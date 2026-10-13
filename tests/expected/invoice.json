@@ -1,0 +1,70 @@
+{
+  "source_file": "invoice.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "bolcom_invoice.yml",
+      "family": "bolcom_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "bol.com b.v.",
+        "document_type": "invoice",
+        "invoice_number": "8587333880016",
+        "date": "2015-10-29",
+        "date_due": "2015-11-12",
+        "date_order": "2015-10-27",
+        "customer_number": "9501198574",
+        "order_number": "8587333880",
+        "date_shipped": "2015-10-29",
+        "seller_name": "bol.com b.v.",
+        "seller_address": "Papendorpseweg 100, 3528 BJ Utrecht",
+        "seller_company_reg": "32147382",
+        "seller_tax_id": "NL820471616B01",
+        "iban": "NL27INGB0000026500",
+        "bic": "INGBNL2A",
+        "buyer_name": "Dhr. M el Mathari",
+        "buyer_address": "Kapittelweg 409, 1216 JD HILVERSUM",
+        "amount_subtotal": 156.2,
+        "amount_untaxed": 156.2,
+        "amount_tax": 32.8,
+        "amount": 189.0,
+        "amount_paid": 189.0,
+        "payment_method": "iDeal",
+        "amount_due": 0.0,
+        "currency": "EUR"
+      },
+      "lines": [
+        {
+          "code": "4718755045813",
+          "name": "BenQ RL2455HM - Gaming Monitor",
+          "qty": 1,
+          "price_unit": 156.2,
+          "discount": 0.0,
+          "price_subtotal": 156.2,
+          "line_tax_percent": 21.0,
+          "line_tax_amount": 32.8
+        }
+      ],
+      "issues": [],
+      "tax_lines": [
+        {
+          "line_tax_percent": 21.0,
+          "price_subtotal": 156.2,
+          "line_tax_amount": 32.8,
+          "price_total": 189.0
+        }
+      ]
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "invoice": {
+      "EUR": 189.0
+    }
+  }
+}

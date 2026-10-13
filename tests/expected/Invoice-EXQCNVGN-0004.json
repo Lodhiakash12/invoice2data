@@ -1,0 +1,56 @@
+{
+  "source_file": "Invoice-EXQCNVGN-0004.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "anthropic_invoice.yml",
+      "family": "anthropic_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Anthropic, PBC",
+        "document_type": "tax_invoice",
+        "invoice_number": "EXQCNVGN-0004",
+        "date": "2026-10-05",
+        "date_due": "2026-10-05",
+        "seller_name": "Anthropic, PBC",
+        "seller_address": "548 Market Street, PMB 90375, San Francisco, California 94104, United States",
+        "seller_email": "support@anthropic.com",
+        "seller_tax_id": "9924USA29003OSI",
+        "buyer_name": "AAkash",
+        "buyer_address": "2 raj coo op society opposite Arya Samaj Mandir Saijpur, Ahmedabad 382345, Gujarat, India",
+        "buyer_email": "furnio24@gmail.com",
+        "currency": "INR",
+        "amount_subtotal": 2033.05,
+        "amount_untaxed": 2033.05,
+        "tax_label": "GST - India",
+        "tax_rate": 18.0,
+        "amount_tax": 365.95,
+        "amount": 2399.0,
+        "amount_due": 2399.0,
+        "hsn_sac": "998315"
+      },
+      "lines": [
+        {
+          "name": "Claude Pro",
+          "qty": 1,
+          "price_unit": 2033.05,
+          "line_tax_percent": 18.0,
+          "price_subtotal": 2033.05,
+          "line_note": "Oct 5–Nov 5, 2026"
+        }
+      ],
+      "issues": []
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 2399.0
+    }
+  }
+}

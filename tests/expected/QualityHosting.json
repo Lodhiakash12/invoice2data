@@ -1,0 +1,126 @@
+{
+  "source_file": "QualityHosting.pdf",
+  "page_count": 2,
+  "documents": [
+    {
+      "pages": [
+        1,
+        2
+      ],
+      "template": "qualityhosting_custom.yml",
+      "family": "qualityhosting_custom",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "QualityHosting AG",
+        "document_type": "invoice",
+        "invoice_number": "30064443",
+        "date": "2014-05-07",
+        "date_due": "2014-05-21",
+        "customer_number": "47774",
+        "contract_number": "CON02858",
+        "payment_method": "Banküberweisung",
+        "payment_terms": "14 Tage netto",
+        "seller_name": "QualityHosting AG",
+        "seller_address": "Uferweg 40-42, D-63571 Gelnhausen",
+        "seller_tax_id": "DE232446240",
+        "seller_tax_number": "044 241 601 03",
+        "seller_company_reg": "HRB 13302",
+        "iban": "DE30507500940000048567",
+        "bic": "HELADEF1GEL",
+        "buyer_name": "iViveLabs Ltd.",
+        "buyer_address": "93B Sai Yu Chung, Yuen Long, N.T., Hong Kong",
+        "amount": 34.73,
+        "amount_untaxed": 34.73,
+        "currency": "EUR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "qty": 1,
+          "name": "Small Business StandardExchange 2010",
+          "price_unit": 3.89,
+          "price_subtotal": 3.89,
+          "line_note": "Grundgebühr pro Einheit",
+          "service": "OUDJQ_strukan",
+          "date_start": "2014-05-01",
+          "date_end": "2014-05-31"
+        },
+        {
+          "pos": 2,
+          "qty": 1,
+          "name": "Small Business QualityExchange 2010",
+          "price_unit": 5.39,
+          "price_subtotal": 5.39,
+          "line_note": "Grundgebühr pro Einheit",
+          "service": "OUDJQ_schneider",
+          "date_start": "2014-05-01",
+          "date_end": "2014-05-31"
+        },
+        {
+          "pos": 3,
+          "qty": 1,
+          "name": "Small Business QualityExchange 2010",
+          "price_unit": 5.39,
+          "price_subtotal": 5.39,
+          "line_note": "Grundgebühr pro Einheit",
+          "service": "OUDJQ_minar",
+          "date_start": "2014-05-01",
+          "date_end": "2014-05-31"
+        },
+        {
+          "pos": 4,
+          "qty": 1,
+          "name": "Small Business QualityExchange 2010",
+          "price_unit": 5.39,
+          "price_subtotal": 5.39,
+          "line_note": "Grundgebühr pro Einheit",
+          "service": "OUDJQ_mayr",
+          "date_start": "2014-05-01",
+          "date_end": "2014-05-31"
+        },
+        {
+          "pos": 5,
+          "qty": 1,
+          "name": "Small Business QualityExchange 2010",
+          "price_unit": 5.39,
+          "price_subtotal": 5.39,
+          "line_note": "Grundgebühr pro Einheit",
+          "service": "OUDJQ_jenewein",
+          "date_start": "2014-05-01",
+          "date_end": "2014-05-31"
+        },
+        {
+          "pos": 6,
+          "qty": 1,
+          "name": "Small Business QualityExchange 2010",
+          "price_unit": 5.39,
+          "price_subtotal": 5.39,
+          "line_note": "Grundgebühr pro Einheit",
+          "service": "OUDJQ_jauernik",
+          "date_start": "2014-05-01",
+          "date_end": "2014-05-31"
+        },
+        {
+          "pos": 7,
+          "qty": 1,
+          "name": "Small Business StandardExchange 2010",
+          "price_unit": 3.89,
+          "price_subtotal": 3.89,
+          "line_note": "Grundgebühr pro Einheit",
+          "service": "OUDJQ_office",
+          "date_start": "2014-05-01",
+          "date_end": "2014-05-31"
+        }
+      ],
+      "issues": []
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "invoice": {
+      "EUR": 34.73
+    }
+  }
+}

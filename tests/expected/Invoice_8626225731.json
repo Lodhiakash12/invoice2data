@@ -1,0 +1,129 @@
+{
+  "source_file": "Invoice_8626225731.pdf",
+  "page_count": 2,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "zomato_restaurant_invoice.yml",
+      "family": "zomato_restaurant_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Zomato (Eternal Limited)",
+        "document_type": "tax_invoice",
+        "invoice_number": "26XUSSHF00001596",
+        "date": "2026-09-24",
+        "order_number": "8626225731",
+        "date_order": "2026-09-24",
+        "seller_name": "kesar kumari kadecha",
+        "seller_trade_name": "Shree Bherunath Parotha House",
+        "seller_address": "Shop 35, Ground Floor, Avani Icon Khathwad Road, Near Salby Hospital Nava, Naroda, Ahmedabad",
+        "seller_tax_id": "UNREGISTERED",
+        "seller_fssai": "20725035002928",
+        "operator_name": "ETERNAL LIMITED",
+        "operator_tax_id": "24AADCD4946L1ZG",
+        "operator_pan": "AADCD4946L",
+        "operator_company_reg": "L93030DL2010PLC198141",
+        "operator_fssai": "10019064001810",
+        "buyer_name": "Akash",
+        "buyer_address": "house no.2,Raj co op society opposite Arya samaj mandir saijpur, 382345",
+        "place_of_supply": "Gujarat (24)",
+        "hsn_sac": "996331",
+        "supply_description": "Restaurant Service",
+        "reverse_charge": "No",
+        "amount_gross": 179.0,
+        "amount_discount": 120.0,
+        "amount_untaxed": 59.0,
+        "amount_cgst": 1.48,
+        "amount_sgst": 1.48,
+        "amount": 61.95,
+        "amount_paid": 61.95,
+        "total_in_words": "Sixty One Rupees And Ninety Five Paisa Only",
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "qty": 2,
+          "name": "Roasted Papad",
+          "gross_amount": 30.0,
+          "discount": 20.11,
+          "price_subtotal": 9.89,
+          "cgst_rate": 2.5,
+          "cgst_amount": 0.25,
+          "sgst_rate": 2.5,
+          "sgst_amount": 0.25,
+          "price_total": 10.38
+        },
+        {
+          "qty": 1,
+          "name": "Sev Masala",
+          "gross_amount": 149.0,
+          "discount": 99.89,
+          "price_subtotal": 49.11,
+          "cgst_rate": 2.5,
+          "cgst_amount": 1.23,
+          "sgst_rate": 2.5,
+          "sgst_amount": 1.23,
+          "price_total": 51.57
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        2
+      ],
+      "template": "zomato_platform_fee_invoice.yml",
+      "family": "zomato_platform_fee_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Zomato (Eternal Limited)",
+        "document_type": "tax_invoice",
+        "invoice_number": "Z27GJOT026836842",
+        "date": "2026-09-24",
+        "order_number": "8626225731",
+        "date_order": "2026-09-24",
+        "seller_name": "ETERNAL LIMITED",
+        "seller_address": "1st Floor, ISHAN, Bhailal Amin Marg, Vadodara, Vadodara, Gujarat, 390023",
+        "seller_state": "Gujarat",
+        "seller_email": "order@zomato.com",
+        "seller_pan": "AADCD4946L",
+        "seller_company_reg": "L93030DL2010PLC198141",
+        "seller_tax_id": "24AADCD4946L1ZG",
+        "buyer_name": "Akash",
+        "buyer_tax_id": "UNREGISTERED",
+        "buyer_address": "house no.2,Raj co op society opposite Arya samaj mandir saijpur, 382345",
+        "place_of_supply": "Gujarat(24)",
+        "hsn_sac": "999799",
+        "supply_description": "Other Services N.E.C",
+        "amount_untaxed": 14.99,
+        "amount_cgst": 1.35,
+        "amount_sgst": 1.35,
+        "amount": 17.69,
+        "amount_paid": 17.69,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "Platform fee",
+          "price_subtotal": 14.99,
+          "cgst_amount": 1.35,
+          "sgst_amount": 1.35,
+          "price_total": 17.69
+        }
+      ],
+      "issues": []
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 79.64
+    }
+  }
+}

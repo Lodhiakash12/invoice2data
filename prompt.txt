@@ -1,0 +1,82 @@
+You are writing invoice2data (v1.0.x) YAML templates. Each template reads ONE document
+layout. Work from the attached pdftotext -layout text. Pages are separated by a form-feed
+character.
+
+STEP 1 - Identify documents
+- List every document in the file: page numbers, document type (tax_invoice, invoice,
+  credit_note, bill_of_supply, consignment_note, payment_receipt, purchase_order, or
+  other), and issuer/platform.
+- One layout = one template. Different document types from the same company (invoice vs
+  credit note vs bill of supply) need separate templates.
+- If a document spans several pages, say so. It is parsed as one text with the pages
+  joined.
+
+STEP 2 - Write one template per layout
+Structure:
+  issuer: <layout family, e.g. "Meesho", "Zomato (Eternal Limited)">
+  keywords: [...]          # plain text present on EVERY page of this layout
+  exclude_keywords: [...]  # text that appears on look-alike layouts but not this one
+  required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+                           # drop amount for non-financial documents
+  fields: ...
+  lines: ...               # item table, if any
+  options:
+    currency: <ISO code>
+    decimal_separator: '.' or ','
+    date_formats: [...]    # every numeric date format used on the document
+    languages: [xx]        # only if month names are not English
+    replace:
+      - ['\r', '']         # always keep this as the first entry
+
+Field names (use exactly these; add others only if needed, in snake_case):
+  document_type (static), invoice_number (the document's own number), date, date_due,
+  date_order, order_number, customer_number, original_document_number and
+  date_original_document (credit notes),
+  seller_name, seller_trade_name, seller_address, seller_tax_id (GSTIN/VAT),
+  seller_company_reg (CIN/KvK/HRB), seller_email, seller_pan,
+  buyer_name, buyer_address, buyer_tax_id, buyer_email,
+  operator_name and operator_tax_id (platform that invoices for the seller),
+  place_of_supply, hsn_sac,
+  amount (grand total), amount_untaxed, amount_tax, amount_cgst, amount_sgst,
+  amount_igst, amount_gross, amount_discount, amount_subtotal, amount_paid, amount_due.
+Line item names: name, code, hsn_sac, qty, price_unit, gross_amount, discount,
+  price_subtotal (taxable value), line_tax_percent, line_tax_amount, cgst_rate,
+  cgst_amount, sgst_rate, sgst_amount, igst_rate, igst_amount,
+  price_total (incl. tax), line_note, date_start, date_end.
+Capture every printed total separately (e.g. both the totals row and "Amount settled"),
+because they are cross-checked.
+
+STEP 3 - Rules (mandatory)
+1.  Every regex has exactly ONE capture group. Use single-quoted YAML strings.
+2.  Quote any keyword or value containing a colon: - 'BILL TO:'
+3.  Any ^ or $ needs (?m), especially lines: end:, which is searched in the whole text.
+4.  ASCII only. Write non-ASCII characters as escapes inside regexes: \u20b9 (rupee),
+    \u20ac (euro), \u00fc (u-umlaut). Better still, skip currency signs with \D? or \D*?.
+    Keywords must be plain ASCII text.
+5.  Amounts: [\d,]+\.\d{2} (or [\d.]+,\d{2} with decimal_separator ','). Fields
+    starting with amount are converted to numbers automatically.
+6.  Never hard-code values that change per document (names, numbers, amounts). Anchor on
+    labels instead.
+7.  Two-column layouts: right-hand text often sits on the same line as, or between, the
+    left-hand lines. Capture the block, then clean it with a field-level replace, e.g.
+    {parser: regex, regex: '(?s)Label:\s*(.*?)\n\s*\n',
+     replace: [['\n[ \t]*OtherLabel:[^\n]*', ''], ['\s+', ' ']]}
+8.  Values printed on the line BELOW their label: 'Label A\s+Label B\s*\n\s*(\S+)\s+\S+'.
+9.  Line tables: start = header text, end = (?m) totals row, first_line = one item row
+    with named groups, line = continuation row for wrapped names '^\s+(?P<name>\S.*?)\s*$'.
+    Types: float for money, int for counts. Leave qty untyped if it can be "NA".
+    If an item's description is printed ABOVE its number row, add to options.replace a
+    rule that moves it onto the row.
+10. Static values: document_type: {parser: static, value: tax_invoice}.
+11. Do not use a field called desc (invoice2data overwrites it).
+
+STEP 4 - Self-check before answering
+For each field and line rule, show the exact text it matches and the value it captures.
+Confirm:
+- keywords match every page of this layout and no page of the other documents;
+- line arithmetic holds: taxable + taxes = line total, and the sum of lines = the totals;
+- dates parse with the listed formats (day-first vs month-first).
+List anything uncertain instead of guessing.
+
+OUTPUT: one YAML block per template, with a file name like <issuer>_<document_type>.yml,
+then the self-check table.

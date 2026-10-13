@@ -1,0 +1,54 @@
+{
+  "source_file": "oyo.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "oyo_payment_receipt.yml",
+      "family": "oyo_payment_receipt",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "OYO (Oravel Stays)",
+        "document_type": "payment_receipt",
+        "invoice_number": "IBZY2087",
+        "date": "2017-12-31",
+        "payment_mode": "Cash at Hotel",
+        "buyer_name": "Sanjay",
+        "hotel_name": "OYO 4189 Resort Nanganallur",
+        "hotel_address": "25,Vembuliamman Koil Street,, Pazhavanthangal, Chennai",
+        "date_check_in": "2017-12-31",
+        "date_check_out": "2018-01-01",
+        "rooms": 1,
+        "seller_name": "Oravel Stays Private Limited",
+        "seller_address": "Delhi Rectangle Regus, Level 4, Rectangle 1, Commercial Complex D-4, Saket, New Delhi - 110017",
+        "seller_tax_id": "06AABCO6063D1ZQ",
+        "seller_company_reg": "U63090DL2012PTC231770",
+        "amount": 1939.0,
+        "amount_paid": 1939.0,
+        "amount_due": 0.0,
+        "tax_note": "Amount payable is inclusive of Central & State Goods & Services Tax at applicable slab rates. Please ask Hotel for invoice at the time of check-out.",
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "name": "Room Charges",
+          "price_unit": 1939.0,
+          "qty": 1,
+          "rooms": 1,
+          "price_total": 1939.0
+        }
+      ],
+      "issues": []
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "payment_receipt": {
+      "INR": 1939.0
+    }
+  }
+}

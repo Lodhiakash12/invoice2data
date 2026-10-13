@@ -1,0 +1,251 @@
+{
+  "source_file": "ms_invoice_326255343871054720_1.pdf",
+  "page_count": 5,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "meesho_tax_invoice.yml",
+      "family": "meesho_tax_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Meesho",
+        "document_type": "tax_invoice",
+        "order_number": "326255343871054720",
+        "invoice_number": "qyecm2745526",
+        "date_order": "2026-09-01",
+        "date": "2026-09-02",
+        "buyer_name": "Akash",
+        "buyer_address": "2, Raj society oppo site Arya samj mandir saijpur, saijpur, , Ahmedabad, Gujarat, 382340",
+        "place_of_supply": "24 Gujarat",
+        "seller_name": "KULDEEP SAINI",
+        "seller_address": "Capital TKS, 05 Unnamed Road, Jaipur Rural, Rajasthan 303904",
+        "seller_tax_id": "08OEJPS9669A5ZH",
+        "amount_tax": 8.85,
+        "amount": 58.03,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "Apple iPhone 12 mini BACK COVER - Free Size",
+          "hsn_sac": "392690",
+          "qty": 1,
+          "gross_amount": 87.03,
+          "discount": 30.0,
+          "price_subtotal": 48.33,
+          "tax_type": "IGST",
+          "line_tax_percent": 18.0,
+          "line_tax_amount": 8.7,
+          "price_total": 57.03
+        },
+        {
+          "pos": 2,
+          "name": "OTHER CHARGES",
+          "hsn_sac": "392690",
+          "qty": null,
+          "gross_amount": 1.0,
+          "discount": 0.0,
+          "price_subtotal": 0.85,
+          "tax_type": "IGST",
+          "line_tax_percent": 18.0,
+          "line_tax_amount": 0.15,
+          "price_total": 1.0
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        2
+      ],
+      "template": "meesho_credit_note.yml",
+      "family": "meesho_credit_note",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Meesho",
+        "document_type": "credit_note",
+        "order_number": "326255343871054720",
+        "invoice_number": "qyecm27C16754",
+        "original_document_number": "qyecm2745526",
+        "date_order": "2026-09-01",
+        "date": "2026-09-12",
+        "date_original_document": "2026-09-02",
+        "buyer_name": "Akash",
+        "buyer_address": "2, Raj society oppo site Arya samj mandir saijpur, saijpur, , Ahmedabad, Gujarat - 382340",
+        "place_of_supply": "24 Gujarat",
+        "seller_name": "KULDEEP SAINI",
+        "seller_address": "Capital TKS, 05 Unnamed Road, Jaipur Rural, Rajasthan - 303904",
+        "seller_tax_id": "08OEJPS9669A5ZH",
+        "amount_tax": 8.85,
+        "amount": 58.03,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "Apple iPhone 12 mini BACK COVER - Free Size",
+          "hsn_sac": "392690",
+          "qty": 1,
+          "gross_amount": 87.03,
+          "discount": 30.0,
+          "price_subtotal": 48.33,
+          "tax_type": "IGST",
+          "line_tax_percent": 18.0,
+          "line_tax_amount": 8.7,
+          "price_total": 57.03
+        },
+        {
+          "pos": 2,
+          "name": "OTHER CHARGES",
+          "hsn_sac": "392690",
+          "qty": null,
+          "gross_amount": 1.0,
+          "discount": 0.0,
+          "price_subtotal": 0.85,
+          "tax_type": "IGST",
+          "line_tax_percent": 18.0,
+          "line_tax_amount": 0.15,
+          "price_total": 1.0
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        3
+      ],
+      "template": "meesho_bill_of_supply.yml",
+      "family": "meesho_bill_of_supply",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Meesho",
+        "document_type": "bill_of_supply",
+        "order_number": "326255343871054720",
+        "invoice_number": "1270000027719290",
+        "date_order": "2026-09-01",
+        "date": "2026-09-02",
+        "buyer_name": "Akash",
+        "buyer_address": "2, Raj society oppo site Arya samj mandir saijpur, saijpur, , Ahmedabad, Gujarat - 382340",
+        "place_of_supply": "08 Rajasthan",
+        "seller_name": "Valmo Transportation Private Limited",
+        "seller_address": "Helios Business Park, Varthur Hobli, Outer Ring Road, Kadubisanahalli, Bengaluru, Karnataka - 560103",
+        "seller_tax_id": "29AALCV8310J1ZU",
+        "amount": 35.97,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "GT Charges",
+          "hsn_sac": "996511",
+          "qty": 1,
+          "gross_amount": 35.97,
+          "discount": 0.0,
+          "price_total": 35.97
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        4
+      ],
+      "template": "meesho_bill_of_supply_credit_note.yml",
+      "family": "meesho_bill_of_supply_credit_note",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Meesho",
+        "document_type": "credit_note",
+        "order_number": "326255343871054720",
+        "invoice_number": "C427000030967211",
+        "original_document_number": "1270000027719290",
+        "date_order": "2026-09-01",
+        "date": "2026-09-12",
+        "date_original_document": "2026-09-02",
+        "buyer_name": "Akash",
+        "buyer_address": "2, Raj society oppo site Arya samj mandir saijpur, saijpur, , Ahmedabad, Gujarat - 382340",
+        "place_of_supply": "08 Rajasthan",
+        "seller_name": "Valmo Transportation Private Limited",
+        "seller_address": "Helios Business Park, Varthur Hobli, Outer Ring Road, Kadubisanahalli, Bengaluru, Karnataka - 560103",
+        "seller_tax_id": "29AALCV8310J1ZU",
+        "amount": 35.97,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "GT Charges",
+          "hsn_sac": "996511",
+          "qty": 1,
+          "gross_amount": 35.97,
+          "discount": 0.0,
+          "price_total": 35.97
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        5
+      ],
+      "template": "meesho_consignment_note.yml",
+      "family": "meesho_consignment_note",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Meesho",
+        "document_type": "consignment_note",
+        "invoice_number": "F27880048297291",
+        "date": "2026-09-02",
+        "seller_name": "Valmo Transportation Private Limited",
+        "on_behalf_of": "Akash",
+        "seller_tax_id": "29AALCV8310J1ZU",
+        "place_of_origin": "129, Gohandi, Vill. Gohandi, Sapna fancy store, Gohandi,Jaipur, Rajasthan, 303904, Jaipur, Rajasthan - 303904",
+        "buyer_name": "Akash",
+        "buyer_address": "2, Raj society oppo site Arya samj mandir saijpur, saijpur, Ahmedabad, Gujarat - 382340",
+        "reverse_charge": "No",
+        "tax_payer": "GTA i.e. Valmo Transportation Private Limited",
+        "transport_legs": [
+          "Jaipur, Rajasthan to Jaipur, Rajasthan- RJ14GG0939",
+          "Jaipur, Rajasthan to Jaipur, Rajasthan- HR55AA4882",
+          "Jaipur, Rajasthan to Ahmedabad, Gujarat- HR38AF7440",
+          "Ahmedabad, Gujarat to Ahmedabad, Gujarat- GJ27TT8952",
+          "Ahmedabad, Gujarat to Kubernagar_Naroda, Gujarat- GJ18BX2233",
+          "Kubernagar_Naroda, Gujarat to Ahmedabad, Gujarat- GJ18BX2233",
+          "Ahmedabad, Gujarat to Ahmedabad, Gujarat- GJ01LT9829",
+          "Ahmedabad, Gujarat to Ahmedabad, Gujarat- GJ01YP7811"
+        ],
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "Apple iPhone 12 mini BACK COVER",
+          "weight_grams": 106.0,
+          "qty": 1,
+          "goods_value": 58.03
+        }
+      ],
+      "issues": []
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 58.03
+    },
+    "credit_note": {
+      "INR": 94.0
+    },
+    "bill_of_supply": {
+      "INR": 35.97
+    }
+  }
+}

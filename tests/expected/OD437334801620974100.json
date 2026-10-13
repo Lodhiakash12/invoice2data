@@ -1,0 +1,311 @@
+{
+  "source_file": "OD437334801620974100.pdf",
+  "page_count": 8,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "flipkart_seller_tax_invoice.yml",
+      "family": "flipkart_seller_tax_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Flipkart",
+        "document_type": "tax_invoice",
+        "invoice_number": "LIAALHX270001900",
+        "order_number": "OD437334801620974100",
+        "date_order": "2026-04-18",
+        "date": "2026-04-18",
+        "seller_name": "Bhumika Highstreet India Private Limited",
+        "ship_from_address": "Warehouse Building Nos. WE-II, Renaissance IntegratedIndustrial Area, Village Vashere, Bhiwandi , Thane , Mumbai , Maharashtra -421302, Bhiwandi , MAHARASHTRA, India - 421302, IN-MH",
+        "seller_tax_id": "27AAICB4842N1Z8",
+        "seller_pan": "AAICB4842N",
+        "seller_company_reg": "U45209DL2019PTC351146",
+        "buyer_name": "Akash Rajput",
+        "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha. Ahmedabad 382345 Gujarat",
+        "amount_gross": 785.0,
+        "amount_discount": -135.0,
+        "amount_untaxed": 619.05,
+        "amount_igst": 30.95,
+        "amount": 650.0,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "category": "Casual Shoes",
+          "name": "RED TAPE Sneakers for Men | Premium PU Finish, Lace-Up Closure & Stylish Uplift Sneakers For Men",
+          "qty": 1,
+          "gross_amount": 785.0,
+          "discount": -135.0,
+          "price_subtotal": 619.05,
+          "igst_amount": 30.95,
+          "price_total": 650.0,
+          "code": "SHOH8YUGNXA9QYRE",
+          "hsn_sac": "64039990",
+          "igst_rate": 5.0
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        2,
+        3
+      ],
+      "template": "flipkart_bill_of_supply.yml",
+      "family": "flipkart_bill_of_supply",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Flipkart",
+        "document_type": "bill_of_supply",
+        "invoice_number": "NBAAJ27001754498",
+        "date": "2026-04-22",
+        "order_number": "OD437334801620974100",
+        "nature_of_transaction": "INTRA",
+        "nature_of_supply": "Service",
+        "seller_name": "Flipkart India Private Limited",
+        "seller_address": "KH NO 14/6 MIN,7 MIN,13 MIN,14,15,17,18,MIN, 23,24,25,16/1,2,, 9,10,11,12/1,17/3,4,5,6,7,8,11/2, 12,13,14,15 BINOLLA, Gurugram, Gurugram, Haryana, 122413 , Haryana, IN-HR, IN - 122413",
+        "seller_tax_id": "06AABCF8078M1Z5",
+        "seller_pan": "AABCF8078M",
+        "buyer_name": "Akash Rajput",
+        "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, India - 382345",
+        "buyer_state": "Gujarat",
+        "place_of_supply": "HARYANA",
+        "ship_from_address": "KHASRA NO. 21//16, 21//25, 22//20/2, 22//21 & 25//5/1, 24//1, 25//5/2 & 25//6/1, 24//9 & 24//10,25//7, 20//24, 20 //25, 21//19, 21//21, 21//22, 21//23& 21//24, AND OTHERS, VILLAGE SANPKA, TEHSIL FARUKHNAGAR, DISTRICT GURUGRAM, HARYANA, INDIA-122503, HARYANA, IN-HR, India- 122503",
+        "amount_gross": 154.0,
+        "amount_untaxed": 154.0,
+        "amount_sgst": 0.0,
+        "amount_cgst": 0.0,
+        "amount": 154.0,
+        "goods_description": "RED TAPE Shoes for Men | Lifestyle Casual Sneakers for Men | Sports Shoes Sneakers For Men (1)",
+        "goods_weight_grams": 492.0,
+        "goods_value": 681.0,
+        "transporter": "Flipkart India Private Limited",
+        "vehicle_number": "NL01AF1335",
+        "reverse_charge": "No",
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "name": "GT Charges",
+          "hsn_sac": "996511",
+          "qty": 1.0,
+          "gross_amount": 154.0,
+          "price_subtotal": 154.0,
+          "sgst_amount": 0.0,
+          "cgst_amount": 0.0,
+          "price_total": 154.0,
+          "cgst_rate": 0.0,
+          "sgst_rate": 0.0
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        4
+      ],
+      "template": "flipkart_platform_fee_invoice.yml",
+      "family": "flipkart_platform_fee_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Flipkart",
+        "document_type": "tax_invoice",
+        "invoice_number": "MXACT27000404679",
+        "order_number": "OD437334801620974100",
+        "date_order": "2026-04-18",
+        "date": "2026-04-18",
+        "seller_name": "Flipkart Internet Private Limited",
+        "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+        "seller_company_reg": "U51109KA2012PTC066107",
+        "seller_tax_id": "29AACCF0683K1ZD",
+        "buyer_name": "Akash Rajput",
+        "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, Ahmedabad 382345",
+        "buyer_state": "Gujarat",
+        "amount_gross": 4.0,
+        "amount_discount": 0.0,
+        "amount_untaxed": 3.39,
+        "amount_igst": 0.61,
+        "amount": 4.0,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "hsn_sac": "998599",
+          "name": "Platform Fee",
+          "qty": 1,
+          "gross_amount": 4.0,
+          "discount": 0.0,
+          "price_subtotal": 3.39,
+          "igst_amount": 0.61,
+          "price_total": 4.0,
+          "serial_no": "B26A0328881",
+          "igst_rate": 18.0
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        5
+      ],
+      "template": "flipkart_platform_fee_invoice.yml",
+      "family": "flipkart_platform_fee_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Flipkart",
+        "document_type": "tax_invoice",
+        "invoice_number": "MXAB427000407204",
+        "order_number": "OD437334801620974100",
+        "date_order": "2026-04-18",
+        "date": "2026-04-18",
+        "seller_name": "Flipkart Internet Private Limited",
+        "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+        "seller_company_reg": "U51109KA2012PTC066107",
+        "seller_tax_id": "29AACCF0683K1ZD",
+        "buyer_name": "Akash Rajput",
+        "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, Ahmedabad 382345",
+        "buyer_state": "Gujarat",
+        "amount_gross": 3.0,
+        "amount_discount": 0.0,
+        "amount_untaxed": 2.54,
+        "amount_igst": 0.46,
+        "amount": 3.0,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "hsn_sac": "998599",
+          "name": "Platform Fee",
+          "qty": 1,
+          "gross_amount": 3.0,
+          "discount": 0.0,
+          "price_subtotal": 2.54,
+          "igst_amount": 0.46,
+          "price_total": 3.0,
+          "igst_rate": 18.0
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        6,
+        7
+      ],
+      "template": "flipkart_bill_of_supply.yml",
+      "family": "flipkart_bill_of_supply",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Flipkart",
+        "document_type": "bill_of_supply",
+        "invoice_number": "NBAEJ27000391211",
+        "date": "2026-04-20",
+        "order_number": "OD437334801620974100",
+        "nature_of_transaction": "INTRA",
+        "nature_of_supply": "Service",
+        "seller_name": "Flipkart India Private Limited",
+        "seller_address": "Warehouse Building Nos. WE-II, Renaissance Integrated Industrial Area, Village Vashere, Bhiwandi , Thane , Mumbai , Maharashtra, Thane, Maharashtra, 421302 , Maharashtra, IN-MH, IN - 421302",
+        "seller_tax_id": "27AABCF8078M1Z1",
+        "seller_pan": "AABCF8078M",
+        "buyer_name": "Akash Rajput",
+        "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, India - 382345",
+        "buyer_state": "Gujarat",
+        "place_of_supply": "MAHARASHTRA",
+        "ship_from_address": "FLIPKART INSTAKART SERVICES PVT LTD, WAREHOUSE BUILDING NO.2, RENAISSANCE INTEGRATED INDUSTRIAL AREA,VILLAGE VASHERE,BHIWANDI,THANE.421302, MAHARASHTRA, IN-MH, India- 421302",
+        "amount_gross": 154.0,
+        "amount_untaxed": 154.0,
+        "amount_sgst": 0.0,
+        "amount_cgst": 0.0,
+        "amount": 154.0,
+        "goods_description": "RED TAPE Sneakers for Men | Premium PU Finish, Lace-Up Closure & Stylish Uplift Sneakers For Men (1)",
+        "goods_weight_grams": 1161.0,
+        "goods_value": 650.0,
+        "transporter": "Flipkart India Private Limited",
+        "vehicle_number": "MH04GR4916",
+        "reverse_charge": "No",
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "name": "GT Charges",
+          "hsn_sac": "996511",
+          "qty": 1.0,
+          "gross_amount": 154.0,
+          "price_subtotal": 154.0,
+          "sgst_amount": 0.0,
+          "cgst_amount": 0.0,
+          "price_total": 154.0,
+          "cgst_rate": 0.0,
+          "sgst_rate": 0.0
+        }
+      ],
+      "issues": []
+    },
+    {
+      "pages": [
+        8
+      ],
+      "template": "flipkart_seller_tax_invoice.yml",
+      "family": "flipkart_seller_tax_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Flipkart",
+        "document_type": "tax_invoice",
+        "invoice_number": "LIAAJOT270003715",
+        "order_number": "OD437334801620974100",
+        "date_order": "2026-04-18",
+        "date": "2026-04-18",
+        "seller_name": "Bhumika Highstreet India Private Limited",
+        "ship_from_address": "Sunsat warehousing Pvt. Ltd., Hadbast No. 23, Village Sanpka,Tehsil Farukhnagar, District - Gurgaon, Haryana- 122503, Farukhnagar , HARYANA, India - 122503, IN-HR",
+        "seller_tax_id": "06AAICB4842N1ZC",
+        "seller_pan": "AAICB4842N",
+        "seller_company_reg": "U45209DL2019PTC351146",
+        "buyer_name": "Akash Rajput",
+        "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha. Ahmedabad 382345 Gujarat",
+        "amount_gross": 825.0,
+        "amount_discount": -144.0,
+        "amount_untaxed": 648.57,
+        "amount_igst": 32.43,
+        "amount": 681.0,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "category": "Casual Shoes",
+          "name": "RED TAPE Shoes for Men | Lifestyle Casual Sneakers for Men | Sports Shoes Sneakers For Men",
+          "qty": 1,
+          "gross_amount": 825.0,
+          "discount": -144.0,
+          "price_subtotal": 648.57,
+          "igst_amount": 32.43,
+          "price_total": 681.0,
+          "code": "SHOH4FGBBE6CYW5W",
+          "hsn_sac": "64039990",
+          "serial_no": "B26A0328881",
+          "igst_rate": 5.0
+        }
+      ],
+      "issues": []
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [
+    "page 3 attached to the previous document as a continuation page",
+    "page 7 attached to the previous document as a continuation page"
+  ],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 1338.0
+    },
+    "bill_of_supply": {
+      "INR": 308.0
+    }
+  }
+}

@@ -1,0 +1,45 @@
+﻿# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Build and packaging artifacts
+build/
+dist/
+*.egg-info/
+
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project data and template directories
+/Config/
+/config/
+/doc/
+/output/
+/templates/
+
+# Generated invoice exports
+/combined_invoice.xlsx
+/invoices.xlsx
+/invoices-output.json
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
