@@ -23,7 +23,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from invoice_engine import Registry, load_templates, process_pdf  # noqa: E402
+from invoice_engine import Registry, layout, load_templates, process_pdf  # noqa: E402
 from invoice_engine.document import process_group  # noqa: E402
 from invoice_engine.rules import COMMON_FUNCTIONS, RuleError, parse_rule  # noqa: E402
 from invoice_engine.segment import matching_templates, page_texts  # noqa: E402
@@ -324,6 +324,46 @@ def test_shared_layouts_do_not_chain_separate_invoices(tmp_path: Path):
     result = process_pdf(pdf, pool_with(tmp_path), REGISTRY)
     assert [(d["pages"], d["template"], d["status"]) for d in result["documents"]] == \
         [([1], "zomato_restaurant_invoice.yml", "OK"), ([2], "zomato_platform_fee_invoice.yml", "OK")]
+
+
+# ---------------------------------------------------------- layout fingerprint (tie-breaker)
+
+def test_fingerprint_keeps_label_words_only_and_ignores_rows():
+    page = [("Invoice", 0.62, 100.0), ("Nexora", 0.70, 90.0), ("Subtotal", 0.61, 500.0), ("18,500.00", 0.9, 500.0)]
+    order = layout.fingerprint([page], {"invoice", "subtotal"})
+    assert order == [["invoice", 7], ["subtotal", 7]]                   # no names, no amounts
+    longer_table = [(w, x, y + 300 if y > 200 else y) for w, x, y in page]   # totals pushed down
+    assert layout.similarity(layout.fingerprint([longer_table], {"invoice", "subtotal"}), order) == 1.0
+    moved = [(w, 0.05, y) for w, x, y in page]                           # same words, other column
+    assert layout.similarity(layout.fingerprint([moved], {"invoice", "subtotal"}), order) == 0.0
+
+
+def test_malformed_layout_block_is_rejected(tmp_path: Path):
+    derive(tmp_path, "oyo_payment_receipt.yml", "oyo_payment_receipt.yml",
+           layout={"columns": 12, "sample_pages": 1, "order": [["receipt", 40]]})
+    assert "oyo_payment_receipt.yml" in load_templates(tmp_path, REGISTRY).rejected
+
+
+def _store_layout(folder: Path, name: str, pdf: Path, pages: list[int]) -> None:
+    templates = {t["template_name"]: t for t in load_templates(folder, REGISTRY).templates}
+    order = layout.fingerprint(layout.page_words(pdf, pages), layout.label_vocabulary(templates[name]))
+    layout.write_layout(folder / name, layout.layout_block(order, 1))
+
+
+def test_layout_breaks_a_tie_only_when_one_layout_is_clearly_closer(tmp_path: Path):
+    meesho, flipkart = need("ms_invoice_326255343871054720_1.pdf"), need("OD437334801620974100.pdf")
+    derive(tmp_path, "meesho_tax_invoice.yml", "abc_marketplace_invoice.yml", issuer="ABC Marketplace")
+    pool_with(tmp_path)
+    _store_layout(tmp_path, "meesho_tax_invoice.yml", meesho, [1])
+    _store_layout(tmp_path, "abc_marketplace_invoice.yml", flipkart, [1])    # ABC's sample looks different
+    doc = process_pdf(meesho, load_templates(tmp_path, REGISTRY).templates, REGISTRY)["documents"][0]
+    assert (doc["template"], doc["status"]) == ("meesho_tax_invoice.yml", "OK")
+    assert any(i["message"].startswith("layout decided the tie") for i in doc["issues"])
+
+    _store_layout(tmp_path, "abc_marketplace_invoice.yml", meesho, [1])      # same layout: no decision
+    doc = process_pdf(meesho, load_templates(tmp_path, REGISTRY).templates, REGISTRY)["documents"][0]
+    assert doc["status"] == "CHECK"
+    assert any(i["message"].startswith("ambiguous:") for i in doc["issues"])
 
 
 # ------------------------------------------------------------------- damaged values

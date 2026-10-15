@@ -9,9 +9,11 @@ The engine (invoice_engine/) contains no issuer- or field-specific code:
 Usage (PowerShell, from the project folder)
   python process_invoice.py                          # every PDF in this folder
   python process_invoice.py Invoice_8626225731.pdf   # one PDF
-  python process_invoice.py D:\\Invoices              # every PDF in another folder
+  python process_invoice.py C:\Work\invoice2data\doc             # every PDF in another folder
   python process_invoice.py --lint                   # only check the templates
   python process_invoice.py --debug ...              # also show invoice2data's own log
+  python process_invoice.py --fingerprint templates\\x.yml a.pdf b.pdf
+                                                     # store x.yml's label layout from sample PDFs
 """
 
 from __future__ import annotations
@@ -23,6 +25,9 @@ import sys
 from pathlib import Path
 
 from invoice_engine import Registry, load_templates, process_pdf
+from invoice_engine import layout as layout_fp
+from invoice_engine.document import attempt
+from invoice_engine.segment import page_texts, split_into_documents
 from invoice_engine.export import print_summary, write_excel, write_json
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -54,6 +59,32 @@ def collect_pdfs(targets: list[str]) -> list[Path]:
     return pdfs
 
 
+def store_fingerprint(template_file: Path, pdfs: list[Path], template_set, registry) -> int:
+    """Write the layout block of one template from the documents it reads in the given PDFs."""
+    template = next((t for t in template_set.templates if t["template_name"] == template_file.name), None)
+    if template is None:
+        print(f"{template_file.name} is not a usable template in the template folder")
+        return 1
+    vocabulary = layout_fp.label_vocabulary(template)
+    samples = []
+    for pdf in pdfs:
+        groups, _ = split_into_documents(page_texts(pdf), template_set.templates)
+        for group in groups:
+            if template not in group["candidates"]:
+                continue
+            record = attempt(template, group["texts"], pdf, registry, group["pages"])
+            if record["status"] != "FAIL":         # it reads this document, whichever template won
+                samples.append(layout_fp.fingerprint(layout_fp.page_words(pdf, group["pages"]), vocabulary))
+                print(f"  sample: {pdf.name} pages {group['pages']} ({record['status']})")
+    if not samples:
+        print("No document in these PDFs was read by this template without FAIL; nothing written.")
+        return 1
+    order = layout_fp.merge(samples)
+    layout_fp.write_layout(template_file, layout_fp.layout_block(order, len(samples)))
+    print(f"Layout of {template_file.name}: {len(order)} labels from {len(samples)} sample(s) written.")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Parse PDF invoices with invoice2data templates.")
     parser.add_argument("inputs", nargs="*", help="PDF files or folders (default: this folder)")
@@ -62,6 +93,8 @@ def main() -> int:
     parser.add_argument("--output", default=str(BASE_DIR / "output"), help="output folder")
     parser.add_argument("--lint", action="store_true", help="only check the templates and exit")
     parser.add_argument("--debug", action="store_true", help="show invoice2data's own log")
+    parser.add_argument("--fingerprint", metavar="TEMPLATE",
+                        help="store this template's label layout, read from the PDFs given as inputs")
     args = parser.parse_args()
 
     if hasattr(sys.stdout, "reconfigure"):
@@ -76,6 +109,8 @@ def main() -> int:
     print(f"Templates: {len(template_set.templates)} usable, {len(template_set.rejected)} rejected")
     if args.lint:
         return 1 if template_set.rejected else 0
+    if args.fingerprint:
+        return store_fingerprint(Path(args.fingerprint), collect_pdfs(args.inputs), template_set, registry)
     if not template_set.templates:
         sys.exit("No usable templates.")
     if shutil.which("pdftotext") is None:

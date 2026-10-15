@@ -6,6 +6,7 @@ from __future__ import annotations
 import difflib
 import re
 
+from .layout import lint_layout
 from .registry import Registry, rule_from
 from .rules import DOCUMENT_FUNCTIONS, LINE_FUNCTIONS, RuleError, parse_expression, parse_rule
 
@@ -114,6 +115,10 @@ def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
     version = template.get("version", 1)
     if not isinstance(version, int) or version < 1:
         errors.append(f"version must be a whole number >= 1, got {version!r}")
+
+    # layout fingerprint (optional, written by: process_invoice.py --fingerprint)
+    if "layout" in template:
+        errors.extend(lint_layout(template["layout"]))
 
     # template checks
     checks = template.get("checks") or {}

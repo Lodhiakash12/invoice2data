@@ -14,6 +14,7 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
+from . import layout as layout_fp
 from .registry import Registry
 from .rules import to_decimal
 from .segment import page_texts, split_into_documents
@@ -113,6 +114,34 @@ def _evidence_text(record: dict) -> str:
             f"{e.get('fields_found', 0)}/{e.get('fields_defined', 0)} fields")
 
 
+def break_tie_by_layout(tied: list[dict], group: dict, pdf: Path):
+    """When no result dominates, compare the document's label positions with each tied
+    template's stored fingerprint. Returns (record, note) when one is clearly closest, else None.
+    Needs a fingerprint on every tied template and the PDF itself (for word positions)."""
+    templates = {t["template_name"]: t for t in group["candidates"]}
+    blocks = {r["template"]: templates[r["template"]].get("layout") for r in tied}
+    if any(not isinstance(b, dict) or not b.get("order") for b in blocks.values()) or not Path(pdf).exists():
+        return None
+    try:
+        words = layout_fp.page_words(Path(pdf), group["pages"])
+    except (RuntimeError, OSError):
+        return None
+    scores = []
+    for record in tied:
+        template, block = templates[record["template"]], blocks[record["template"]]
+        page = layout_fp.fingerprint(words, layout_fp.label_vocabulary(template), block.get("columns", layout_fp.COLUMNS))
+        stored = [list(x) for x in block["order"]]
+        scores.append((layout_fp.similarity(page, stored), record))
+    scores.sort(key=lambda s: s[0], reverse=True)
+    for score, record in scores:
+        record.setdefault("evidence", {})["layout_similarity"] = round(score, 2)
+    (best, winner), (second, _) = scores[0], scores[1]
+    if best < layout_fp.MIN_SIMILARITY or best - second < layout_fp.MIN_MARGIN:
+        return None
+    shown = ", ".join(f"{r['template']} {s:.2f}" for s, r in scores)
+    return winner, f"layout decided the tie: label positions match {winner['template']} best ({shown})"
+
+
 def process_group(group: dict, pdf: Path, registry: Registry) -> dict:
     """Parse the document with every candidate layout and keep the one the evidence supports.
 
@@ -142,6 +171,13 @@ def process_group(group: dict, pdf: Path, registry: Registry) -> dict:
         winners = [a for a in alive if all(a is b or dominates(a, b) for b in alive)]
         ambiguous = len(winners) != 1
         chosen = winners[0] if not ambiguous else max(alive, key=evidence_key)
+
+    if ambiguous:
+        decided = break_tie_by_layout(alive, group, pdf)
+        if decided is not None:
+            chosen, note = decided
+            chosen["issues"].append({"level": "INFO", "message": note})
+            ambiguous = False
 
     if ambiguous:
         others = [r for r in alive if r is not chosen]
