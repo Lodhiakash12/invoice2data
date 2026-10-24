@@ -1,0 +1,78 @@
+{
+  "source_file": "shopify_bill_462798055.pdf",
+  "page_count": 2,
+  "documents": [
+    {
+      "pages": [
+        1,
+        2
+      ],
+      "template": "shopify_bill.yml",
+      "family": "shopify_bill",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Shopify",
+        "document_type": "tax_invoice",
+        "invoice_number": "462798055",
+        "date": "2025-12-21",
+        "billing_period": "30-day billing cycle",
+        "seller_name": "Shopify Commerce Singapore Pte. Ltd.",
+        "seller_address": "77 Robinson Road #13-00 Robinson 77 Singapore 068896 Singapore",
+        "seller_tax_id": "9921SGP29003OS0",
+        "buyer_name": "Ekarshi OpenSource Foundation",
+        "buyer_email": "ekarshi.data@gmail.com",
+        "buyer_trade_name": "Odisha Desi Haat",
+        "buyer_address": "A 303, THE FIRST. B/H KESHAVBAUG PARTY PLOT, VASTRAPUR THE FIRST. Ahmedabad, 380015 Gujarat - 24 India",
+        "buyer_state": "Gujarat",
+        "buyer_state_code": "24",
+        "amount_untaxed": 3230.89,
+        "tax_rate": 18.0,
+        "amount_igst": 581.56,
+        "amount": 3812.45,
+        "amount_due": 3812.45,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "name": "Apps (1 item)",
+          "hsn_sac": "998315",
+          "line_note": "Hosting and information technology (IT) infrastructure provisioning services",
+          "price_subtotal": 3217.56
+        },
+        {
+          "name": "Transaction fees (3 items)",
+          "hsn_sac": "998315",
+          "line_note": "Hosting and information technology (IT) infrastructure provisioning services",
+          "price_subtotal": 13.33
+        },
+        {
+          "name": "Subscription (1 item)",
+          "hsn_sac": "998315",
+          "line_note": "Hosting and information technology (IT) infrastructure provisioning services",
+          "price_subtotal": 20.0
+        },
+        {
+          "name": "Credit",
+          "hsn_sac": "",
+          "line_note": "",
+          "price_subtotal": -20.0
+        }
+      ],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 4,
+        "checks_skipped": 47,
+        "fields_found": 17,
+        "fields_defined": 17
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 3812.45
+    }
+  }
+}

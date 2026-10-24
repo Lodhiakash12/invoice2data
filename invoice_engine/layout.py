@@ -20,10 +20,11 @@ from __future__ import annotations
 
 import math
 import re
-import subprocess
 from difflib import SequenceMatcher
 from html import unescape
 from pathlib import Path
+
+from . import poppler
 
 COLUMNS = 12
 # Provisional, from 7 same-layout and 6 different-layout page pairs: same layouts scored
@@ -40,11 +41,8 @@ _LETTERS = re.compile(r"[A-Za-z]{3,}")
 
 def page_words(pdf: Path, pages: list[int] | None = None) -> list[list[tuple[str, float, float]]]:
     """Per page: (word, x as share of the page width, y in points) for every word."""
-    proc = subprocess.run(["pdftotext", "-bbox", "-enc", "UTF-8", str(pdf), "-"], capture_output=True)
-    if proc.returncode != 0:
-        raise RuntimeError("pdftotext -bbox failed: " + proc.stderr.decode("utf-8", errors="replace").strip())
     result = []
-    for number, (width, _height, body) in enumerate(_PAGE.findall(proc.stdout.decode("utf-8")), start=1):
+    for number, (width, _height, body) in enumerate(_PAGE.findall(poppler.run(["-bbox", "-enc", "UTF-8"], pdf)), start=1):
         if pages is not None and number not in pages:
             continue
         width = float(width)

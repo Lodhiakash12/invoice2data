@@ -9,7 +9,7 @@ The engine (invoice_engine/) contains no issuer- or field-specific code:
 Usage (PowerShell, from the project folder)
   python process_invoice.py                          # every PDF in this folder
   python process_invoice.py Invoice_8626225731.pdf   # one PDF
-  python process_invoice.py C:\Work\invoice2data\doc             # every PDF in another folder
+  python process_invoice.py D:\\Invoices              # every PDF in another folder
   python process_invoice.py --lint                   # only check the templates
   python process_invoice.py --debug ...              # also show invoice2data's own log
   python process_invoice.py --fingerprint templates\\x.yml a.pdf b.pdf
@@ -20,12 +20,12 @@ from __future__ import annotations
 
 import argparse
 import logging
-import shutil
 import sys
 from pathlib import Path
 
 from invoice_engine import Registry, load_templates, process_pdf
 from invoice_engine import layout as layout_fp
+from invoice_engine import poppler
 from invoice_engine.document import attempt
 from invoice_engine.segment import page_texts, split_into_documents
 from invoice_engine.export import print_summary, write_excel, write_json
@@ -109,12 +109,15 @@ def main() -> int:
     print(f"Templates: {len(template_set.templates)} usable, {len(template_set.rejected)} rejected")
     if args.lint:
         return 1 if template_set.rejected else 0
+    try:
+        tool = poppler.configure(Path(args.config))
+    except poppler.PopplerError as exc:
+        sys.exit(str(exc))
+    print(f"pdftotext: {tool.path} (version {tool.version}, from {tool.source})")
     if args.fingerprint:
         return store_fingerprint(Path(args.fingerprint), collect_pdfs(args.inputs), template_set, registry)
     if not template_set.templates:
         sys.exit("No usable templates.")
-    if shutil.which("pdftotext") is None:
-        sys.exit("pdftotext (Poppler) is not on PATH.")
 
     pdfs = collect_pdfs(args.inputs)
     if not pdfs:

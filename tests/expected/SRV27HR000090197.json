@@ -1,0 +1,68 @@
+{
+  "source_file": "SRV27HR000090197.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "shiprocket_services_invoice.yml",
+      "family": "shiprocket_services_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Shiprocket",
+        "document_type": "tax_invoice",
+        "invoice_number": "SRV27HR000090197",
+        "date": "2026-05-13",
+        "date_due": "2026-05-19",
+        "irn": "8a0c21be95453e0f35226d76b6c6a3fbb2504e77da61d65a504b0944e86a682d",
+        "seller_name": "Shiprocket Limited",
+        "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+        "seller_pan": "AAECB7131Q",
+        "seller_tax_id": "06AAECB7131Q1ZE",
+        "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+        "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+        "buyer_tax_id": "24ABGCS6913E1ZG",
+        "place_of_supply": "24 - Gujarat",
+        "reverse_charge": "No",
+        "amount_untaxed": 383.1,
+        "amount_igst": 68.96,
+        "amount": 452.06,
+        "total_in_words": "Four Hundred Fifty Two Rupees And Six Paisa(s)",
+        "amount_due": 0.0,
+        "bank_account": "BFRS8502170",
+        "bank_ifsc": "ICIC0000104",
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "Fastrr/Checkout Services",
+          "qty": 30,
+          "hsn_sac": "998313",
+          "gross_amount": 452.06,
+          "discount": 0.0,
+          "price_total": 452.06,
+          "price_subtotal": 383.1,
+          "igst_rate": 18.0,
+          "igst_amount": 68.96
+        }
+      ],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 9,
+        "checks_skipped": 17,
+        "fields_found": 20,
+        "fields_defined": 20
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 452.06
+    }
+  }
+}

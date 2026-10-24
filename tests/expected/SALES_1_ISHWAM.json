@@ -1,0 +1,91 @@
+{
+  "source_file": "SALES_1_ISHWAM.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "ishwam_sales_invoice.yml",
+      "family": "ishwam_sales_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Ishwam Infrasystems",
+        "document_type": "tax_invoice",
+        "invoice_number": "SALES/01/26-27",
+        "date": "2026-08-19",
+        "order_number": "CS/RPSF/06BN(166)/6/2025/47",
+        "date_order": "2025-02-01",
+        "seller_name": "ISHWAM INFRASYSTEMS LIMITED",
+        "seller_address": "A-303,The First,B/S Keshavbaug Party Plot, Vastrapur,Ahmedabad, Gujarat,India.",
+        "seller_tax_id": "24AAGCE0636D1Z6",
+        "seller_state": "Gujarat",
+        "buyer_name": "RAILWAY PROTECTION SPECIAL FORCE",
+        "buyer_address": "HEADQUATERS 6TH BATTALION DAYABASTI DELHI-35",
+        "buyer_state": "Delhi",
+        "buyer_state_code": "07",
+        "amount_untaxed": 450000.0,
+        "tax_rate": 18.0,
+        "amount_igst": 81000.0,
+        "amount": 531000.0,
+        "total_in_words": "Indian Rupees Five Lakh Thirty One Thousand Only",
+        "bank_name": "ICICI Bank",
+        "bank_account": "324305000428",
+        "bank_ifsc": "ICIC0003243",
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "name": "SECURE SOCKET LAYER",
+          "hsn_sac": "",
+          "qty": 1,
+          "price_unit": 78500.0,
+          "price_subtotal": 78500.0
+        },
+        {
+          "pos": 2,
+          "name": "SECURITY AUDIT",
+          "hsn_sac": "",
+          "qty": 1,
+          "price_unit": 154000.0,
+          "price_subtotal": 154000.0,
+          "line_note": "EXTENDED UPTO 31.3.2025"
+        },
+        {
+          "pos": 3,
+          "name": "I-OS SUB",
+          "hsn_sac": "",
+          "qty": 1,
+          "price_unit": 90000.0,
+          "price_subtotal": 90000.0,
+          "line_note": "EXTENDED UPTO 31.03.2025"
+        },
+        {
+          "pos": 4,
+          "name": "BULK SMS OTY-10 LAC",
+          "hsn_sac": "",
+          "qty": 1,
+          "price_unit": 127500.0,
+          "price_subtotal": 127500.0,
+          "line_note": "AS PER WORK ORDER NO: CS/RPSF/06BN (166)/6/2025/47 DATED: 01.02.2025"
+        }
+      ],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 7,
+        "checks_skipped": 44,
+        "fields_found": 20,
+        "fields_defined": 20
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 531000.0
+    }
+  }
+}

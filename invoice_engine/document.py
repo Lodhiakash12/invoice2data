@@ -208,6 +208,12 @@ def process_pdf(pdf: Path, templates: list, registry: Registry) -> dict:
         result["notes"].append(f"ERROR: {exc}")
         return result
     result["page_count"] = len(pages)
+    blank = [n for n, text in enumerate(pages, start=1) if not text.strip()]
+    if pages and len(blank) == len(pages):
+        result["notes"].append("ERROR: no page has a text layer: a scanned or image-only PDF. "
+                               "OCR is needed, which is not supported yet")
+    elif blank:
+        result["notes"].append(f"pages {blank} have no text layer (scanned or blank)")
     groups, notes = split_into_documents(pages, templates)
     result["notes"].extend(notes)
 

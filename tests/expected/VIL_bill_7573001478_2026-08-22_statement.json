@@ -1,0 +1,103 @@
+{
+  "source_file": "VIL_bill_7573001478_2026-08-22_statement.pdf",
+  "page_count": 5,
+  "documents": [
+    {
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "template": "vodafone_idea_postpaid_bill.yml",
+      "family": "vodafone_idea_postpaid_bill",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Vodafone Idea",
+        "document_type": "telecom_bill",
+        "invoice_number": "GJI0608675537364",
+        "date": "2026-08-22",
+        "date_due": "2026-09-01",
+        "billing_period": "22.07.26 to 21.08.26",
+        "service_number": "7573001478",
+        "customer_number": "40283068",
+        "service_plan": "Entertainment Plus 501",
+        "supply_description": "Telecommunications",
+        "place_of_supply": "Gujarat",
+        "buyer_state_code": "24",
+        "buyer_tax_id": "24AABCT4561D1ZO",
+        "hsn_sac": "998413",
+        "irn": "ada243f0bc6afbd69dd1cb780648a358ff3f113a618c5b827764673cb7c26474",
+        "seller_name": "Vodafone Idea Limited",
+        "seller_address": "Building A, 4th, Vodafone House, Corporate Road, Prahalad Nagar,Off SG Highway, Ahmedabad, Gujarat, 380015",
+        "seller_tax_id": "24AAACB2100P1Z3",
+        "seller_company_reg": "L32100GJ1996PLC030976",
+        "buyer_name": "Co. Tectona Softsolutions Pvt Ltd C/o Rajesh",
+        "buyer_address": "A/304 The First Beside Keshav Baug Party Plot,Vastrapur Ahmedabad-380015, Gujarat",
+        "amount_previous_balance": 918.57,
+        "amount_payments_received": 918.57,
+        "amount_account_adjustments": 0.0,
+        "amount_due": 933.96,
+        "amount_discount": 149.0,
+        "amount_untaxed": 791.5,
+        "amount_tax": 142.46,
+        "amount": 933.96,
+        "total_in_words": "Nine Hundred Thirty Three Rupees and Ninety Six Paise",
+        "amount_sgst": 71.23,
+        "amount_cgst": 71.23,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "name": "One Time Charges",
+          "price_subtotal": 0.0
+        },
+        {
+          "name": "Monthly Charges",
+          "price_subtotal": 700.0
+        },
+        {
+          "name": "Usage Charges",
+          "price_subtotal": 91.5
+        },
+        {
+          "name": "International Roaming Service Charges",
+          "price_subtotal": 149.0
+        },
+        {
+          "name": "Other Credits / Charges",
+          "price_subtotal": 0.0
+        },
+        {
+          "name": "Miscellaneous Charges",
+          "price_subtotal": 0.0
+        },
+        {
+          "name": "Late payment charges",
+          "price_subtotal": 0.0
+        }
+      ],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 4,
+        "checks_skipped": 71,
+        "fields_found": 30,
+        "fields_defined": 30
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [
+    "page 2 attached to the previous document as a continuation page",
+    "page 3 attached to the previous document as a continuation page",
+    "page 4 attached to the previous document as a continuation page",
+    "page 5 attached to the previous document as a continuation page"
+  ],
+  "totals_by_document_type": {
+    "telecom_bill": {
+      "INR": 933.96
+    }
+  }
+}

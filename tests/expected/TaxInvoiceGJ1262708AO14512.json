@@ -1,0 +1,90 @@
+{
+  "source_file": "TaxInvoiceGJ1262708AO14512.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "indigo_tax_invoice.yml",
+      "family": "indigo_tax_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "IndiGo (InterGlobe Aviation)",
+        "document_type": "tax_invoice",
+        "invoice_number": "GJ1262708AO14512",
+        "date": "2026-08-04",
+        "booking_reference": "ZBSKSJ",
+        "flight_number": "6E - 6468",
+        "travel_from": "AMD",
+        "travel_to": "BOM",
+        "place_of_supply": "Gujarat",
+        "seller_name": "InterGlobe Aviation Limited",
+        "seller_address": "Sardar Vallabhbhai Patel International Airport Near King Fisher Black Office Sardarnagar Ahmedabad Gujarat - 380003",
+        "seller_tax_id": "24AABCI2726B1Z8",
+        "seller_pan": "AABCI2726B",
+        "seller_company_reg": "L62100DL2004PLC129768",
+        "buyer_tax_id": "24AABCT4561D1ZO",
+        "buyer_name": "TECTONA SOFTSOLUTIONS PVT LTD",
+        "amount_untaxed": 13055.0,
+        "amount_exempt": 1033.0,
+        "amount_value_before_tax": 14088.0,
+        "amount_igst": 0.0,
+        "amount_cgst": 326.0,
+        "amount_sgst": 326.0,
+        "amount_cess": 0.0,
+        "amount": 14740.0,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "name": "Air Travel and related charges",
+          "hsn_sac": "996425",
+          "price_subtotal": 13055.0,
+          "exempt_amount": 0.0,
+          "value_before_tax": 13055.0,
+          "igst_rate": 0.0,
+          "igst_amount": 0.0,
+          "cgst_rate": 2.5,
+          "cgst_amount": 326.0,
+          "sgst_rate": 2.5,
+          "sgst_amount": 326.0,
+          "cess_rate": 0.0,
+          "cess_amount": 0.0,
+          "price_total": 13707.0
+        },
+        {
+          "name": "Airport Charges",
+          "hsn_sac": "",
+          "price_subtotal": 0.0,
+          "exempt_amount": 1033.0,
+          "value_before_tax": 1033.0,
+          "igst_rate": 0.0,
+          "igst_amount": 0.0,
+          "cgst_rate": 0.0,
+          "cgst_amount": 0.0,
+          "sgst_rate": 0.0,
+          "sgst_amount": 0.0,
+          "cess_rate": 0.0,
+          "cess_amount": 0.0,
+          "price_total": 1033.0
+        }
+      ],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 23,
+        "checks_skipped": 14,
+        "fields_found": 22,
+        "fields_defined": 22
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 14740.0
+    }
+  }
+}

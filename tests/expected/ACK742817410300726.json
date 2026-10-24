@@ -1,0 +1,55 @@
+{
+  "source_file": "ACK742817410300726.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "income_tax_itr_acknowledgement.yml",
+      "family": "income_tax_itr_acknowledgement",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Income Tax Department (India)",
+        "document_type": "itr_acknowledgement",
+        "invoice_number": "742817410300726",
+        "date": "2026-07-30",
+        "assessment_year": "2026-27",
+        "form_number": "ITR-1",
+        "filed_under": "139(1)-On or before due date",
+        "taxpayer_status": "Individual",
+        "taxpayer_pan": "KGQPS4626N",
+        "taxpayer_name": "CHAYAN SUTHAR",
+        "taxpayer_address": "SUTHAR PANCHAL BASTI, VILLAGE JETHANA, Jethana B.O, Jethana (Rural), DUNGARPUR, 27-Rajasthan, 91-INDIA, 314031",
+        "amount_current_year_loss": 0.0,
+        "amount_total_income": 75000.0,
+        "amount_book_profit_mat": 0.0,
+        "amount_adjusted_income_amt": 0.0,
+        "amount_net_tax_payable": 0.0,
+        "amount_interest_fee_payable": 0.0,
+        "amount_total_tax_payable": 0.0,
+        "amount_taxes_paid": 0.0,
+        "amount_tax_payable_refundable": 0.0,
+        "amount_accreted_income": 0.0,
+        "amount_additional_tax": 0.0,
+        "amount_interest_115te": 0.0,
+        "amount_additional_tax_interest": 0.0,
+        "amount_tax_interest_paid": 0.0,
+        "amount_additional_payable_refundable": 0.0,
+        "currency": "INR"
+      },
+      "lines": [],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 4,
+        "checks_skipped": 18,
+        "fields_found": 24,
+        "fields_defined": 24
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {}
+}

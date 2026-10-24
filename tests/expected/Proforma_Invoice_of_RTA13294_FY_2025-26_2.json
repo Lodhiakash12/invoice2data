@@ -1,0 +1,70 @@
+{
+  "source_file": "Proforma_Invoice_of_RTA13294_FY_2025-26_2.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "maashitla_proforma_invoice.yml",
+      "family": "maashitla_proforma_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Maashitla Securities",
+        "document_type": "proforma_invoice",
+        "invoice_number": "2025-26 / RTA13294",
+        "date": "2025-04-01",
+        "billing_period": "01.04.2025-31.03.2026",
+        "customer_number": "RTA13294",
+        "seller_name": "MAASHITLA SECURITIES PRIVATE LIMITED",
+        "seller_address": "451, KRISHNA APRA BUSINESS SQUARE, NETAJI SUBHASH PLACE PITAMPURA, NEW DELHI-110034",
+        "seller_email": "accounts@maashitla.com",
+        "seller_tax_id": "07AACCI4191H1ZK",
+        "seller_pan": "AACCI4191H",
+        "seller_company_reg": "U67100DL2010PTC208725",
+        "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+        "buyer_address": "A-303 THE FIRST, B/S KESHAVBAUG PARTY PLOT, VASTRAPUR, AHMEDABAD, Gujarat, India, 380015",
+        "buyer_state": "Gujarat",
+        "buyer_state_code": "24",
+        "supply_description": "AMC FOR NSDL EQUITY ISIN: INE1M5J01013 FOR FY 2025-26",
+        "tax_rate": 18.0,
+        "amount_untaxed": 7500.0,
+        "amount_cgst": 0.0,
+        "amount_sgst": 0.0,
+        "amount_igst": 1350.0,
+        "amount_utgst": 0.0,
+        "amount_subtotal": 8850.0,
+        "amount_previous_balance": 0.0,
+        "amount_other_charges": 1050.0,
+        "amount": 9900.0,
+        "total_in_words": "Rupees Nine Thousand Nine Hundred Only",
+        "bank_name": "HDFC Bank Limited",
+        "bank_account": "50200058628786",
+        "bank_ifsc": "HDFC0000935",
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "pos": 1,
+          "hsn_sac": "998399",
+          "price_subtotal": 7500.0
+        }
+      ],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 4,
+        "checks_skipped": 24,
+        "fields_found": 29,
+        "fields_defined": 29
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "proforma_invoice": {
+      "INR": 9900.0
+    }
+  }
+}

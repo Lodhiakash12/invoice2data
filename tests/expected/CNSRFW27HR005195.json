@@ -1,0 +1,53 @@
+{
+  "source_file": "CNSRFW27HR005195.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "shiprocket_credit_note.yml",
+      "family": "shiprocket_credit_note",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Shiprocket",
+        "document_type": "credit_note",
+        "invoice_number": "CNSRFW27HR005195",
+        "date": "2026-05-05",
+        "original_document_number": "SRF27HR000094683",
+        "irn": "30e1f3787bae5c45b1188b589a3c523a27855c08312dcd1368b4a2b2c50ed052",
+        "seller_name": "Shiprocket Limited",
+        "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana Gurugram, Haryana - 122002",
+        "seller_tax_id": "06AAECB7131Q1ZE",
+        "seller_email": "support@shiprocket.in",
+        "seller_company_reg": "U72900DL2011PLC225614",
+        "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+        "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad 380015, India Ahmedabad, Gujarat",
+        "buyer_tax_id": "24ABGCS6913E1ZG",
+        "buyer_state_code": "24",
+        "supply_description": "Credit note issued against Weight/Freight refund against - SRF27HR000094683",
+        "amount_untaxed": 1016.95,
+        "tax_rate": 18.0,
+        "amount_igst": 183.05,
+        "amount": 1200.0,
+        "currency": "INR"
+      },
+      "lines": [],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 2,
+        "checks_skipped": 17,
+        "fields_found": 18,
+        "fields_defined": 18
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "credit_note": {
+      "INR": 1200.0
+    }
+  }
+}

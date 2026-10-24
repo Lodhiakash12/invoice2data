@@ -1,0 +1,59 @@
+{
+  "source_file": "SRC27DL000011945.pdf",
+  "page_count": 1,
+  "documents": [
+    {
+      "pages": [
+        1
+      ],
+      "template": "shiprocket_charges_invoice.yml",
+      "family": "shiprocket_charges_invoice",
+      "version": 1,
+      "status": "OK",
+      "fields": {
+        "issuer": "Shiprocket",
+        "document_type": "tax_invoice",
+        "invoice_number": "SRC27DL000011945",
+        "date": "2026-04-30",
+        "irn": "e2bacdad4aa9e551a7e2f7099c3ecda4896641ef21d5d6d1922326af5a951050",
+        "seller_name": "Shiprocket Limited",
+        "seller_address": "Plot No. B, Khasra-360, Sultanpur, MG Road, New Delhi, Delhi 110030",
+        "seller_pan": "AAECB7131Q",
+        "seller_company_reg": "U72900DL2011PLC225614",
+        "seller_tax_id": "07AAECB7131Q1ZC",
+        "seller_email": "support@shiprocket.in",
+        "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+        "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+        "buyer_state_code": "24",
+        "place_of_supply": "Gujarat",
+        "buyer_tax_id": "24ABGCS6913E1ZG",
+        "reverse_charge": "No",
+        "tax_rate": 18.0,
+        "amount_igst": 2.38,
+        "amount": 15.57,
+        "currency": "INR"
+      },
+      "lines": [
+        {
+          "hsn_sac": "996812",
+          "name": "EARLY COD/ Instant COD CHARGES*",
+          "price_subtotal": 13.19
+        }
+      ],
+      "issues": [],
+      "evidence": {
+        "checks_passed": 2,
+        "checks_skipped": 25,
+        "fields_found": 18,
+        "fields_defined": 18
+      }
+    }
+  ],
+  "unrecognized_pages": [],
+  "notes": [],
+  "totals_by_document_type": {
+    "tax_invoice": {
+      "INR": 15.57
+    }
+  }
+}

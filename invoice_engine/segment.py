@@ -3,19 +3,16 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 
+from . import poppler
 from .templates import family_of
 
 
 def page_texts(pdf: Path) -> list[str]:
-    """Text of every page, in order. pdftotext ends each page with a form feed."""
-    cmd = ["pdftotext", "-layout", "-enc", "UTF-8", "-eol", "unix", str(pdf), "-"]
-    proc = subprocess.run(cmd, capture_output=True)
-    if proc.returncode != 0:
-        raise RuntimeError("pdftotext failed: " + proc.stderr.decode("utf-8", errors="replace").strip())
-    pages = proc.stdout.decode("utf-8").split("\f")
+    """Text of every page, in order. pdftotext ends each page with a form feed.
+    Raises poppler.PopplerError with a readable reason (protected, damaged, not found)."""
+    pages = poppler.run(["-layout", "-enc", "UTF-8", "-eol", "unix"], pdf).split("\f")
     if pages and pages[-1] == "":
         pages.pop()
     return pages

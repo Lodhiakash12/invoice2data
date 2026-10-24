@@ -23,7 +23,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from invoice_engine import Registry, layout, load_templates, process_pdf  # noqa: E402
+from invoice_engine import Registry, layout, load_templates, poppler, process_pdf  # noqa: E402
 from invoice_engine.document import process_group  # noqa: E402
 from invoice_engine.rules import COMMON_FUNCTIONS, RuleError, parse_rule  # noqa: E402
 from invoice_engine.segment import matching_templates, page_texts  # noqa: E402
@@ -364,6 +364,55 @@ def test_layout_breaks_a_tie_only_when_one_layout_is_clearly_closer(tmp_path: Pa
     doc = process_pdf(meesho, load_templates(tmp_path, REGISTRY).templates, REGISTRY)["documents"][0]
     assert doc["status"] == "CHECK"
     assert any(i["message"].startswith("ambiguous:") for i in doc["issues"])
+
+
+# --------------------------------------------------------------- finding and running pdftotext
+
+def _blank_pdf(path: Path) -> None:
+    """A valid one-page PDF with no text at all (like a scan without OCR)."""
+    objects = [b"<< /Type /Catalog /Pages 2 0 R >>", b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+               b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] >>"]
+    out, offsets = bytearray(b"%PDF-1.4\n"), []
+    for number, body in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += b"%d 0 obj\n%s\nendobj\n" % (number, body)
+    xref = len(out)
+    out += b"xref\n0 4\n0000000000 65535 f \n" + b"".join(b"%010d 00000 n \n" % o for o in offsets)
+    out += b"trailer\n<< /Size 4 /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % xref
+    path.write_bytes(bytes(out))
+
+
+def test_pdftotext_is_found_from_settings_without_the_path(tmp_path: Path, monkeypatch):
+    real = poppler.configure(None)                           # wherever it is on this machine
+    (tmp_path / "settings.yml").write_text(f"poppler_path: {Path(real.path).parent}\n", encoding="utf-8")
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.delenv("POPPLER_PATH", raising=False)
+    found = poppler.configure(tmp_path)
+    assert (found.source, found.version) == ("settings.yml", real.version)
+    monkeypatch.setenv("POPPLER_PATH", str(Path(real.path).parent))   # the environment variable wins
+    assert poppler.configure(tmp_path).source == "POPPLER_PATH"
+
+
+def test_missing_pdftotext_explains_where_it_looked(tmp_path: Path, monkeypatch):
+    (tmp_path / "settings.yml").write_text("poppler_path: C:\\nowhere\\bin\n", encoding="utf-8")
+    monkeypatch.setenv("PATH", "")
+    monkeypatch.delenv("POPPLER_PATH", raising=False)
+    with pytest.raises(poppler.PopplerError) as exc:
+        poppler.configure(tmp_path)
+    assert "nowhere" in str(exc.value) and "settings.yml" in str(exc.value)
+
+
+def test_unreadable_pdfs_are_reported_not_crashed(tmp_path: Path):
+    poppler.configure(None)
+    damaged = tmp_path / "damaged.pdf"
+    damaged.write_bytes(b"this is not a pdf at all")
+    blank = tmp_path / "scan.pdf"
+    _blank_pdf(blank)
+    result = process_pdf(damaged, TEMPLATES.templates, REGISTRY)
+    assert result["documents"] == [] and "damaged or is not a real PDF" in result["notes"][0]
+    result = process_pdf(blank, TEMPLATES.templates, REGISTRY)
+    assert any("no page has a text layer" in n for n in result["notes"])
+    assert "password-protected" in poppler._explain("Command Line Error: Incorrect password")
 
 
 # ------------------------------------------------------------------- damaged values
