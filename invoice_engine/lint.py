@@ -6,6 +6,8 @@ from __future__ import annotations
 import difflib
 import re
 
+import regex
+
 from .layout import lint_layout
 from .registry import Registry, rule_from
 from .rules import DOCUMENT_FUNCTIONS, LINE_FUNCTIONS, RuleError, parse_expression, parse_rule
@@ -30,14 +32,48 @@ def _regexes(spec) -> list[str]:
 
 
 def _compile(rx, where: str, errors: list[str]):
+    """Compile with both engines: `re` for the checks below, `regex` because templates run on it."""
     if not isinstance(rx, str):
         errors.append(f"{where}: pattern is not text: {rx!r}")
         return None
     try:
-        return re.compile(rx)
-    except re.error as exc:
+        compiled = re.compile(rx)
+        regex.compile(rx)
+        return compiled
+    except (re.error, regex.error) as exc:
         errors.append(f"{where}: invalid regex ({exc})")
         return None
+
+
+def _check_replace(pairs, where: str, errors: list[str]) -> None:
+    """[pattern, replacement] pairs: the replacement may only name groups the pattern has.
+    An undefined group (\\2 with one group) would otherwise stop the run on the first match."""
+    if isinstance(pairs, list) and len(pairs) == 2 and all(isinstance(x, str) for x in pairs):
+        pairs = [pairs]                            # one pair written flat: [pattern, replacement]
+    for pair in pairs or []:
+        if not (isinstance(pair, list) and len(pair) == 2 and all(isinstance(x, str) for x in pair)):
+            errors.append(f"{where}: entry must be [pattern, replacement] as text: {pair!r}")
+            continue
+        compiled = _compile(pair[0], where, errors)
+        if compiled is None:
+            continue
+        try:
+            compiled.sub(pair[1], "")             # parses the replacement without needing a match
+            _expand_check(compiled, pair[1])
+        except (re.error, IndexError) as exc:
+            errors.append(f"{where}: replacement {pair[1]!r} is invalid for pattern {pair[0]!r} ({exc})")
+
+
+def _expand_check(compiled, replacement: str) -> None:
+    """Raise when the replacement names a group the pattern does not define."""
+    for match in re.finditer(r"\\(\d+)|\\g<(\w+)>", replacement):
+        number, name = match.group(1), match.group(2)
+        if number is not None and int(number) > compiled.groups:
+            raise re.error(f"group {number} is not defined (the pattern has {compiled.groups})")
+        if name is not None and not name.isdigit() and name not in compiled.groupindex:
+            raise re.error(f"group {name!r} is not defined")
+        if name is not None and name.isdigit() and int(name) > compiled.groups:
+            raise re.error(f"group {name} is not defined (the pattern has {compiled.groups})")
 
 
 def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
@@ -101,12 +137,26 @@ def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
         if name not in produced:
             errors.append(f"required field {name!r} is not defined in fields")
 
-    # options.replace
-    for pair in options.get("replace") or []:
-        if not (isinstance(pair, list) and len(pair) == 2):
-            errors.append(f"options.replace entry must be [pattern, replacement]: {pair!r}")
+    # options.replace and field-level replace lists
+    _check_replace(options.get("replace"), "options.replace", errors)
+    for name, spec in fields.items():
+        if isinstance(spec, dict) and spec.get("replace") is not None:
+            _check_replace(spec.get("replace"), f"field {name} replace", errors)
+
+    min_checks = template.get("min_checks", 1)
+    if not isinstance(min_checks, int) or isinstance(min_checks, bool) or min_checks < 0:
+        errors.append(f"min_checks must be a whole number >= 0, got {min_checks!r}")
+
+    optional = template.get("optional_fields")
+    if optional is not None:
+        if not isinstance(optional, list) or not all(isinstance(n, str) for n in optional):
+            errors.append("optional_fields must be a list of field names")
         else:
-            _compile(pair[0], "options.replace", errors)
+            for name in optional:
+                if name not in fields:
+                    errors.append(f"optional_fields: {name!r} is not one of this template's fields")
+                elif name in (template.get("required_fields") or []):
+                    errors.append(f"optional_fields: {name!r} is also in required_fields")
 
     # engine directives
     follow = template.get("continuation_keywords")
@@ -119,6 +169,9 @@ def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
     # layout fingerprint (optional, written by: process_invoice.py --fingerprint)
     if "layout" in template:
         errors.extend(lint_layout(template["layout"]))
+    else:
+        warnings.append("no layout block (used to decide a tie with a look-alike layout); build it "
+                        "with: python process_invoice.py --fingerprint <this template> <sample PDFs>")
 
     # template checks
     checks = template.get("checks") or {}

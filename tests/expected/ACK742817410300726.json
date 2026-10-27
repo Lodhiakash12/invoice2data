@@ -1,4 +1,5 @@
 {
+  "format_version": 2,
   "source_file": "ACK742817410300726.pdf",
   "page_count": 1,
   "documents": [
@@ -9,7 +10,8 @@
       "template": "income_tax_itr_acknowledgement.yml",
       "family": "income_tax_itr_acknowledgement",
       "version": 1,
-      "status": "OK",
+      "type": "tax_document",
+      "status": "CHECK",
       "fields": {
         "issuer": "Income Tax Department (India)",
         "document_type": "itr_acknowledgement",
@@ -40,12 +42,45 @@
         "currency": "INR"
       },
       "lines": [],
-      "issues": [],
+      "issues": [
+        {
+          "level": "WARN",
+          "message": "amounts are not verified (amount_current_year_loss, amount_total_income, amount_book_profit_mat, ...): no arithmetic check passed (checks on all-zero values prove nothing)"
+        }
+      ],
       "evidence": {
-        "checks_passed": 4,
-        "checks_skipped": 18,
+        "checks_passed": 0,
+        "checks_skipped": 0,
+        "checks_trivial": 4,
         "fields_found": 24,
         "fields_defined": 24
+      },
+      "field_pages": {
+        "document_type": 1,
+        "invoice_number": 1,
+        "date": 1,
+        "assessment_year": 1,
+        "form_number": 1,
+        "filed_under": 1,
+        "taxpayer_status": 1,
+        "taxpayer_pan": 1,
+        "taxpayer_name": 1,
+        "taxpayer_address": 1,
+        "amount_current_year_loss": 1,
+        "amount_total_income": 1,
+        "amount_book_profit_mat": 1,
+        "amount_adjusted_income_amt": 1,
+        "amount_net_tax_payable": 1,
+        "amount_interest_fee_payable": 1,
+        "amount_total_tax_payable": 1,
+        "amount_taxes_paid": 1,
+        "amount_tax_payable_refundable": 1,
+        "amount_accreted_income": 1,
+        "amount_additional_tax": 1,
+        "amount_interest_115te": 1,
+        "amount_additional_tax_interest": 1,
+        "amount_tax_interest_paid": 1,
+        "amount_additional_payable_refundable": 1
       }
     }
   ],

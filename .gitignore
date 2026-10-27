@@ -34,11 +34,16 @@ dist/
 /Docs/
 /output/
 /templates/
-
+/pdf/
+/document_types/
+/samples/
+/Test/
+/tests/expected/
 # Generated invoice exports
 /combined_invoice.xlsx
 /invoices.xlsx
 /invoices-output.json
+/invoice2data.rar
 
 # OS metadata
 .DS_Store

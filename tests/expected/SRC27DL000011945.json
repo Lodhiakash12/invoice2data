@@ -1,4 +1,5 @@
 {
+  "format_version": 2,
   "source_file": "SRC27DL000011945.pdf",
   "page_count": 1,
   "documents": [
@@ -9,6 +10,7 @@
       "template": "shiprocket_charges_invoice.yml",
       "family": "shiprocket_charges_invoice",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Shiprocket",
@@ -44,8 +46,30 @@
       "evidence": {
         "checks_passed": 2,
         "checks_skipped": 25,
+        "checks_trivial": 0,
         "fields_found": 18,
         "fields_defined": 18
+      },
+      "field_pages": {
+        "document_type": 1,
+        "invoice_number": 1,
+        "date": 1,
+        "irn": 1,
+        "seller_name": 1,
+        "seller_address": 1,
+        "seller_pan": 1,
+        "seller_company_reg": 1,
+        "seller_tax_id": 1,
+        "seller_email": 1,
+        "buyer_name": 1,
+        "buyer_address": 1,
+        "buyer_state_code": 1,
+        "place_of_supply": 1,
+        "buyer_tax_id": 1,
+        "reverse_charge": 1,
+        "tax_rate": 1,
+        "amount_igst": 1,
+        "amount": 1
       }
     }
   ],

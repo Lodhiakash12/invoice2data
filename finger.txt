@@ -1,0 +1,17 @@
+Put all your sample PDFs in one folder, both the old ones and any new ones, keeping one copy of each. Then run:
+
+cd C:\Work\invoice2data
+.\venv\Scripts\Activate.ps1
+python process_invoice.py --fingerprint C:\Work\invoice2data\samples
+
+Replace C:\Work\invoice2data\samples with the folder your PDFs are in. If the path has spaces, put it in quotes, for example "D:\My Samples".
+
+To rebuild just one template:
+
+python process_invoice.py --fingerprint shopify_bill.yml C:\Work\invoice2data\samples
+
+Afterwards, check that nothing broke:
+
+python -m pytest -q tests
+
+In the output, each template shows layout written ... from N sample(s), with the PDFs it learned from listed below. A bigger N means a sturdier fingerprint.

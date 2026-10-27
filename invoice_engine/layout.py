@@ -37,6 +37,7 @@ MIN_MARGIN = 0.3
 _WORD = re.compile(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="[\d.]+" yMax="[\d.]+">([^<]*)</word>')
 _PAGE = re.compile(r'<page width="([\d.]+)" height="([\d.]+)">(.*?)</page>', re.S)
 _LETTERS = re.compile(r"[A-Za-z]{3,}")
+_SYNTAX = re.compile(r"\(\?P<\w+>|\(\?P=\w+\)|\\g<\w+>|\\[uUx][0-9A-Fa-f]{2,8}|\\[A-Za-z]")
 
 
 def page_words(pdf: Path, pages: list[int] | None = None) -> list[list[tuple[str, float, float]]]:
@@ -69,8 +70,9 @@ def label_vocabulary(template) -> set[str]:
 
     for spec in (template.get("fields") or {}).values():
         collect(spec if isinstance(spec, (str, list)) else spec)
-    # \s, \d and the like leave single letters behind; three letters or more are real words
-    return {w.lower() for text in texts for w in _LETTERS.findall(text)}
+    # group names ((?P<name>...), (?P=name)) and escapes (\s, \d, \u20b9) are pattern syntax, not
+    # words printed on the page; what remains with three letters or more is a label word
+    return {w.lower() for text in texts for w in _LETTERS.findall(_SYNTAX.sub(" ", text))}
 
 
 def fingerprint(pages: list[list[tuple[str, float, float]]], vocabulary: set[str],

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -12,7 +13,7 @@ import pandas as pd
 from .registry import Registry
 from .rules import to_decimal
 
-SUMMARY_MONEY = {"untaxed", "tax", "total"}
+SUMMARY_MONEY = {"untaxed", "tax", "total", "tax_total"}
 
 
 def page_label(pages: list[int]) -> str:
@@ -33,9 +34,25 @@ def json_default(value):
     raise TypeError(f"not JSON serialisable: {type(value).__name__}")
 
 
-def write_json(result: dict, out_dir: Path) -> None:
+def output_names(pdfs: list[Path]) -> dict[Path, str]:
+    """A distinct output name per PDF: its file name without extension, plus _2, _3 ... when two
+    inputs (e.g. from different folders) have the same name, so no output overwrites another."""
+    names: dict[Path, str] = {}
+    used: set[str] = set()
+    for pdf in pdfs:
+        base = name = pdf.stem
+        n = 1
+        while name.lower() in used:
+            n += 1
+            name = f"{base}_{n}"
+        used.add(name.lower())
+        names[pdf] = name
+    return names
+
+
+def write_json(result: dict, out_dir: Path, name: str | None = None) -> None:
     """One JSON per PDF. Text of unrecognized pages goes to output/unrecognized/ for template authoring."""
-    stem = Path(result["source_file"]).stem
+    stem = name or Path(result["source_file"]).stem
     clean = dict(result)
     clean["unrecognized_pages"] = []
     for unrec in result["unrecognized_pages"]:
@@ -58,8 +75,32 @@ def tax_total(fields: dict, registry: Registry):
     return float(sum(parts)) if parts else None
 
 
-def write_excel(results: list[dict], path: Path, registry: Registry) -> None:
-    documents, line_rows, field_rows, issue_rows = [], [], [], []
+class _Formats:
+    """Which columns hold money, across every document type's fields."""
+
+    def __init__(self, catalog):
+        self.document = set()
+        self.line = set()
+        for dt in catalog.types:
+            self.document |= {n for n, spec in dt.registry.document.items() if spec.type == "money"}
+            self.line |= {n for n, spec in dt.registry.line.items() if spec.type == "money"}
+
+    def is_money(self, name: str, level: str = "document") -> bool:
+        return name in (self.document if level == "document" else self.line)
+
+
+DEFAULT_COLUMNS = ["issuer", "document_type", "invoice_number", "date", "currency", "amount"]
+
+
+def write_excel(results: list[dict], path: Path, catalog) -> Path:
+    """Write the workbook: one summary sheet per document type (its columns from type.yml), then
+    Line Items, All Fields and Issues. Returns the path written (another name when the file is
+    locked, e.g. open in Excel)."""
+    if isinstance(catalog, Registry):                    # older callers: one registry, one type
+        from .catalog import Catalog
+        catalog = Catalog.single([], catalog)
+    by_type: dict[str, list[dict]] = {dt.name: [] for dt in catalog.types}
+    line_rows, field_rows, issue_rows = [], [], []
     for res in results:
         for note in res["notes"]:
             issue_rows.append({"file": res["source_file"], "pages": "", "document_number": "",
@@ -67,52 +108,71 @@ def write_excel(results: list[dict], path: Path, registry: Registry) -> None:
         for unrec in res["unrecognized_pages"]:
             issue_rows.append({"file": res["source_file"], "pages": page_label(unrec["pages"]),
                                "document_number": "", "level": "ERROR",
-                               "message": "no template matches: " + " | ".join(unrec["preview"])})
+                               "message": f"{unrec.get('reason', 'no template matches')}: " + " | ".join(unrec["preview"])})
         for doc in res["documents"]:
             f = doc["fields"]
             number = display(f.get("invoice_number"))
-            documents.append({
-                "file": res["source_file"], "pages": page_label(doc["pages"]), "template": doc["template"],
-                "version": doc.get("version"), "status": doc["status"], "issuer": f.get("issuer"),
-                "document_type": f.get("document_type"), "document_number": number,
-                "date": display(f.get("date")), "seller": display(f.get("seller_name")),
-                "buyer": display(f.get("buyer_name")), "currency": f.get("currency"),
-                "untaxed": f.get("amount_untaxed"), "tax": tax_total(f, registry),
-                "total": display(f.get("amount")),
-                "issues": sum(1 for i in doc["issues"] if i["level"] != "INFO"),
-            })
+            dt = catalog.type_named(doc.get("type", "")) or catalog.types[0]
+            row = {"file": res["source_file"], "pages": page_label(doc["pages"]), "template": doc["template"],
+                   "version": doc.get("version"), "status": doc["status"]}
+            for column in dt.summary_columns or DEFAULT_COLUMNS:
+                row[column] = tax_total(f, dt.registry) if column == "tax_total" else display(f.get(column))
+            row["copy_of"] = page_label(doc["copy_of"]) if doc.get("copy_of") else ""
+            row["issues"] = sum(1 for i in doc["issues"] if i["level"] != "INFO")
+            by_type.setdefault(dt.name, []).append(row)
             for name, value in f.items():
-                field_rows.append({"file": res["source_file"], "pages": page_label(doc["pages"]),
-                                   "document_number": number, "field": name, "value": display(value)})
+                field_rows.append({"file": res["source_file"], "pages": page_label(doc["pages"]), "type": dt.name,
+                                   "document_number": number, "field": name, "value": display(value),
+                                   "page": (doc.get("field_pages") or {}).get(name)})
             for i, line in enumerate(doc["lines"], start=1):
-                row = {"file": res["source_file"], "document_number": number,
-                       "document_type": f.get("document_type"), "line": i}
-                row.update({k: display(v) for k, v in line.items()})
-                line_rows.append(row)
+                line_row = {"file": res["source_file"], "type": dt.name, "document_number": number,
+                            "document_type": f.get("document_type"), "line": i}
+                line_row.update({k: display(v) for k, v in line.items()})
+                line_rows.append(line_row)
             for issue in doc["issues"]:
                 issue_rows.append({"file": res["source_file"], "pages": page_label(doc["pages"]),
                                    "document_number": number, **issue})
 
     lines_df = pd.DataFrame(line_rows)
     if not lines_df.empty:
-        fixed = ["file", "document_number", "document_type", "line"]
-        known = [c for c in registry.line_column_order() if c in lines_df.columns]
+        fixed = ["file", "type", "document_number", "document_type", "line"]
+        known = list(dict.fromkeys(c for dt in catalog.types for c in dt.registry.line_column_order()
+                                   if c in lines_df.columns))
         other = [c for c in lines_df.columns if c not in fixed and c not in known]
         lines_df = lines_df[fixed + known + other]
 
-    sheets = {
-        "Documents": pd.DataFrame(documents),
+    sheets = {_sheet_name(name): pd.DataFrame(rows) for name, rows in by_type.items() if rows}
+    if not sheets:
+        sheets["Documents"] = pd.DataFrame()
+    sheets.update({
         "Line Items": lines_df,
         "All Fields": pd.DataFrame(field_rows),
         "Issues": pd.DataFrame(issue_rows, columns=["file", "pages", "document_number", "level", "message"]),
-    }
+    })
+    formats = _Formats(catalog)
+    try:
+        _write_sheets(path, sheets, formats)
+    except PermissionError:
+        # typically: the workbook is open in Excel (Windows locks it). Keep this run's results.
+        fallback = path.with_name(f"{path.stem}_{datetime.now():%Y%m%d_%H%M%S}{path.suffix}")
+        _write_sheets(fallback, sheets, formats)
+        return fallback
+    return path
+
+
+def _sheet_name(type_name: str) -> str:
+    """Excel sheet names: at most 31 characters, none of []:*?/\\."""
+    return re.sub(r"[\\[\]:*?/]", "_", type_name.replace("_", " ").title())[:31]
+
+
+def _write_sheets(path: Path, sheets: dict, formats) -> None:
     with pd.ExcelWriter(path, engine="openpyxl") as writer:
         for name, frame in sheets.items():
             frame.to_excel(writer, sheet_name=name, index=False)
-            _format(writer.sheets[name], registry, line_sheet=(name == "Line Items"))
+            _format(writer.sheets[name], formats, line_sheet=(name == "Line Items"))
 
 
-def _format(sheet, registry: Registry, line_sheet: bool) -> None:
+def _format(sheet, registry, line_sheet: bool) -> None:
     headers = [c.value for c in sheet[1]]
     sheet.freeze_panes = "A2"
     if headers and headers[0] is not None:

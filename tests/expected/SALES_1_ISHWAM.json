@@ -1,4 +1,5 @@
 {
+  "format_version": 2,
   "source_file": "SALES_1_ISHWAM.pdf",
   "page_count": 1,
   "documents": [
@@ -9,6 +10,7 @@
       "template": "ishwam_sales_invoice.yml",
       "family": "ishwam_sales_invoice",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Ishwam Infrasystems",
@@ -76,8 +78,32 @@
       "evidence": {
         "checks_passed": 7,
         "checks_skipped": 44,
+        "checks_trivial": 0,
         "fields_found": 20,
         "fields_defined": 20
+      },
+      "field_pages": {
+        "document_type": 1,
+        "invoice_number": 1,
+        "date": 1,
+        "order_number": 1,
+        "date_order": 1,
+        "seller_name": 1,
+        "seller_address": 1,
+        "seller_tax_id": 1,
+        "seller_state": 1,
+        "buyer_name": 1,
+        "buyer_address": 1,
+        "buyer_state": 1,
+        "buyer_state_code": 1,
+        "amount_untaxed": 1,
+        "tax_rate": 1,
+        "amount_igst": 1,
+        "amount": 1,
+        "total_in_words": 1,
+        "bank_name": 1,
+        "bank_account": 1,
+        "bank_ifsc": 1
       }
     }
   ],

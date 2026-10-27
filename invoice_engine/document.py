@@ -1,7 +1,7 @@
 """Parses one document with its candidate templates and chooses between them by evidence.
 
-Every candidate layout (template family) is parsed. Within a family the newest version that does
-not FAIL represents it. Between families, a result is accepted only when it is at least as good
+Every candidate layout (template family) is parsed. Within a family every version is parsed and the
+one with the most evidence represents it (on equal evidence, the newest). Between families, a result is accepted only when it is at least as good
 as every other non-failing result on each measure of evidence (status, checks passed, share of
 the template's fields found) and better on at least one. When no result dominates the others the
 document is marked CHECK as ambiguous instead of picking one by name."""
@@ -9,12 +9,15 @@ document is marked CHECK as ambiguous instead of picking one by name."""
 from __future__ import annotations
 
 import re
+import subprocess
 from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
 from . import layout as layout_fp
+from . import poppler, safe_regex
+from .catalog import Catalog
 from .registry import Registry
 from .rules import to_decimal
 from .segment import page_texts, split_into_documents
@@ -66,10 +69,43 @@ def clean_line(line: dict, registry: Registry) -> dict:
     return row
 
 
-def attempt(template, texts: list[str], pdf: Path, registry: Registry, pages: list[int]) -> dict:
+def field_pages(template, texts: list[str], pages: list[int], fields: dict) -> dict[str, int]:
+    """For every field read with a pattern, the page its pattern first matches on (provenance).
+    A value whose pattern only matches across a page break gets no page."""
+    def read(spec):
+        return not (isinstance(spec, dict) and spec.get("parser") in ("static", "lines"))
+    if len(pages) == 1:
+        return {name: pages[0] for name in fields if name in template["fields"] and read(template["fields"][name])}
+    found: dict[str, int] = {}
+    prepared = []
+    for text in texts:
+        try:
+            prepared.append(template.prepare_input(text))
+        except Exception:
+            prepared.append(text)
+    for name in fields:
+        spec = template["fields"].get(name)
+        if isinstance(spec, dict) and spec.get("parser") in ("static", "lines"):
+            continue
+        pattern = spec.get("regex") if isinstance(spec, dict) else spec
+        for rx in (pattern if isinstance(pattern, list) else [pattern]) if pattern else []:
+            try:
+                page = next((pg for pg, text in zip(pages, prepared) if safe_regex.search(rx, text)), None)
+            except Exception:
+                page = None
+            if page is not None:
+                found[name] = page
+                break
+    return found
+
+
+def attempt(template, texts: list[str], pdf: Path, registry: Registry, pages: list[int],
+            type_name: str | None = None) -> dict:
     """Parse + validate with one template; never raises."""
     record = {"pages": pages, "template": template["template_name"],
               "family": family_of(template), "version": version_of(template)}
+    if type_name:
+        record["type"] = type_name
     try:
         raw = parse_with(template, texts, pdf)
     except Exception as exc:  # a broken template must not stop the other documents
@@ -87,7 +123,8 @@ def attempt(template, texts: list[str], pdf: Path, registry: Registry, pages: li
     evidence.update(fields_found=sum(1 for name in defined if fields.get(name) not in (None, "", [])),
                     fields_defined=len(defined))
     record.update(status=status_of(issues), fields=fields, lines=lines,
-                  issues=[{"level": level, "message": msg} for level, msg in issues], evidence=evidence)
+                  issues=[{"level": level, "message": msg} for level, msg in issues], evidence=evidence,
+                  field_pages=field_pages(template, texts, pages, fields))
     if tax_lines:
         record["tax_lines"] = tax_lines
     return record
@@ -142,35 +179,54 @@ def break_tie_by_layout(tied: list[dict], group: dict, pdf: Path):
     return winner, f"layout decided the tie: label positions match {winner['template']} best ({shown})"
 
 
-def process_group(group: dict, pdf: Path, registry: Registry) -> dict:
+def _registry(source, template) -> Registry:
+    """source = a Registry (one type) or a Catalog (the template's own type's registry)."""
+    return source.registry_for(template) if hasattr(source, "registry_for") else source
+
+
+def _type_name(source, template) -> str | None:
+    return source.type_of(template).name if hasattr(source, "type_of") else None
+
+
+def parse_candidates(group: dict, pdf: Path, source) -> tuple[list[dict], list[dict]]:
+    """Parse the document with every candidate. Returns (every attempt, one representative per
+    layout family). Every version of a family is tried; the one with the most evidence represents
+    the layout, and on equal evidence the newest (versions arrive newest first, max() keeps the first)."""
+    attempts, representatives = [], []
+    for family in dict.fromkeys(family_of(t) for t in group["candidates"]):
+        tried = [attempt(t, group["texts"], pdf, _registry(source, t), group["pages"], _type_name(source, t))
+                 for t in group["candidates"] if family_of(t) == family]
+        attempts.extend(tried)
+        representatives.append(max(tried, key=evidence_key))
+    return attempts, representatives
+
+
+def dominant(alive: list[dict]) -> dict | None:
+    """The one result at least as good as every other on all measures, if there is one."""
+    winners = [a for a in alive if all(a is b or dominates(a, b) for b in alive)]
+    return winners[0] if len(winners) == 1 else None
+
+
+def process_group(group: dict, pdf: Path, registry) -> dict:
     """Parse the document with every candidate layout and keep the one the evidence supports.
 
-    - within a layout family: versions newest first; the first that does not FAIL represents it
+    - within a layout family: every version is parsed; the one with the most evidence represents
+      it (on equal evidence the newest)
     - one family left that does not FAIL: it is used
     - several: the one that dominates all others is used; if none does, the best-ranked result is
       shown with status CHECK and the alternatives listed (a person decides)
     - all FAIL: the result with the most evidence is reported, so its errors are the useful ones
     """
-    attempts, representatives = [], []
-    families = list(dict.fromkeys(family_of(t) for t in group["candidates"]))
-    for family in families:
-        tried = []
-        for template in (t for t in group["candidates"] if family_of(t) == family):
-            record = attempt(template, group["texts"], pdf, registry, group["pages"])
-            tried.append(record)
-            if record["status"] != "FAIL":
-                break
-        attempts.extend(tried)
-        representatives.append(next((r for r in tried if r["status"] != "FAIL"), tried[0]))
+    attempts, representatives = parse_candidates(group, pdf, registry)
 
     alive = [r for r in representatives if r["status"] != "FAIL"]
     ambiguous = False
     if not alive:
         chosen = max(representatives, key=evidence_key)
     else:
-        winners = [a for a in alive if all(a is b or dominates(a, b) for b in alive)]
-        ambiguous = len(winners) != 1
-        chosen = winners[0] if not ambiguous else max(alive, key=evidence_key)
+        winner = dominant(alive)
+        ambiguous = winner is None
+        chosen = winner if winner is not None else max(alive, key=evidence_key)
 
     if ambiguous:
         decided = break_tie_by_layout(alive, group, pdf)
@@ -199,38 +255,105 @@ def process_group(group: dict, pdf: Path, registry: Registry) -> dict:
     return chosen
 
 
-def process_pdf(pdf: Path, templates: list, registry: Registry) -> dict:
-    result = {"source_file": pdf.name, "page_count": 0, "documents": [],
-              "unrecognized_pages": [], "notes": []}
+FORMAT_VERSION = 2           # JSON output format; 2 = document types, field pages, copies
+THIN_TEXT_CHARS = 200        # a page with less text than this is checked for a page-sized picture
+SCAN_COVERAGE = 0.5          # share of the page covered by pictures that marks it as scanned
+
+
+def picture_coverage(pdf: Path) -> dict[int, float] | None:
+    """Share of each page covered by pictures, from Poppler's pdfimages and pdfinfo.
+    None when those programs are not available next to pdftotext."""
+    images, info = poppler.tool_path("pdfimages"), poppler.tool_path("pdfinfo")
+    if not images or not info:
+        return None
     try:
-        pages = page_texts(pdf)
+        listing = subprocess.run([images, "-list", str(pdf)], capture_output=True, timeout=60).stdout
+        sizes = subprocess.run([info, "-f", "1", "-l", "100000", str(pdf)], capture_output=True, timeout=60).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    area = {int(m.group(1)): float(m.group(2)) * float(m.group(3)) / 72 / 72
+            for m in re.finditer(r"Page\s+(\d+) size:\s+([\d.]+) x ([\d.]+)", sizes.decode("utf-8", "replace"))}
+    covered: dict[int, float] = defaultdict(float)
+    for line in listing.decode("utf-8", "replace").splitlines()[2:]:
+        cols = line.split()
+        if len(cols) < 14 or cols[2] != "image":
+            continue
+        try:
+            page, width, height, xppi, yppi = int(cols[0]), int(cols[3]), int(cols[4]), float(cols[12]), float(cols[13])
+        except ValueError:
+            continue
+        if xppi > 0 and yppi > 0:
+            covered[page] += (width / xppi) * (height / yppi)
+    return {page: min(covered.get(page, 0.0) / a, 1.0) for page, a in area.items() if a > 0}
+
+
+def scanned_pages(pdf: Path, pages: list[str]) -> list[tuple[int, int, float]]:
+    """(page, characters of text, picture coverage) for pages that look scanned: little or no
+    text and a picture over at least half the page. Checked only when a page has little text."""
+    chars = [len(re.sub(r"\s", "", t)) for t in pages]
+    thin = [n for n, c in enumerate(chars, start=1) if c < THIN_TEXT_CHARS]
+    if not thin:
+        return []
+    coverage = picture_coverage(pdf)
+    if coverage is None:
+        return []
+    return [(n, chars[n - 1], coverage.get(n, 0.0)) for n in thin if coverage.get(n, 0.0) >= SCAN_COVERAGE]
+
+
+def process_pdf(pdf: Path, catalog, registry: Registry | None = None) -> dict:
+    """Process one PDF. catalog = a Catalog of document types, or (with registry) a plain list
+    of templates that all use that registry."""
+    if registry is not None:
+        catalog = Catalog.single(catalog, registry)
+    result = {"format_version": FORMAT_VERSION, "source_file": pdf.name, "page_count": 0, "documents": [],
+              "unrecognized_pages": [], "notes": []}
+    warnings: list[str] = []
+    try:
+        pages = page_texts(pdf, warnings)
     except RuntimeError as exc:
         result["notes"].append(f"ERROR: {exc}")
         return result
     result["page_count"] = len(pages)
+    if warnings:
+        result["notes"].append(f"pdftotext reported {len(warnings)} problem(s) in this file, so it may be "
+                               f"damaged and some text may be missing (first: {warnings[0]})")
     blank = [n for n, text in enumerate(pages, start=1) if not text.strip()]
+    scanned = scanned_pages(pdf, pages)
+    scanned_numbers = {n for n, _, _ in scanned}
     if pages and len(blank) == len(pages):
         result["notes"].append("ERROR: no page has a text layer: a scanned or image-only PDF. "
                                "OCR is needed, which is not supported yet")
-    elif blank:
-        result["notes"].append(f"pages {blank} have no text layer (scanned or blank)")
-    groups, notes = split_into_documents(pages, templates)
+    else:
+        if [n for n in blank if n not in scanned_numbers]:
+            result["notes"].append(f"pages {[n for n in blank if n not in scanned_numbers]} are blank")
+        for n, count, cover in scanned:
+            result["notes"].append(f"page {n} looks scanned: {count} characters of text and a picture over "
+                                   f"{cover:.0%} of the page. OCR is needed, which is not supported yet")
+    groups, notes = split_into_documents(pages, catalog)
     result["notes"].extend(notes)
 
     for group in groups:
         if group["family"] is None:
             text = "\n".join(group["texts"])
             preview = [ln.strip() for ln in text.splitlines() if ln.strip()][:3]
+            reason = ("scanned page: OCR needed" if any(n in scanned_numbers for n in group["pages"])
+                      else "no template matches")
             result["unrecognized_pages"].append(
-                {"pages": group["pages"], "preview": preview or ["(no text layer: scanned or blank page)"],
-                 "text": text})
+                {"pages": group["pages"], "reason": reason,
+                 "preview": preview or ["(no text layer: scanned or blank page)"], "text": text})
             continue
-        result["documents"].append(process_group(group, pdf, registry))
+        document = process_group(group, pdf, catalog)
+        if group.get("copy_of"):
+            document["copy_of"] = group["copy_of"]
+            document["issues"].append({"level": "INFO", "message":
+                                       f"another copy of the document on pages {group['copy_of']}; "
+                                       "not counted again in the totals"})
+        result["documents"].append(document)
 
     totals: dict = defaultdict(lambda: defaultdict(Decimal))
     for doc in result["documents"]:
         amount = to_decimal(doc["fields"].get("amount"))
-        if amount is not None:
+        if amount is not None and not doc.get("copy_of"):
             totals[doc["fields"].get("document_type", "unknown")][doc["fields"].get("currency", "?")] += amount
     result["totals_by_document_type"] = {k: {c: float(v) for c, v in by.items()} for k, by in totals.items()}
     return result

@@ -143,12 +143,13 @@ class Evaluator:
         raise RuleError(f"unsupported expression element {type(node).__name__}")
 
 
-PASS, SKIP, FAIL = "pass", "skip", "fail"
+PASS, SKIP, FAIL, TRIVIAL = "pass", "skip", "fail", "trivial"
 
 
 def evaluate_rule(rule, evaluator: Evaluator, allowed: frozenset, prefix: str = "") -> tuple[str, str | None]:
-    """Return (outcome, message). outcome is PASS (the values were there and agree), SKIP (a value
-    the rule needs is not on the document, so the rule proves nothing) or FAIL (message says why)."""
+    """Return (outcome, message). outcome is PASS (the values were there and agree), TRIVIAL (they
+    agree but both sides are zero, which proves nothing), SKIP (a value the rule needs is not on
+    the document, so the rule proves nothing) or FAIL (message says why)."""
     for condition in rule.unless:
         try:
             evaluator.value(parse_expression(condition, allowed))
@@ -164,6 +165,8 @@ def evaluate_rule(rule, evaluator: Evaluator, allowed: frozenset, prefix: str = 
         return SKIP, None                  # values not on this document: rule not applicable
     targets = right if isinstance(right, AnyOf) else [right]
     if any(abs(left - t) <= tolerance for t in targets):
+        if left == 0 and all(t == 0 for t in targets):
+            return TRIVIAL, None           # 0 == 0 agrees but proves nothing about the reading
         return PASS, None
     if isinstance(right, AnyOf):
         shown = ", ".join(str(round2(t)) for t in targets)

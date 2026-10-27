@@ -1,4 +1,5 @@
 {
+  "format_version": 2,
   "source_file": "ms_invoice_326255343871054720_1.pdf",
   "page_count": 5,
   "documents": [
@@ -9,6 +10,7 @@
       "template": "meesho_tax_invoice.yml",
       "family": "meesho_tax_invoice",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Meesho",
@@ -55,7 +57,29 @@
           "price_total": 1.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 9,
+        "checks_skipped": 25,
+        "checks_trivial": 0,
+        "fields_found": 12,
+        "fields_defined": 12
+      },
+      "field_pages": {
+        "document_type": 1,
+        "order_number": 1,
+        "invoice_number": 1,
+        "date_order": 1,
+        "date": 1,
+        "buyer_name": 1,
+        "buyer_address": 1,
+        "place_of_supply": 1,
+        "seller_name": 1,
+        "seller_address": 1,
+        "seller_tax_id": 1,
+        "amount_tax": 1,
+        "amount": 1
+      }
     },
     {
       "pages": [
@@ -64,6 +88,7 @@
       "template": "meesho_credit_note.yml",
       "family": "meesho_credit_note",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Meesho",
@@ -112,7 +137,31 @@
           "price_total": 1.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 9,
+        "checks_skipped": 25,
+        "checks_trivial": 0,
+        "fields_found": 14,
+        "fields_defined": 14
+      },
+      "field_pages": {
+        "document_type": 2,
+        "order_number": 2,
+        "invoice_number": 2,
+        "original_document_number": 2,
+        "date_order": 2,
+        "date": 2,
+        "date_original_document": 2,
+        "buyer_name": 2,
+        "buyer_address": 2,
+        "place_of_supply": 2,
+        "seller_name": 2,
+        "seller_address": 2,
+        "seller_tax_id": 2,
+        "amount_tax": 2,
+        "amount": 2
+      }
     },
     {
       "pages": [
@@ -121,6 +170,7 @@
       "template": "meesho_bill_of_supply.yml",
       "family": "meesho_bill_of_supply",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Meesho",
@@ -149,7 +199,28 @@
           "price_total": 35.97
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 2,
+        "checks_skipped": 24,
+        "checks_trivial": 0,
+        "fields_found": 11,
+        "fields_defined": 11
+      },
+      "field_pages": {
+        "document_type": 3,
+        "order_number": 3,
+        "invoice_number": 3,
+        "date_order": 3,
+        "date": 3,
+        "buyer_name": 3,
+        "buyer_address": 3,
+        "place_of_supply": 3,
+        "seller_name": 3,
+        "seller_address": 3,
+        "seller_tax_id": 3,
+        "amount": 3
+      }
     },
     {
       "pages": [
@@ -158,6 +229,7 @@
       "template": "meesho_bill_of_supply_credit_note.yml",
       "family": "meesho_bill_of_supply_credit_note",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Meesho",
@@ -188,7 +260,30 @@
           "price_total": 35.97
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 2,
+        "checks_skipped": 24,
+        "checks_trivial": 0,
+        "fields_found": 13,
+        "fields_defined": 13
+      },
+      "field_pages": {
+        "document_type": 4,
+        "order_number": 4,
+        "invoice_number": 4,
+        "original_document_number": 4,
+        "date_order": 4,
+        "date": 4,
+        "date_original_document": 4,
+        "buyer_name": 4,
+        "buyer_address": 4,
+        "place_of_supply": 4,
+        "seller_name": 4,
+        "seller_address": 4,
+        "seller_tax_id": 4,
+        "amount": 4
+      }
     },
     {
       "pages": [
@@ -197,6 +292,7 @@
       "template": "meesho_consignment_note.yml",
       "family": "meesho_consignment_note",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Meesho",
@@ -232,7 +328,28 @@
           "goods_value": 58.03
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 0,
+        "checks_skipped": 26,
+        "checks_trivial": 0,
+        "fields_found": 11,
+        "fields_defined": 11
+      },
+      "field_pages": {
+        "document_type": 5,
+        "invoice_number": 5,
+        "date": 5,
+        "seller_name": 5,
+        "on_behalf_of": 5,
+        "seller_tax_id": 5,
+        "place_of_origin": 5,
+        "buyer_name": 5,
+        "buyer_address": 5,
+        "reverse_charge": 5,
+        "tax_payer": 5,
+        "transport_legs": 5
+      }
     }
   ],
   "unrecognized_pages": [],

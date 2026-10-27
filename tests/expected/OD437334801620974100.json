@@ -1,4 +1,5 @@
 {
+  "format_version": 2,
   "source_file": "OD437334801620974100.pdf",
   "page_count": 8,
   "documents": [
@@ -9,6 +10,7 @@
       "template": "flipkart_seller_tax_invoice.yml",
       "family": "flipkart_seller_tax_invoice",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Flipkart",
@@ -46,7 +48,33 @@
           "igst_rate": 5.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 10,
+        "checks_skipped": 16,
+        "checks_trivial": 0,
+        "fields_found": 16,
+        "fields_defined": 16
+      },
+      "field_pages": {
+        "document_type": 1,
+        "invoice_number": 1,
+        "order_number": 1,
+        "date_order": 1,
+        "date": 1,
+        "seller_name": 1,
+        "ship_from_address": 1,
+        "seller_tax_id": 1,
+        "seller_pan": 1,
+        "seller_company_reg": 1,
+        "buyer_name": 1,
+        "buyer_address": 1,
+        "amount_gross": 1,
+        "amount_discount": 1,
+        "amount_untaxed": 1,
+        "amount_igst": 1,
+        "amount": 1
+      }
     },
     {
       "pages": [
@@ -56,6 +84,7 @@
       "template": "flipkart_bill_of_supply.yml",
       "family": "flipkart_bill_of_supply",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Flipkart",
@@ -101,7 +130,41 @@
           "sgst_rate": 0.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 5,
+        "checks_skipped": 16,
+        "checks_trivial": 5,
+        "fields_found": 25,
+        "fields_defined": 25
+      },
+      "field_pages": {
+        "invoice_number": 2,
+        "date": 2,
+        "order_number": 2,
+        "nature_of_transaction": 2,
+        "nature_of_supply": 2,
+        "seller_name": 2,
+        "seller_address": 2,
+        "seller_tax_id": 2,
+        "seller_pan": 2,
+        "buyer_name": 2,
+        "buyer_address": 2,
+        "buyer_state": 2,
+        "place_of_supply": 2,
+        "ship_from_address": 2,
+        "amount_gross": 2,
+        "amount_untaxed": 2,
+        "amount_sgst": 2,
+        "amount_cgst": 2,
+        "amount": 2,
+        "goods_description": 2,
+        "goods_weight_grams": 2,
+        "goods_value": 2,
+        "transporter": 3,
+        "vehicle_number": 3,
+        "reverse_charge": 3
+      }
     },
     {
       "pages": [
@@ -110,6 +173,7 @@
       "template": "flipkart_platform_fee_invoice.yml",
       "family": "flipkart_platform_fee_invoice",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Flipkart",
@@ -146,7 +210,33 @@
           "igst_rate": 18.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 9,
+        "checks_skipped": 16,
+        "checks_trivial": 1,
+        "fields_found": 16,
+        "fields_defined": 16
+      },
+      "field_pages": {
+        "document_type": 4,
+        "invoice_number": 4,
+        "order_number": 4,
+        "date_order": 4,
+        "date": 4,
+        "seller_name": 4,
+        "seller_address": 4,
+        "seller_company_reg": 4,
+        "seller_tax_id": 4,
+        "buyer_name": 4,
+        "buyer_address": 4,
+        "buyer_state": 4,
+        "amount_gross": 4,
+        "amount_discount": 4,
+        "amount_untaxed": 4,
+        "amount_igst": 4,
+        "amount": 4
+      }
     },
     {
       "pages": [
@@ -155,6 +245,7 @@
       "template": "flipkart_platform_fee_invoice.yml",
       "family": "flipkart_platform_fee_invoice",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Flipkart",
@@ -190,7 +281,33 @@
           "igst_rate": 18.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 9,
+        "checks_skipped": 16,
+        "checks_trivial": 1,
+        "fields_found": 16,
+        "fields_defined": 16
+      },
+      "field_pages": {
+        "document_type": 5,
+        "invoice_number": 5,
+        "order_number": 5,
+        "date_order": 5,
+        "date": 5,
+        "seller_name": 5,
+        "seller_address": 5,
+        "seller_company_reg": 5,
+        "seller_tax_id": 5,
+        "buyer_name": 5,
+        "buyer_address": 5,
+        "buyer_state": 5,
+        "amount_gross": 5,
+        "amount_discount": 5,
+        "amount_untaxed": 5,
+        "amount_igst": 5,
+        "amount": 5
+      }
     },
     {
       "pages": [
@@ -200,6 +317,7 @@
       "template": "flipkart_bill_of_supply.yml",
       "family": "flipkart_bill_of_supply",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Flipkart",
@@ -245,7 +363,41 @@
           "sgst_rate": 0.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 5,
+        "checks_skipped": 16,
+        "checks_trivial": 5,
+        "fields_found": 25,
+        "fields_defined": 25
+      },
+      "field_pages": {
+        "invoice_number": 6,
+        "date": 6,
+        "order_number": 6,
+        "nature_of_transaction": 6,
+        "nature_of_supply": 6,
+        "seller_name": 6,
+        "seller_address": 6,
+        "seller_tax_id": 6,
+        "seller_pan": 6,
+        "buyer_name": 6,
+        "buyer_address": 6,
+        "buyer_state": 6,
+        "place_of_supply": 6,
+        "ship_from_address": 6,
+        "amount_gross": 6,
+        "amount_untaxed": 6,
+        "amount_sgst": 6,
+        "amount_cgst": 6,
+        "amount": 6,
+        "goods_description": 6,
+        "goods_weight_grams": 6,
+        "goods_value": 6,
+        "transporter": 6,
+        "vehicle_number": 6,
+        "reverse_charge": 7
+      }
     },
     {
       "pages": [
@@ -254,6 +406,7 @@
       "template": "flipkart_seller_tax_invoice.yml",
       "family": "flipkart_seller_tax_invoice",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Flipkart",
@@ -292,7 +445,33 @@
           "igst_rate": 5.0
         }
       ],
-      "issues": []
+      "issues": [],
+      "evidence": {
+        "checks_passed": 10,
+        "checks_skipped": 16,
+        "checks_trivial": 0,
+        "fields_found": 16,
+        "fields_defined": 16
+      },
+      "field_pages": {
+        "document_type": 8,
+        "invoice_number": 8,
+        "order_number": 8,
+        "date_order": 8,
+        "date": 8,
+        "seller_name": 8,
+        "ship_from_address": 8,
+        "seller_tax_id": 8,
+        "seller_pan": 8,
+        "seller_company_reg": 8,
+        "buyer_name": 8,
+        "buyer_address": 8,
+        "amount_gross": 8,
+        "amount_discount": 8,
+        "amount_untaxed": 8,
+        "amount_igst": 8,
+        "amount": 8
+      }
     }
   ],
   "unrecognized_pages": [],

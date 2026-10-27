@@ -1,4 +1,5 @@
 {
+  "format_version": 2,
   "source_file": "VIL_bill_7573001478_2026-08-22_statement.pdf",
   "page_count": 5,
   "documents": [
@@ -13,6 +14,7 @@
       "template": "vodafone_idea_postpaid_bill.yml",
       "family": "vodafone_idea_postpaid_bill",
       "version": 1,
+      "type": "invoice",
       "status": "OK",
       "fields": {
         "issuer": "Vodafone Idea",
@@ -83,13 +85,47 @@
       "evidence": {
         "checks_passed": 4,
         "checks_skipped": 71,
+        "checks_trivial": 0,
         "fields_found": 30,
         "fields_defined": 30
+      },
+      "field_pages": {
+        "invoice_number": 1,
+        "date": 1,
+        "date_due": 1,
+        "billing_period": 1,
+        "service_number": 1,
+        "customer_number": 1,
+        "service_plan": 1,
+        "supply_description": 1,
+        "place_of_supply": 1,
+        "buyer_state_code": 1,
+        "buyer_tax_id": 1,
+        "hsn_sac": 1,
+        "irn": 1,
+        "seller_name": 1,
+        "seller_address": 1,
+        "seller_tax_id": 1,
+        "seller_company_reg": 1,
+        "buyer_name": 1,
+        "buyer_address": 1,
+        "amount_previous_balance": 1,
+        "amount_payments_received": 1,
+        "amount_account_adjustments": 1,
+        "amount_due": 1,
+        "amount_discount": 1,
+        "amount_untaxed": 1,
+        "amount_tax": 1,
+        "amount": 1,
+        "total_in_words": 1,
+        "amount_sgst": 3,
+        "amount_cgst": 3
       }
     }
   ],
   "unrecognized_pages": [],
   "notes": [
+    "pdftotext reported 9 problem(s) in this file, so it may be damaged and some text may be missing (first: Syntax Error (28700): Missing 'endstream' or incorrect stream length)",
     "page 2 attached to the previous document as a continuation page",
     "page 3 attached to the previous document as a continuation page",
     "page 4 attached to the previous document as a continuation page",

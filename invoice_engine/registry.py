@@ -38,13 +38,25 @@ class Rule:
 
 
 class Registry:
-    def __init__(self, config_dir: Path):
-        fields = _read_yaml(config_dir / "fields.yml")
-        checks = _read_yaml(config_dir / "checks.yml")
-        self.document = self._specs(fields.get("document") or {}, "document")
-        self.line = self._specs(fields.get("line") or {}, "line")
-        self.line_rules = [rule_from(r) for r in checks.get("line") or []]
-        self.document_rules = [rule_from(r) for r in checks.get("document") or []]
+    def __init__(self, config_dir: Path, type_dir: Path | None = None):
+        """Shared fields and checks from config_dir, plus those of one document type (its folder
+        under document_types/). A field defined in both places is an error, not an override."""
+        folders = [Path(config_dir)] + ([Path(type_dir)] if type_dir is not None else [])
+        self.document: dict[str, FieldSpec] = {}
+        self.line: dict[str, FieldSpec] = {}
+        self.line_rules: list[Rule] = []
+        self.document_rules: list[Rule] = []
+        for folder in folders:
+            fields = _read_yaml(folder / "fields.yml", required=folder == folders[0])
+            checks = _read_yaml(folder / "checks.yml", required=False)
+            for level, target in (("document", self.document), ("line", self.line)):
+                for name, spec in self._specs(fields.get(level) or {}, level).items():
+                    if name in target:
+                        raise ValueError(f"{folder / 'fields.yml'}: field {name!r} is already defined "
+                                         "(shared fields live in config/fields.yml, each name once)")
+                    target[name] = spec
+            self.line_rules += [rule_from(r) for r in checks.get("line") or []]
+            self.document_rules += [rule_from(r) for r in checks.get("document") or []]
         for spec in self.line.values():
             if spec.sums_to and spec.sums_to not in self.document:
                 raise ValueError(f"fields.yml: line field {spec.name} sums_to unknown field {spec.sums_to}")
@@ -96,7 +108,9 @@ def rule_from(entry: dict) -> Rule:
                 unless=tuple(str(u) for u in entry.get("unless") or ()))
 
 
-def _read_yaml(path: Path) -> dict:
+def _read_yaml(path: Path, required: bool = True) -> dict:
     if not path.is_file():
-        raise FileNotFoundError(f"configuration file not found: {path}")
+        if required:
+            raise FileNotFoundError(f"configuration file not found: {path}")
+        return {}
     return yaml.safe_load(path.read_text(encoding="utf-8-sig")) or {}

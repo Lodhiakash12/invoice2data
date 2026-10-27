@@ -108,8 +108,10 @@ def pdftotext() -> Pdftotext:
     return _FOUND or configure(None)
 
 
-def run(args: list[str], pdf: Path) -> str:
-    """Run pdftotext with these options on one PDF and return its text output (UTF-8)."""
+def run(args: list[str], pdf: Path, warnings: list[str] | None = None) -> str:
+    """Run pdftotext with these options on one PDF and return its text output (UTF-8).
+    Messages Poppler prints on a file it could still read (e.g. "Syntax Error ...", a sign of a
+    damaged file) are appended to `warnings` when a list is given."""
     tool = pdftotext()
     try:
         proc = subprocess.run([tool.path, *args, str(pdf), "-"], capture_output=True, timeout=300)
@@ -117,7 +119,16 @@ def run(args: list[str], pdf: Path) -> str:
         raise PopplerError(f"{pdf.name}: pdftotext took longer than 5 minutes") from None
     if proc.returncode != 0:
         raise PopplerError(f"{pdf.name}: {_explain(proc.stderr.decode('utf-8', 'replace'))}")
+    if warnings is not None:
+        warnings.extend(line.strip() for line in proc.stderr.decode("utf-8", "replace").splitlines() if line.strip())
     return proc.stdout.decode("utf-8", errors="replace")
+
+
+def tool_path(name: str) -> str | None:
+    """Another Poppler program (pdfimages, pdfinfo) from the same folder as pdftotext."""
+    folder = Path(pdftotext().path).parent
+    exe = folder / (name + (".exe" if os.name == "nt" else ""))
+    return str(exe) if exe.is_file() else shutil.which(name)
 
 
 def _explain(stderr: str) -> str:

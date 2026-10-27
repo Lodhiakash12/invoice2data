@@ -3,7 +3,8 @@ arithmetic rules from config/checks.yml plus the template's own checks.
 
 Besides the issues, check_document() returns the evidence the parse produced: how many
 arithmetic checks had their values and agreed (passed) and how many could not run (skipped).
-A skipped check proves nothing, so it never counts in a template's favour."""
+A skipped check proves nothing, and neither does a check whose values are all zero (0 == 0), so
+neither counts in a template's favour."""
 
 from __future__ import annotations
 
@@ -43,7 +44,7 @@ def check_document(fields: dict, lines: list[dict], tax_lines: list[dict], templ
                    registry: Registry) -> tuple[list[tuple[str, str]], dict[str, int]]:
     """(issues, evidence). evidence = {"checks_passed": n, "checks_skipped": n}."""
     issues: list[tuple[str, str]] = []
-    outcomes = {"pass": 0, "skip": 0, "fail": 0}
+    outcomes = {"pass": 0, "skip": 0, "fail": 0, "trivial": 0}
 
     def run(rule, evaluator, allowed, prefix=""):
         outcome, message = evaluate_rule(rule, evaluator, allowed, prefix)
@@ -61,10 +62,12 @@ def check_document(fields: dict, lines: list[dict], tax_lines: list[dict], templ
         if isinstance(value, list) and registry.must_be_single(name):
             issues.append(("ERROR", f"{name} has several different values {value}"))
 
-    # 3. Template fields that found nothing
+    # 3. Template fields that found nothing (optional_fields: printed on some documents of
+    #    this layout only, so their absence is normal)
+    optional = set(template.get("optional_fields") or [])
     for name, spec in template["fields"].items():
         is_structural = isinstance(spec, dict) and spec.get("parser") in ("static", "lines")
-        if not is_structural and name not in fields and name not in required:
+        if not is_structural and name not in fields and name not in required and name not in optional:
             issues.append(("WARN", f"template field found nothing: {name}"))
 
     # 4. Line items (a 'lines' field with parser: lines, or the older top-level 'lines:' block)
@@ -160,12 +163,21 @@ def check_document(fields: dict, lines: list[dict], tax_lines: list[dict], templ
         if message:
             issues.append(("ERROR", message))
 
-    # 7. A total that no check could verify (e.g. a template that reads only number, date and total)
-    totals = [n for n in registry.document_fields_with_role("total") if fields.get(n) not in (None, "", [])]
-    if totals and outcomes[PASS] == 0 and outcomes[FAIL] == 0:
-        issues.append(("WARN", f"{totals[0]} is not verified: no arithmetic check had the values it needs"))
+    # 7. Amounts that no check verified (e.g. a template that reads only number, date and total).
+    #    A template for a document that prints no arithmetic at all can declare min_checks: 0.
+    needed = template.get("min_checks", 1)
+    if outcomes[FAIL] == 0 and outcomes[PASS] < needed:
+        totals = [n for n in registry.document_fields_with_role("total") if fields.get(n) not in (None, "", [])]
+        money = [n for n, v in fields.items() if registry.is_money(n) and to_decimal(v) is not None]
+        if totals:
+            issues.append(("WARN", f"{totals[0]} is not verified: no arithmetic check had the values it needs"))
+        elif money:
+            issues.append(("WARN", f"amounts are not verified ({', '.join(money[:3])}"
+                                   f"{', ...' if len(money) > 3 else ''}): no arithmetic check passed"
+                                   + (" (checks on all-zero values prove nothing)" if outcomes["trivial"] else "")))
 
-    return issues, {"checks_passed": outcomes[PASS], "checks_skipped": outcomes["skip"]}
+    return issues, {"checks_passed": outcomes[PASS], "checks_skipped": outcomes["skip"],
+                    "checks_trivial": outcomes["trivial"]}
 
 
 def status_of(issues) -> str:
