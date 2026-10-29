@@ -159,7 +159,7 @@ def run_one(template, registry, type_name, pdf: Path, pages: list[int], texts: l
         matched = False
     if not matched:
         return Outcome(rewrite, sample, "not matched", "keywords no longer match")
-    result = attempt(template, changed, pdf, registry, pages, type_name)
+    result = attempt(template, changed, pdf, registry, pages, type_name, rewrite=change, positions=True)
     lost, wrong = compare(original, result, change)
     if wrong:
         return Outcome(rewrite, sample, "WRONG", "different value: " + ", ".join(wrong[:6]))
@@ -193,7 +193,7 @@ def stress(catalog, pdfs: list[Path], only: set[str] | None = None,
             template = by_name[name]
             dt = catalog.type_of(template)
             texts = [all_texts[p - 1] for p in doc["pages"]]
-            original = attempt(template, texts, pdf, dt.registry, doc["pages"], dt.name)
+            original = attempt(template, texts, pdf, dt.registry, doc["pages"], dt.name, positions=True)
             report = reports.setdefault(name, TemplateReport(name))
             report.samples.append(f"{pdf.name} p{doc['pages'][0]}")
             for rewrite in rewrites:

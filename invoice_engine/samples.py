@@ -11,7 +11,12 @@ the checks of a new or changed template possible without anyone collecting PDFs 
 
 The store holds real documents. It stays on this computer (the folder is set by sample_store in
 config/settings.yml, default: samples/) and keeps at most `per_family` documents per layout
-family, the most recent ones.
+family, the most recent ones; an older document stays while it is the only one of some variant
+(variants.py), so the only CGST + SGST document of a layout is not dropped for newer IGST ones.
+
+Documents a checked template read FAIL or CHECK are noted too (name, pages, first reason, the
+last PROBLEMS_PER_FAMILY per family), for the variant report; reading the same pages OK later
+removes the note.
 
     samples/
       index.json      the samples (file, pages, template, values) and the template checks
@@ -28,6 +33,7 @@ from pathlib import Path
 
 INDEX = "index.json"
 PER_FAMILY = 20
+PROBLEMS_PER_FAMILY = 10
 
 
 def file_hash(path: Path) -> str:
@@ -51,6 +57,7 @@ class SampleStore:
                 pass                                  # unreadable index: start again, files stay
         self.data.setdefault("samples", [])
         self.data.setdefault("templates", {})
+        self.data.setdefault("problems", [])
 
     # --- samples -------------------------------------------------------------------------------
     def pdf_path(self, sample: dict) -> Path:
@@ -72,11 +79,14 @@ class SampleStore:
         """Store one OK document. False when this file and pages are already stored."""
         digest = file_hash(pdf)
         pages = list(document["pages"])
+        forgot = self._forget_problem(digest, pages)
         for sample in self.data["samples"]:
             if sample["pdf"] == digest and sample["pages"] == pages:
                 if sample["template"] != document["template"]:      # read by a newer version now
                     sample.update(template=document["template"], fields=document["fields"],
                                   lines=document.get("lines", []), status=document["status"])
+                    forgot = True
+                if forgot:
                     self.save()
                 return False
         target = self.folder / "pdfs" / f"{digest}.pdf"
@@ -91,18 +101,59 @@ class SampleStore:
         self.save()
         return True
 
+    def remove(self, digest: str, pages: list[int]) -> bool:
+        """Take one document out of the store (its values are in doubt). True when it was there."""
+        before = len(self.data["samples"])
+        self.data["samples"] = [s for s in self.data["samples"] if not (s["pdf"] == digest and s["pages"] == list(pages))]
+        if len(self.data["samples"]) == before:
+            return False
+        if not any(s["pdf"] == digest for s in self.data["samples"]):
+            (self.folder / "pdfs" / f"{digest}.pdf").unlink(missing_ok=True)
+        self.save()
+        return True
+
     def update_values(self, sample: dict, document: dict) -> None:
-        sample.update(template=document["template"], fields=document["fields"],
+        sample.update(template=document["template"], fields=document["fields"], pages=document["pages"],
                       lines=document.get("lines", []), status=document["status"])
 
     def _trim(self, family: str) -> None:
+        from .variants import keep_on_trim
         own = [s for s in self.data["samples"] if s["family"] == family]
-        for old in sorted(own, key=lambda s: s["added"])[:-self.per_family]:
-            self.data["samples"].remove(old)
+        kept = {id(s) for s in keep_on_trim(own, self.per_family)}
+        for old in own:
+            if id(old) not in kept:
+                self.data["samples"].remove(old)
         used = {s["pdf"] for s in self.data["samples"]}
         for path in (self.folder / "pdfs").glob("*.pdf"):
             if path.stem not in used:
                 path.unlink(missing_ok=True)
+
+    # --- documents not read OK ----------------------------------------------------------------
+    def note_problem(self, pdf: Path, document: dict, family: str) -> None:
+        """Note a FAIL or CHECK document of a checked template (replaces an older note of the same
+        file and pages)."""
+        digest = file_hash(pdf)
+        pages = list(document["pages"])
+        issues = document.get("issues") or []
+        reasons = [i.get("message", "") for i in issues if i.get("level") == "ERROR"] or \
+                  [i.get("message", "") for i in issues if i.get("level") == "WARN"]
+        self.data["problems"] = [p for p in self.data["problems"] if not (p["pdf"] == digest and p["pages"] == pages)]
+        self.data["problems"].append({
+            "pdf": digest, "name": Path(pdf).name, "pages": pages, "family": family,
+            "template": document.get("template"), "status": document.get("status"),
+            "reason": reasons[0] if reasons else "", "added": datetime.now().isoformat(timespec="seconds")})
+        own = [p for p in self.data["problems"] if p["family"] == family]
+        for old in own[:-PROBLEMS_PER_FAMILY]:
+            self.data["problems"].remove(old)
+        self.save()
+
+    def problems_of(self, family: str) -> list[dict]:
+        return [p for p in self.data["problems"] if p["family"] == family]
+
+    def _forget_problem(self, digest: str, pages: list[int]) -> bool:
+        before = len(self.data["problems"])
+        self.data["problems"] = [p for p in self.data["problems"] if not (p["pdf"] == digest and p["pages"] == pages)]
+        return len(self.data["problems"]) != before
 
     # --- template check results ---------------------------------------------------------------
     def template_state(self, name: str) -> dict:

@@ -76,6 +76,11 @@ def check_template(catalog, template, store, extra_pdfs: list[Path] = (),
     for sample in stored:
         result = process_pdf(store.pdf_path(sample), catalog)
         doc = next((d for d in result["documents"] if d["pages"] == sample["pages"]), None)
+        # the template now also takes the pages that followed (e.g. a continuation page it used to
+        # leave unrecognized): the same document, grown; its values are compared as usual
+        grown = doc is None and next((d for d in result["documents"] if d["pages"][0] == sample["pages"][0]
+                                      and set(sample["pages"]) < set(d["pages"])), None)
+        doc = doc or grown or None
         where = f"{sample['name']} p{sample['pages'][0]}"
         if doc is None or family_of_name(catalog, doc["template"]) != family:
             verdict.problems.append(f"regression: {where} is no longer read by this layout"
@@ -83,9 +88,15 @@ def check_template(catalog, template, store, extra_pdfs: list[Path] = (),
             continue
         lost, changed = compare(sample, doc)
         if _RANK.get(doc["status"], 0) < _RANK.get(sample["status"], 0):
-            verdict.problems.append(f"regression: {where} {sample['status']} -> {doc['status']}")
+            why = [i["message"] for i in doc.get("issues", []) if i["level"] == ("ERROR" if doc["status"] == "FAIL" else "WARN")]
+            verdict.problems.append(f"regression: {where} {sample['status']} -> {doc['status']}"
+                                    + (f" (pages {', '.join(map(str, doc['pages']))}: {'; '.join(why[:2])})" if why else ""))
         elif lost:
             verdict.problems.append(f"regression: {where} lost {', '.join(lost[:5])}")
+        elif grown and not changed:
+            verdict.notes.append(f"{where}: now read as pages {grown['pages'][0]}-{grown['pages'][-1]} "
+                                 f"(was {', '.join(map(str, sample['pages']))}), no value lost or changed")
+            corrected.append((sample, doc))
         elif changed and accept_changes:
             verdict.notes.append(f"regression: {where} changed {', '.join(changed[:5])} (accepted)")
             corrected.append((sample, doc))
@@ -163,10 +174,19 @@ def family_of_name(catalog, template_name: str) -> str | None:
     return family_of(template) if template is not None else None
 
 
+def engine_version() -> str:
+    """A fingerprint of the engine's own code: a template held by an older engine is checked again
+    when the engine changes (the reason it was held may have been a gap in the engine)."""
+    digest = hashlib.sha256()
+    for path in sorted(Path(__file__).parent.glob("*.py")):
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:16]
+
+
 def record(store, catalog, template, verdict: Verdict) -> dict:
     # passed without any document of its own to check on: it waits for its first document
     outcome = (ADMITTED if verdict.samples else NEW) if verdict.passed else HELD
-    state = {"hash": template_hash(catalog, template), "state": outcome,
+    state = {"hash": template_hash(catalog, template), "state": outcome, "engine": engine_version(),
              "checked": datetime.now().isoformat(timespec="seconds"), "samples": verdict.samples,
              "problems": verdict.problems, "notes": verdict.notes[:20]}
     store.set_template_state(template["template_name"], state)

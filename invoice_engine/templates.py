@@ -34,13 +34,34 @@ def version_of(template) -> int:
     return version if isinstance(version, int) else 1
 
 
+def _read_isolated(folder: Path, problems: dict[str, list[str]]) -> list:
+    """invoice2data reads a folder in one go, and one file in an unexpected shape stops it for
+    every file. Then each file is read on its own: the bad ones are rejected with the reason."""
+    import shutil
+    import tempfile
+    loaded = []
+    for path in sorted(folder.rglob("*")):
+        if path.suffix.lower() not in TEMPLATE_SUFFIXES:
+            continue
+        with tempfile.TemporaryDirectory() as single:
+            shutil.copyfile(path, Path(single) / path.name)
+            try:
+                loaded += read_templates(single)
+            except Exception as exc:
+                problems[path.name] = [f"could not be read: {type(exc).__name__}: {exc}"]
+    return loaded
+
+
 def load_templates(folder: Path, registry: Registry) -> TemplateSet:
     result = TemplateSet()
-    loaded = read_templates(str(folder))
+    try:
+        loaded = read_templates(str(folder))
+    except Exception:
+        loaded = _read_isolated(folder, result.rejected)
     names_on_disk = [p.name for p in sorted(folder.rglob("*")) if p.suffix.lower() in TEMPLATE_SUFFIXES]
     loaded_names = {t["template_name"] for t in loaded}
     for name in names_on_disk:
-        if name not in loaded_names:
+        if name not in loaded_names and name not in result.rejected:
             result.rejected[name] = ["could not be read (YAML syntax error or missing keywords)"]
 
     seen: dict[tuple[str, int], str] = {}

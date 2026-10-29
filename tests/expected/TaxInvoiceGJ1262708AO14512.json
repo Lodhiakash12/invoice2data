@@ -58,7 +58,6 @@
         },
         {
           "name": "Airport Charges",
-          "hsn_sac": "",
           "price_subtotal": 0.0,
           "exempt_amount": 1033.0,
           "value_before_tax": 1033.0,

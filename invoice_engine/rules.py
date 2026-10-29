@@ -11,14 +11,14 @@ from __future__ import annotations
 import ast
 import operator
 from functools import lru_cache
-from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal, InvalidOperation
 
 CENT = Decimal("0.01")
 
 _BINOPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
 
 #: Functions available in every rule; context-specific ones are added by the caller.
-COMMON_FUNCTIONS = frozenset({"default", "first", "any", "abs", "round2"})
+COMMON_FUNCTIONS = frozenset({"default", "first", "any", "abs", "round2", "round_to", "ceil_to", "floor_to"})
 LINE_FUNCTIONS = COMMON_FUNCTIONS | {"taxes"}
 DOCUMENT_FUNCTIONS = COMMON_FUNCTIONS | {"lines", "taxlines", "role", "tax_total", "untaxed",
                                          "line_taxes", "line_rate_tax"}
@@ -44,6 +44,13 @@ def to_decimal(value) -> Decimal | None:
 
 def round2(value: Decimal) -> Decimal:
     return value.quantize(CENT, ROUND_HALF_UP)
+
+
+def to_unit(value: Decimal, unit: Decimal, rounding) -> Decimal:
+    """value rounded to a multiple of unit (1 = whole rupees): ROUND_HALF_UP, ROUND_CEILING, ROUND_FLOOR."""
+    if unit <= 0:
+        raise Missing("rounding unit must be above 0")
+    return (value / unit).quantize(Decimal(1), rounding) * unit
 
 
 @lru_cache(maxsize=1024)
@@ -138,6 +145,9 @@ class Evaluator:
                 return abs(self.value(node.args[0]))
             if name == "round2":
                 return round2(self.value(node.args[0]))
+            if name in ("round_to", "ceil_to", "floor_to"):
+                mode = {"round_to": ROUND_HALF_UP, "ceil_to": ROUND_CEILING, "floor_to": ROUND_FLOOR}[name]
+                return to_unit(self.value(node.args[0]), self.value(node.args[1]), mode)
             args = [self.value(a) for a in node.args]
             return self.functions[name](*args)
         raise RuleError(f"unsupported expression element {type(node).__name__}")

@@ -11,6 +11,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from .registry import Registry, Rule, rule_from
+from .textchecks import text_issues
 from .rules import DOCUMENT_FUNCTIONS, FAIL, LINE_FUNCTIONS, PASS, Evaluator, Missing, evaluate_rule, round2, to_decimal
 
 DEFAULT_REQUIRED = ["date", "amount", "invoice_number", "issuer"]
@@ -62,17 +63,29 @@ def check_document(fields: dict, lines: list[dict], tax_lines: list[dict], templ
         if isinstance(value, list) and registry.must_be_single(name):
             issues.append(("ERROR", f"{name} has several different values {value}"))
 
+    # 2b. The document number is a number: a value without any digit is a label read by mistake
+    #     ("Train" from "Train No./Name") or a placeholder such as N.A.
+    number = fields.get("invoice_number")
+    for value in (number if isinstance(number, list) else [number]):
+        if value not in (None, "") and not any(c.isdigit() for c in str(value)):
+            issues.append(("WARN", f"invoice_number {value!r} has no digit: a label or placeholder, not the "
+                                   "document's number"))
+
+    # 2c. Text fields no arithmetic can prove: registration number formats, the PAN inside the
+    #     GSTIN, the GSTIN's state, labels that ran into a name or an address (textchecks.py)
+    issues.extend(text_issues(fields))
+
     # 3. Template fields that found nothing (optional_fields: printed on some documents of
     #    this layout only, so their absence is normal)
     optional = set(template.get("optional_fields") or [])
     for name, spec in template["fields"].items():
-        is_structural = isinstance(spec, dict) and spec.get("parser") in ("static", "lines")
+        is_structural = isinstance(spec, dict) and spec.get("parser") in ("static", "lines", "table")
         if not is_structural and name not in fields and name not in required and name not in optional:
             issues.append(("WARN", f"template field found nothing: {name}"))
 
     # 4. Line items (a 'lines' field with parser: lines, or the older top-level 'lines:' block)
     lines_spec = template["fields"].get("lines")
-    has_line_rules = "lines" in template or (isinstance(lines_spec, dict) and lines_spec.get("parser") == "lines")
+    has_line_rules = "lines" in template or (isinstance(lines_spec, dict) and lines_spec.get("parser") in ("lines", "table"))
     if has_line_rules and not lines:
         issues.append(("ERROR", "no line items found although the template defines line rules"))
 
@@ -158,6 +171,26 @@ def check_document(fields: dict, lines: list[dict], tax_lines: list[dict], templ
         sum_rules.append(Rule(name=f"sum of line {line_field} vs {doc_field}",
                               rule=f"lines('{line_field}'){extra} == {doc_field}", tolerance="0.01 * n_lines"))
     document_rules = [r for r in sum_rules + registry.document_rules if r.name not in disabled]
+    # total_rounding: the document rounds its grand total (to whole rupees: 1) without printing a
+    # round-off line; total_rounding_mode says how: up (IRCTC: 518.15 -> 519), nearest, down. A
+    # check that ends in the total then compares the rounded sum, exactly. It applies only when the
+    # printed total is a multiple of the unit (an unrounded total is checked as it is).
+    # A first sample can fit more than one rule (1378.60 -> 1379 is both up and nearest): the
+    # template then lists them (total_rounding_mode: [up, nearest]) and a document passes with any
+    # of them; evidence["rounding_fits"] says which fit, so a later document that fits only one can
+    # settle the rule (pipeline.py).
+    options = template.get("options") or {}
+    setting = template.get("total_rounding") or options.get("total_rounding")   # options: older AI drafts
+    modes = rounding_modes(template.get("total_rounding_mode") or options.get("total_rounding_mode"))
+    unit = to_decimal(setting) if setting else None
+    total = to_decimal(fields.get("amount")) if unit else None
+    rounding_fits = None
+    if unit and unit > 0 and total is not None and total % unit == 0:
+        candidates = {mode: _rounded_rules(document_rules, _ROUNDING_FUNCTIONS[mode], unit) for mode in modes}
+        rounding_fits = [mode for mode in modes
+                         if all(evaluate_rule(r, evaluator, DOCUMENT_FUNCTIONS)[0] != FAIL
+                                for r in candidates[mode] if r.name.endswith("(rounded)"))]
+        document_rules = candidates[rounding_fits[0] if rounding_fits else modes[0]]
     for rule in document_rules + extra_document_rules:
         message = run(rule, evaluator, DOCUMENT_FUNCTIONS)
         if message:
@@ -176,8 +209,33 @@ def check_document(fields: dict, lines: list[dict], tax_lines: list[dict], templ
                                    f"{', ...' if len(money) > 3 else ''}): no arithmetic check passed"
                                    + (" (checks on all-zero values prove nothing)" if outcomes["trivial"] else "")))
 
-    return issues, {"checks_passed": outcomes[PASS], "checks_skipped": outcomes["skip"],
-                    "checks_trivial": outcomes["trivial"]}
+    evidence = {"checks_passed": outcomes[PASS], "checks_skipped": outcomes["skip"],
+                "checks_trivial": outcomes["trivial"]}
+    if rounding_fits is not None and len(modes) > 1:
+        evidence["rounding_fits"] = rounding_fits
+    return issues, evidence
+
+
+ROUNDING_MODES = ("up", "nearest", "down")
+_ROUNDING_FUNCTIONS = {"up": "ceil_to", "nearest": "round_to", "down": "floor_to"}
+
+
+def rounding_modes(setting) -> list[str]:
+    """total_rounding_mode as a list: 'up' -> ['up'], [up, nearest] -> ['up', 'nearest'],
+    nothing -> ['nearest']. Unknown words are left out (lint reports them)."""
+    values = setting if isinstance(setting, list) else [setting] if setting else ["nearest"]
+    modes = [str(v) for v in values if str(v) in ROUNDING_MODES]
+    return list(dict.fromkeys(modes)) or ["nearest"]
+
+
+def _rounded_rules(rules: list[Rule], function: str, unit) -> list[Rule]:
+    out = []
+    for r in rules:
+        left, _, right = r.rule.rpartition("==")
+        if right.strip() == "amount" and left.strip():
+            r = Rule(r.name + " (rounded)", f"{function}({left.strip()}, {unit}) == amount", r.tolerance, r.unless)
+        out.append(r)
+    return out
 
 
 def status_of(issues) -> str:

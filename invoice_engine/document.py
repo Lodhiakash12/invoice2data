@@ -16,7 +16,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from . import layout as layout_fp
-from . import poppler, safe_regex
+from . import poppler, safe_regex, words
 from .catalog import Catalog
 from .registry import Registry
 from .rules import to_decimal
@@ -60,11 +60,15 @@ def to_number(text: str):
 
 
 def clean_line(line: dict, registry: Registry) -> dict:
+    """One item row; a column the row does not print is left out (not kept as an empty value):
+    a row of one GST kind has no columns of the other, a charge row has no quantity."""
     row = {}
     for key, value in line.items():
         value = clean(value)
         if registry.is_numeric_line_field(key) and isinstance(value, str):
             value = to_number(value)
+        if value is None or value == "":
+            continue
         row[key] = value
     return row
 
@@ -73,7 +77,7 @@ def field_pages(template, texts: list[str], pages: list[int], fields: dict) -> d
     """For every field read with a pattern, the page its pattern first matches on (provenance).
     A value whose pattern only matches across a page break gets no page."""
     def read(spec):
-        return not (isinstance(spec, dict) and spec.get("parser") in ("static", "lines"))
+        return not (isinstance(spec, dict) and spec.get("parser") in ("static", "lines", "table"))
     if len(pages) == 1:
         return {name: pages[0] for name in fields if name in template["fields"] and read(template["fields"][name])}
     found: dict[str, int] = {}
@@ -85,7 +89,7 @@ def field_pages(template, texts: list[str], pages: list[int], fields: dict) -> d
             prepared.append(text)
     for name in fields:
         spec = template["fields"].get(name)
-        if isinstance(spec, dict) and spec.get("parser") in ("static", "lines"):
+        if isinstance(spec, dict) and spec.get("parser") in ("static", "lines", "table"):
             continue
         pattern = spec.get("regex") if isinstance(spec, dict) else spec
         for rx in (pattern if isinstance(pattern, list) else [pattern]) if pattern else []:
@@ -100,18 +104,25 @@ def field_pages(template, texts: list[str], pages: list[int], fields: dict) -> d
 
 
 def attempt(template, texts: list[str], pdf: Path, registry: Registry, pages: list[int],
-            type_name: str | None = None) -> dict:
-    """Parse + validate with one template; never raises."""
+            type_name: str | None = None, rewrite=None, positions: bool = False) -> dict:
+    """Parse + validate with one template; never raises. positions: the texts are this PDF's own
+    page texts (or the stress test's `rewrite` of them), so the parsers that read word positions
+    may read the PDF's words (words.current) instead; a caller that passes other texts (a test)
+    leaves it off."""
     record = {"pages": pages, "template": template["template_name"],
               "family": family_of(template), "version": version_of(template)}
     if type_name:
         record["type"] = type_name
+    token = words.current.set({"pdf": Path(pdf) if (pdf and positions) else None, "pages": list(pages),
+                               "rewrite": rewrite})
     try:
         raw = parse_with(template, texts, pdf)
     except Exception as exc:  # a broken template must not stop the other documents
+        words.current.reset(token)
         record.update(status="FAIL", fields={}, lines=[],
                       issues=[{"level": "ERROR", "message": f"template error: {type(exc).__name__}: {exc}"}])
         return record
+    words.current.reset(token)
     lines = [clean_line(l, registry) for l in raw.pop("lines", []) or [] if isinstance(l, dict)]
     tax_lines = [clean_line(l, registry) for l in raw.pop("tax_lines", []) or [] if isinstance(l, dict)]
     raw.pop("desc", None)
@@ -119,7 +130,7 @@ def attempt(template, texts: list[str], pdf: Path, registry: Registry, pages: li
     fields = {key: clean(value) for key, value in raw.items()}
     issues, evidence = check_document(fields, lines, tax_lines, template, registry)
     defined = [name for name, spec in template["fields"].items()
-               if not (isinstance(spec, dict) and spec.get("parser") in ("static", "lines"))]
+               if not (isinstance(spec, dict) and spec.get("parser") in ("static", "lines", "table"))]
     evidence.update(fields_found=sum(1 for name in defined if fields.get(name) not in (None, "", [])),
                     fields_defined=len(defined))
     record.update(status=status_of(issues), fields=fields, lines=lines,
@@ -194,7 +205,8 @@ def parse_candidates(group: dict, pdf: Path, source) -> tuple[list[dict], list[d
     the layout, and on equal evidence the newest (versions arrive newest first, max() keeps the first)."""
     attempts, representatives = [], []
     for family in dict.fromkeys(family_of(t) for t in group["candidates"]):
-        tried = [attempt(t, group["texts"], pdf, _registry(source, t), group["pages"], _type_name(source, t))
+        tried = [attempt(t, group["texts"], pdf, _registry(source, t), group["pages"], _type_name(source, t),
+                         positions=True)
                  for t in group["candidates"] if family_of(t) == family]
         attempts.extend(tried)
         representatives.append(max(tried, key=evidence_key))

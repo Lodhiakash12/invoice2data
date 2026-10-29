@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import subprocess
+from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -108,20 +109,54 @@ def pdftotext() -> Pdftotext:
     return _FOUND or configure(None)
 
 
+# Results of pdftotext, kept while the program runs: the automatic template checks read the
+# same stored samples once per template and per check (regression, stress test, overlap), and a
+# PDF that is read again gives the same text. One run of pdftotext per file and option set is
+# enough; on Windows starting it costs about as much as reading the file. A file that changed
+# (other size or modification time) is read again. At most _CACHE_BYTES of text are kept.
+_CACHE: "OrderedDict[tuple, tuple[str, str, str | None]]" = OrderedDict()
+_CACHE_BYTES = 256 * 2**20
+_cached_bytes = 0
+
+
+def _key(tool: str, args: list[str], pdf: Path) -> tuple | None:
+    try:
+        stat = Path(pdf).stat()
+        return (tool, tuple(args), str(Path(pdf).resolve()), stat.st_size, stat.st_mtime_ns)
+    except OSError:
+        return None
+
+
 def run(args: list[str], pdf: Path, warnings: list[str] | None = None) -> str:
     """Run pdftotext with these options on one PDF and return its text output (UTF-8).
     Messages Poppler prints on a file it could still read (e.g. "Syntax Error ...", a sign of a
     damaged file) are appended to `warnings` when a list is given."""
+    global _cached_bytes
+    pdf = Path(pdf)
     tool = pdftotext()
-    try:
-        proc = subprocess.run([tool.path, *args, str(pdf), "-"], capture_output=True, timeout=300)
-    except subprocess.TimeoutExpired:
-        raise PopplerError(f"{pdf.name}: pdftotext took longer than 5 minutes") from None
-    if proc.returncode != 0:
-        raise PopplerError(f"{pdf.name}: {_explain(proc.stderr.decode('utf-8', 'replace'))}")
+    key = _key(tool.path, args, pdf)
+    if key is not None and key in _CACHE:
+        _CACHE.move_to_end(key)
+        out, err, error = _CACHE[key]
+    else:
+        try:
+            proc = subprocess.run([tool.path, *args, str(pdf), "-"], capture_output=True, timeout=300)
+        except subprocess.TimeoutExpired:
+            raise PopplerError(f"{pdf.name}: pdftotext took longer than 5 minutes") from None
+        err = proc.stderr.decode("utf-8", "replace")
+        out = proc.stdout.decode("utf-8", errors="replace") if proc.returncode == 0 else ""
+        error = _explain(err) if proc.returncode != 0 else None
+        if key is not None:
+            _CACHE[key] = (out, err, error)
+            _cached_bytes += len(out) + len(err)
+            while _cached_bytes > _CACHE_BYTES and len(_CACHE) > 1:
+                _, (o, e, _x) = _CACHE.popitem(last=False)
+                _cached_bytes -= len(o) + len(e)
+    if error is not None:
+        raise PopplerError(f"{pdf.name}: {error}")
     if warnings is not None:
-        warnings.extend(line.strip() for line in proc.stderr.decode("utf-8", "replace").splitlines() if line.strip())
-    return proc.stdout.decode("utf-8", errors="replace")
+        warnings.extend(line.strip() for line in err.splitlines() if line.strip())
+    return out
 
 
 def tool_path(name: str) -> str | None:

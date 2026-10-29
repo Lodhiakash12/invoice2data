@@ -334,3 +334,222 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
   of shared repositories.
   The commands --stress, --overlap and --fingerprint remain for looking into a problem by hand.
 
+17. AI TEMPLATE AUTHOR (optional, config/settings.yml section ai)
+  When it is switched on, every normal run (and the test page) gives the AI:
+  - pages no template recognizes: the AI names the document type (an existing folder under
+    document_types/, or a new one: it then creates the folder with type.yml, fields.yml and
+    checks.yml), and writes the template into document_types/<type>/templates/. Fields the
+    registry lacks are added to that type's fields.yml.
+  - a document an admitted template reads with FAIL: the AI writes the next version of that
+    template (same family, version + 1); the old version stays.
+  A template the AI writes is used only when
+  - it loads without lint errors and its keywords match the document,
+  - the document comes out OK (required fields found, arithmetic checks pass),
+  - no keyword contains a value of this one document (buyer, number, date, amount),
+  - it passes the automatic checks of section 16 (regression, stress, overlap).
+  Otherwise the problems go back to the AI (up to max_attempts drafts). A template that never
+  passes is removed again, with any folder or fields it added; its last draft is kept in
+  samples/ai_drafts/. Each document is given to the AI once; --ai-retry gives it again.
+  Every AI exchange is logged in samples/ai_log.jsonl (it contains page text: keep it local).
+
+  Setting it up (NVIDIA build.nvidia.com, free tier for development):
+    1. Create a key at build.nvidia.com and set it for the session (PowerShell):
+          $env:NVIDIA_API_KEY = "nvapi-..."
+    2. List the models and pick one:      python process_invoice.py --ai-models
+    3. In config/settings.yml set ai.enabled: true, ai.model: <model id>, and
+       ai.send_unanonymised_text: true (test documents only: the page text is sent as it is, and
+       the free tier records inputs and outputs).
+    4. Check the connection:               python process_invoice.py --ai-test
+  Changing to another service later (Claude) changes the provider in ai_provider.py and the
+  settings; nothing else.
+
+
+18. ITEM TABLES READ BY THEIR COLUMN HEADINGS (parser: table)
+  A `lines` table reads each row with one fixed pattern ("qty, gross, discount, taxable, ONE
+  tax, total"). A document of the same layout with another set of columns (CGST + SGST instead
+  of IGST when the seller is in the buyer's state, an extra CESS column, no Qty) then reads no
+  rows. `parser: table` reads the header instead and puts each value under the heading above it:
+
+    lines:
+      parser: table
+      start: '(?m)^Product\s+Title\s+Qty'     # first header line
+      end: '(?m)^\s+Total\s+\d'                # line after the table
+      columns: {category: '^Product', name: 'Title', qty: 'Qty', gross_amount: 'Gross',
+                discount: 'Discount', price_subtotal: 'Taxable', igst_amount: 'IGST',
+                cgst_amount: 'CGST', sgst_amount: 'SGST', cess_amount: 'CESS', price_total: 'Total'}
+      row: [qty, price_total]                  # a row starts on a line with these values
+      text: after                              # description below the amounts (or: before)
+      row_end: '^IMEI'                         # optional: a line that closes the row
+      extra: ['^\s+IGST:\s*(?P<igst_rate>[\d.]+)\s*%']   # optional patterns for other lines
+      prefix: '^SAC:\s*(?P<hsn_sac>\d+)'      # optional: a value in front of the row, no heading
+      types: {qty: int, price_total: float, ...}         # numeric columns need a type
+
+  List every column the issuer CAN print, not only those of the first sample. The header ends at
+  the first blank line (or after header_lines lines). A value is placed under the nearest heading
+  (at most max_gap = 12 characters away), in left-to-right order; a number written one space
+  after a word stays part of the text ("Pack of 2"). Two values for one column are an error, never
+  a choice. Used by: flipkart_seller_tax_invoice.yml.
+
+  What the table reader handles, and what it refuses:
+    - a value under a heading that columns do not list (TCS when only CESS is listed): error that
+      names the heading; the value is never put in a neighbouring column
+    - two columns whose headings are the same printed word: template error
+    - the table continued on the next page: the header printed again is read again (its columns
+      may stand elsewhere); footer and policy sentences between the pages are left out
+    - numbers: 1,23,456.78 / 1.234,56 (decimal_separator ',') / (135.00) and 135.00- as minus,
+      but (18.0) under a rate column stays 18 / currency before or after (Rs, INR, $, EUR) /
+      "-" or "NA" as an empty value / "2 Nos" as 2 / "1 Pigeon ..." as serial 1 + description
+    - descriptions printed above their amounts with text: after: error asking for text: before
+      (unless row_end is set, which places the text of each row explicitly)
+    - not handled: a description line long enough to run under the amount columns is left out of
+      the name; taxes printed on separate lines under one "Tax Amount" heading (Amazon) need the
+      lines parser.
+
+19. ROUNDED TOTALS (total_rounding, total_rounding_mode)
+  Some issuers print the total rounded to whole rupees without a round-off line (IRCTC agent
+  tickets: 518.15 -> 519). The template says so, and the check compares the rounded sum exactly:
+
+    total_rounding: 1                    # whole rupees
+    total_rounding_mode: up              # up | nearest | down (nearest when left out)
+
+  It applies only when the printed total is a whole number; a total that is wrong (519 printed
+  for 518.15 under "nearest", or 520) still fails.
+
+  One document cannot always tell the rule: 1378.60 -> 1379 is both "up" and "nearest". The
+  template then lists every rule that fits:
+
+    total_rounding_mode: [up, nearest]
+
+  A document passes with any listed rule. The first later document that fits only some of them
+  settles it: the engine writes the template line itself, for example
+    total_rounding_mode: up   # settled 2026-10-29 by 2147438163.pdf (was up, nearest)
+  and the changed template is checked again on every stored sample on the next run. Two documents
+  that fit different rules are reported, and the template is not changed. The AI template author
+  writes the list when its document fits more than one rule.
+
+20. CHECKS ON TEXT FIELDS (textchecks.py, part of every run)
+  Amounts are proven by arithmetic; names, addresses and registration numbers are not. Misreads
+  with a recognisable shape make the document CHECK:
+    - GSTIN (fields *_tax_id): 15 characters whose last one is the check character computed from
+      the first 14, so a single misread character is caught
+    - PAN (*_pan): 5 letters, 4 digits, 1 letter; CIN (*_company_reg starting L or U): 21
+      characters; FSSAI (*_fssai): 14 digits
+    - the PAN inside the GSTIN (characters 3-12) equals the party's PAN field (not compared when
+      the printed PAN is another kind of holder, such as a partner's personal PAN on a firm's
+      invoice)
+    - the first two digits of the GSTIN equal the party's state (*_state_code, *_state: 27,
+      Maharashtra, Gujarat(24), IN-GJ, "Bangalore, Karnataka")
+    - a name or address (*_name, *_trade_name, *_address) contains no other field's label
+      ("Invoice Number #", "PAN: ...", "Sold By:", "Phone:")
+  Placeholders (NA, UNREGISTERED, URP) and other countries' numbers (DE..., NL...B01, HRB ...) are
+  not checked. A finding is a warning, not an error: an issuer can also print a value wrong.
+
+21. BLOCKS READ FROM WORD POSITIONS (parser: region, words.py)
+  A digital PDF stores where each word is drawn. A block printed beside other blocks (Bill To |
+  Ship To, Sold By | Billing Address) is read from those positions, so the column next to it
+  cannot run into it, even where the page text puts the two one space apart:
+
+    buyer_name: {parser: region, heading: 'Bill To', max_lines: 1}
+    buyer_address: {parser: region, heading: 'Bill To', skip: 1, stop: '^Phone'}
+
+  The column starts at the heading and ends at the next heading on the heading's line (or the
+  page edge). Lines are read downwards until `stop` matches (not included), a vertical gap, or
+  max_lines (8). skip: lines left out at the top; same_line: true when the value starts on the
+  heading's line ("Sold By: X"); replace: [[pattern, replacement], ...] on the joined value.
+  Inside a line, a gap of three characters ends the block (a note at the right edge is not part
+  of the last column). A word running across the column's left edge (a centred or right-aligned
+  block) gives no value rather than part of one. Without the PDF (a template run on text alone)
+  a region field is empty.
+  join: what goes between the lines (default one space; ', ' for an address block printed
+  without commas).
+  Label and value on one line ("Address : Flat 12, ..." with more lines hanging under the value,
+  "Place of Supply:" further right): same_line: true. The column runs from the value to the next
+  column (found on that line, or where the lines just above and below start their next column,
+  so a value printed one space before it is still cut right); the next label at the left
+  ("Pincode:") ends the block. A colon drawn as a word of its own ("Address", ":") reads as
+  "Address:" for the heading.
+  Columns printed half a line apart (Shiprocket: State Code / Place of Supply between the
+  buyer's lines) are kept apart: rows near the heading that lie wholly right of it, with nothing
+  at the block's left edge, mark where the next column starts.
+  Used by (buyer, and some seller blocks): flipkart_seller_tax_invoice, flipkart_platform_fee_
+  invoice, flipkart_bill_of_supply, flipkart_grocery_invoice, flipkart_seller_own_invoice,
+  shiprocket_charges_invoice, shiprocket_credit_note, shiprocket_services_invoice, meesho_tax_
+  invoice, meesho_credit_note, meesho_bill_of_supply, meesho_bill_of_supply_credit_note,
+  mtalkz_tax_invoice, ishwam_sales_invoice, anthropic_invoice, blinkit_fee_invoice. Each was
+  changed only where it read the same values as before on every sample document.
+  Kept on patterns: blinkit_goods_invoice (its address takes the pincode from the next label),
+  zomato_* (continuation lines start under the label, not under the value), blocks without a
+  heading (bol.com, Shopify, Vodafone, QualityHosting) and right-aligned blocks (Amazon).
+  Tables keep reading the page text: pdftotext widens its columns to fit a crowded row, which
+  rebuilt text at one scale does not (tested).
+
+22. VARIANT TRACKER (python process_invoice.py --variants, variants.py)
+  One layout is printed in several variants; a template has read only the ones it has seen. For
+  every layout the report shows, from the documents in the sample store (read OK):
+    seen          variants read on real documents, with how many
+    TO COLLECT    variants the template has fields for but no real document proves yet: IGST,
+                  CGST+SGST, several items, several pages (several pages once documents with
+                  several items are known)
+    if available  discount, round-off, cess, a shipping or handling row between the items
+    cannot read   a GST kind the template has no fields for: such a document fails and goes to
+                  the AI repair
+    not expected  listed in document_types/<type>/variants.yml with the reason (Shopify: always
+                  IGST; a bill of supply: no GST)
+    recent FAIL / CHECK   the last documents of this layout that were not read OK, with the reason
+  Variants are worked out from the values read (amount_igst, cgst_amount, number of lines, pages,
+  amount_round_off ...), so they hold for every template. What a template can read comes from its
+  fields, line patterns and table columns.
+
+    python process_invoice.py --variants            every layout; also writes output\variants.xlsx
+    python process_invoice.py --variants x.yml      one layout
+
+  variants.xlsx: sheet "To collect" (one row per document wanted, needed / if available: the list
+  for the testing team) and sheet "Coverage" (one row per layout). The test page (gui.py) shows
+  the same table under "Variant coverage".
+  During normal runs: the first document of a variant a layout had not read before gives the note
+  "first CGST+SGST document read OK by <layout>". The sample store keeps an older document while
+  it is the only one of a variant (the limit samples_per_layout drops the oldest of the common
+  variants first).
+
+23. SECOND OPINION ON TEXT FIELDS (second_opinion.py, needs the AI step)
+  The first documents a template reads OK become its stored samples, the values every later
+  version must keep reading. Amounts are proven by the checks; names, addresses, registration
+  numbers, document numbers and dates are not. So the first documents of every template are read
+  a second time by the AI, on its own: it gets the page text and the field names, never the
+  template's values. The engine compares field by field:
+    agree             the same (spaces, case, punctuation, line joins and "India" aside; dates in
+                      any format; numbers character by character)
+    differs           WARN: the document becomes CHECK, both values are shown, and it is not
+                      stored as a sample
+    template missed   WARN: the template read nothing, the AI reads a value printed on the page
+    AI unreliable     INFO only: the AI's value is not on the page (made up or reworded), or the
+                      AI found nothing; the template's value stands
+  Only the template's text and date fields are asked (no amounts, no static values). One question
+  per document; a document is never asked about twice by the same template file (read again, it
+  gets the same result). After `second_opinion` documents agreed, the template is not asked about
+  any more; when the template file changes, it starts again. When the AI cannot be reached, the
+  document stays OK and is asked about on a later run; if the AI then disagrees, the document is
+  taken out of the sample store.
+
+  config/settings.yml, section ai:
+    second_opinion: 3        # documents per template file the AI reads again; 0 = off
+
+    python process_invoice.py --second-opinion          the stored samples of every template
+                                                        (at most second_opinion per template)
+    python process_invoice.py --second-opinion x.yml    only template x.yml
+    python process_invoice.py --trust x.yml             a person checked x.yml's values and they
+                                                        are right (the AI misreads that layout):
+                                                        no more second opinions for this file
+  The test page (gui.py) shows a "Template values are right" button on such a document.
+  Every question and answer is in samples\ai_log.jsonl (purpose: second_opinion).
+
+24. BOTH GST KINDS IN EVERY INDIAN TEMPLATE
+  A seller in the buyer's state charges CGST + SGST (or UTGST); a seller in another state
+  charges IGST. Every Indian template reads both, except where variants.yml says the issuer never
+  prints one (Shopify: always IGST; Flipkart bill of supply: no GST). How each prints the other
+  kind is proven on conversions of real samples (tests/gst_variants.py): the same document with
+  the other kind's columns, rows and totals, checked by the same arithmetic, and one wrong tax
+  value in it makes the document fail. A real document of the other kind that is printed
+  differently fails visibly and goes to the AI repair. Meesho, whose seller-same-state print was
+  never seen, is read with CGST on the item's line and SGST/UTGST after it or on the line below.
+  An item row has only the columns it prints: a CGST row has no IGST column (no empty value).

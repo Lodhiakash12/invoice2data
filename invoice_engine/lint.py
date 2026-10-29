@@ -12,7 +12,8 @@ from .layout import lint_layout
 from .registry import Registry, rule_from
 from .rules import DOCUMENT_FUNCTIONS, LINE_FUNCTIONS, RuleError, parse_expression, parse_rule
 
-KNOWN_PARSERS = {"regex", "static", "lines"}
+KNOWN_PARSERS = {"regex", "static", "lines", "table", "region"}
+REGION_KEYS = {"parser", "heading", "stop", "max_lines", "skip", "same_line", "first_line", "join", "replace"}
 LINE_KEYS = ("start", "end", "first_line", "line", "last_line", "skip_line")
 # ^ or $ used as line anchors (not inside [...] and not escaped)
 _ANCHOR = re.compile(r"(?<![\\\[])\^|(?<!\\)\$")
@@ -76,7 +77,34 @@ def _expand_check(compiled, replacement: str) -> None:
             raise re.error(f"group {name} is not defined (the pattern has {compiled.groups})")
 
 
+_MAPPINGS = ("fields", "options", "checks", "lines")
+_LISTS = ("keywords", "exclude_keywords", "continuation_keywords", "required_fields", "optional_fields")
+
+
+def _shape_errors(template) -> list[str]:
+    """A template written by hand or by the AI can have a section in the wrong shape (a list
+    where named entries are needed). Report it instead of failing on it."""
+    errors = []
+    for key in _MAPPINGS:
+        value = template.get(key)
+        if value is not None and not isinstance(value, dict):
+            errors.append(f"{key} must be a mapping of names to values (name: value), not a "
+                          f"{type(value).__name__}")
+    for key in _LISTS:
+        value = template.get(key)
+        if value is not None and not isinstance(value, list):
+            errors.append(f"{key} must be a list ([a, b, ...]), not a {type(value).__name__}")
+    for name, spec in (template.get("fields") or {}).items() if isinstance(template.get("fields"), dict) else ():
+        if not isinstance(spec, (str, dict, list)):
+            errors.append(f"field {name}: must be a pattern (text) or a mapping with parser: ..., "
+                          f"not a {type(spec).__name__}")
+    return errors
+
+
 def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
+    shape = _shape_errors(template)
+    if shape:                                   # the rest of the checks need the right shape
+        return shape, []
     errors: list[str] = []
     warnings: list[str] = []
     options = template.get("options") or {}
@@ -103,6 +131,28 @@ def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
             continue
         if parser == "lines":
             _lint_lines(spec, f"{where} (lines)", registry, errors, warnings)
+        elif parser == "table":
+            _lint_table(spec, f"{where} (table)", registry, errors, warnings)
+        elif parser == "region":
+            if not spec.get("heading"):
+                errors.append(f"{where} (region): missing 'heading' (a regex on the heading's line)")
+            for key in ("heading", "stop"):
+                if spec.get(key) is not None:
+                    _compile(spec[key], f"{where}.{key}", errors)
+            for key in ("skip", "max_lines"):
+                if key in spec and (not isinstance(spec[key], int) or spec[key] < 0):
+                    errors.append(f"{where}.{key} must be a whole number >= 0")
+            unknown = sorted(set(spec) - REGION_KEYS)
+            if unknown:
+                errors.append(f"{where} (region): unknown setting(s) {', '.join(unknown)} (known: "
+                              f"{', '.join(sorted(REGION_KEYS - {'parser'}))})")
+            if "join" in spec and not isinstance(spec["join"], str):
+                errors.append(f"{where}.join must be a text (what goes between the lines, e.g. ', ')")
+            for pair in spec.get("replace") or []:
+                if not (isinstance(pair, (list, tuple)) and len(pair) == 2):
+                    errors.append(f"{where}.replace: each entry must be [pattern, replacement]")
+                else:
+                    _compile(pair[0], f"{where}.replace", errors)
         elif parser == "regex":
             for rx in _regexes(spec):
                 compiled = _compile(rx, where, errors)
@@ -115,7 +165,7 @@ def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
                                   "start/end of the whole text (use \\A for start of text)")
                 if registry.document.get(name, None) and registry.document[name].type == "date":
                     has_numeric_dates |= bool(_NUMERIC_DATE.search(rx))
-        if parser == "lines":
+        if parser in ("lines", "table"):
             continue  # a table (e.g. tax_lines): its columns were checked above
         if name not in registry.document:
             if name.startswith("amount"):
@@ -146,6 +196,21 @@ def lint_template(template, registry: Registry) -> tuple[list[str], list[str]]:
     min_checks = template.get("min_checks", 1)
     if not isinstance(min_checks, int) or isinstance(min_checks, bool) or min_checks < 0:
         errors.append(f"min_checks must be a whole number >= 0, got {min_checks!r}")
+
+    rounding = template.get("total_rounding")
+    if rounding is not None and (isinstance(rounding, bool) or not isinstance(rounding, (int, float))
+                                 or not 0 < rounding <= 10):
+        errors.append(f"total_rounding must be a number above 0 and at most 10 (1 = whole rupees), got {rounding!r}")
+    for key in ("total_rounding", "total_rounding_mode"):
+        if key in options and key not in template:
+            warnings.append(f"options.{key} belongs at the top level of the template (it is read from "
+                            "options too, but move it)")
+    mode = template.get("total_rounding_mode")
+    if mode is not None:
+        values = mode if isinstance(mode, list) else [mode]
+        if not values or any(v not in ("up", "nearest", "down") for v in values) or len(set(values)) != len(values):
+            errors.append(f"total_rounding_mode must be up, nearest or down, or a list of them while a first "
+                          f"sample fits more than one ([up, nearest]), got {mode!r}")
 
     optional = template.get("optional_fields")
     if optional is not None:
@@ -218,3 +283,39 @@ def _lint_lines(spec, where: str, registry: Registry, errors: list[str], warning
                     if group not in registry.line:
                         warnings.append(f"{where}.{key}: column {group!r} not in config/fields.yml"
                                         f"{_suggest(group, registry.line)}")
+
+
+def _lint_table(spec, where: str, registry: Registry, errors: list[str], warnings: list[str]) -> None:
+    """A table read by its column headings (parser: table, see table.py)."""
+    for key in ("start", "end", "columns"):
+        if key not in spec:
+            errors.append(f"{where}: missing '{key}'")
+    for key in ("start", "end", "row_end", "prefix"):
+        if spec.get(key) is not None:
+            _compile(spec[key], f"{where}.{key}", errors)
+    for key in ("extra", "skip"):
+        value = spec.get(key)
+        for rx in (value if isinstance(value, list) else [value] if value is not None else []):
+            compiled = _compile(rx, f"{where}.{key}", errors)
+            for group in (compiled.groupindex if compiled else {}):
+                if group not in registry.line:
+                    warnings.append(f"{where}.{key}: column {group!r} not in config/fields.yml"
+                                    f"{_suggest(group, registry.line)}")
+    columns = spec.get("columns")
+    types = spec.get("types") or {}
+    if columns is not None and not isinstance(columns, dict):
+        errors.append(f"{where}.columns must be a mapping of line field: heading pattern")
+        return
+    for field, heading in (columns or {}).items():
+        _compile(heading, f"{where}.columns.{field}", errors)
+        if field not in registry.line:
+            warnings.append(f"{where}.columns: {field!r} not in config/fields.yml{_suggest(field, registry.line)}")
+    numeric = [f for f in (columns or {}) if types.get(f) in ("int", "float")]
+    if columns and not numeric:
+        errors.append(f"{where}: no numeric column (give the amount columns a type: float)")
+    rows = spec.get("row")
+    for field in (rows if isinstance(rows, list) else [rows] if rows else []):
+        if field not in (columns or {}):
+            errors.append(f"{where}.row: {field!r} is not one of the columns")
+    if spec.get("text", "after") not in ("after", "before"):
+        errors.append(f"{where}.text must be after or before")

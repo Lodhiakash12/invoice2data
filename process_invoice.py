@@ -1,4 +1,4 @@
-"""
+r"""
 Local PDF document parser - command line.
 
 The engine (invoice_engine/) contains no issuer-, type- or field-specific code:
@@ -13,7 +13,7 @@ The engine (invoice_engine/) contains no issuer-, type- or field-specific code:
 Usage (PowerShell, from the project folder)
   python process_invoice.py                          # every PDF in this folder
   python process_invoice.py Invoice_8626225731.pdf   # one PDF
-  python process_invoice.py D:\\Invoices              # every PDF in another folder
+  python process_invoice.py C:\Work\invoice2data\Docs  # every PDF in another folder
   python process_invoice.py --lint                   # only check the templates
   python process_invoice.py --overlap samples        # do two layouts read the same sample document?
   python process_invoice.py --overlap x.yml samples  # the same, only pairs that involve template x.yml
@@ -21,7 +21,13 @@ Usage (PowerShell, from the project folder)
   python process_invoice.py --fingerprint x.yml a.pdf b.pdf
                                                      # the same, only for template x.yml
   python process_invoice.py --stress samples         # do templates survive small layout variations?
+  python process_invoice.py --variants               # which variants each template has read; what to collect
+  python process_invoice.py --second-opinion         # the AI reads the stored samples' text fields again
+  python process_invoice.py --trust x.yml            # x.yml's text values were checked by a person
   python process_invoice.py --accept x.yml           # confirm a deliberate change of values read by x.yml
+  python process_invoice.py --ai-test                # check the AI settings and connection
+  python process_invoice.py --ai-models              # list the models of the AI service
+  python process_invoice.py --no-ai ...              # a run without the AI step
   python process_invoice.py --debug ...              # also show invoice2data's own log
 """
 
@@ -40,6 +46,10 @@ from invoice_engine import stress as stress_test
 from invoice_engine.fingerprints import build_layouts
 from invoice_engine.pipeline import Pipeline
 from invoice_engine.samples import SampleStore
+from invoice_engine.variants import coverage as variant_coverage, print_report as print_variants, write_excel as write_variants
+from invoice_engine.variants import exception_problems as variant_exception_problems
+from invoice_engine.ai_author import author_from_settings
+from invoice_engine.ai_provider import AIError, AISettings, make_provider
 from invoice_engine.export import output_names, print_summary, write_excel, write_json
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -124,6 +134,55 @@ def check_overlap(focus_arg: str, pdfs: list[Path], catalog) -> int:
     return 1 if report.failed(focus) else 0
 
 
+def make_author(ai: AISettings, args, store):
+    """The AI template author, or None when the AI step is off or cannot run (says why)."""
+    if args.no_ai:
+        return None
+    author, problems = author_from_settings({"ai": ai.__dict__}, Path(args.types), Path(args.config),
+                                            store, retry=args.ai_retry)
+    if problems:
+        print("AI step is switched on but cannot run:")
+        for problem in problems:
+            print(f"  - {problem}")
+    elif author is not None:
+        print(f"AI step: {ai.model} at {ai.base_url} (page text is sent without anonymisation)")
+    return author
+
+
+def ai_tools(ai: AISettings, list_models: bool) -> int:
+    print(f"AI settings: enabled={ai.enabled} provider={ai.provider} base_url={ai.base_url} model={ai.model!r}")
+    for problem in ai.problems():
+        print(f"  - {problem}")
+    try:
+        provider = make_provider(ai)
+        if list_models:
+            for model in provider.models():
+                print(f"  {model}")
+            return 0
+        if not ai.model:
+            return 1
+        answer = provider.complete("Answer with one word.", "Reply with the word: ready")
+        print(f"Answer from {ai.model}: {answer.strip()[:80]!r}")
+        return 0
+    except AIError as exc:
+        print(f"AI service error: {exc}")
+        return 1
+
+
+def report_ai(results) -> None:
+    print("\nAI template author:")
+    for r in results:
+        if r.outcome == "admitted":
+            print(f"  wrote     {r.template}  ({r.action}, type {r.doc_type}{', NEW TYPE' if r.new_type else ''}, "
+                  f"{r.attempts} draft(s), passed the automatic checks)  <- {r.pdf} p{r.pages}")
+        elif r.outcome == "failed":
+            print(f"  FAILED    {r.pdf} p{r.pages}: {r.action} not accepted after {r.attempts} draft(s)")
+            for problem in r.problems[:4]:
+                print(f"              - {problem[:150]}")
+        else:
+            print(f"  skipped   {r.pdf} p{r.pages}: {r.problems[0] if r.problems else ''}")
+
+
 def sample_folder(settings: dict) -> Path:
     folder = Path(settings.get("sample_store") or "samples")
     return folder if folder.is_absolute() else BASE_DIR / folder
@@ -131,15 +190,12 @@ def sample_folder(settings: dict) -> Path:
 
 def report_template_checks(pipeline, store) -> list[str]:
     """Print the template checks decided in this run; returns the templates held."""
-    final = {e.template: e for e in pipeline.events}            # last decision per template
+    final = {e.template: e for e in pipeline.events if e.state != "new"}   # last decision per template
     if final:
         print("\nAutomatic template checks:")
     for event in sorted(final.values(), key=lambda e: (e.state != "held", e.template)):
         if event.state == "admitted":
             print(f"  admitted  {event.template}  ({event.samples} sample(s))")
-        elif event.state == "new":
-            print(f"  waiting   {event.template}  (no overlap with stored samples; checked fully on "
-                  "the first document it reads)")
         else:
             print(f"  HELD      {event.template}  (not used until a corrected version passes)")
             for problem in event.problems[:6]:
@@ -151,6 +207,64 @@ def report_template_checks(pipeline, store) -> list[str]:
     print(f"Sample store: {len(store.data['samples'])} document(s) in {store.folder}"
           + (f"; {len(waiting)} template(s) waiting for a first sample" if waiting else ""))
     return held
+
+
+def report_variants(catalog, settings: dict, focus: str, out_dir: Path) -> int:
+    store = SampleStore(sample_folder(settings), int(settings.get("samples_per_layout") or 20))
+    report = variant_coverage(catalog, store)
+    if focus:
+        wanted = Path(focus).stem
+        report = [r for r in report if r.family == wanted or wanted in {Path(t).stem for t in r.templates}]
+        if not report:
+            print(f"{focus} is not a usable template in document_types")
+            return 1
+    print_variants(report, variant_exception_problems(catalog))
+    if not focus:
+        path = write_variants(report, out_dir / "variants.xlsx")
+        print(f"Written: {path}  (sheet 'To collect' is the list for the testing team)")
+    return 0
+
+
+def trust_template(catalog, settings: dict, name: str) -> int:
+    from invoice_engine.admission import template_hash
+    from invoice_engine import second_opinion
+    template = find_template(catalog, name)
+    if template is None:
+        print(f"{Path(name).name} is not a usable template in document_types")
+        return 1
+    store = SampleStore(sample_folder(settings), int(settings.get("samples_per_layout") or 20))
+    second_opinion.trust(store, template["template_name"], template_hash(catalog, template))
+    print(f"{template['template_name']}: its text values are trusted; no second opinion until the file changes")
+    return 0
+
+
+def second_opinion_on_samples(catalog, settings: dict, ai: AISettings, args) -> int:
+    from invoice_engine import second_opinion
+    only = None
+    if args.second_opinion:
+        template = find_template(catalog, args.second_opinion)
+        if template is None:
+            print(f"{Path(args.second_opinion).name} is not a usable template in document_types")
+            return 1
+        only = template["template_name"]
+    store = SampleStore(sample_folder(settings), int(settings.get("samples_per_layout") or 20))
+    author, problems = author_from_settings({"ai": ai.__dict__}, Path(args.types), Path(args.config), store)
+    if author is None:
+        print("The second opinion needs the AI step: " + ("; ".join(problems) or "ai.enabled is false in "
+                                                         "config/settings.yml"))
+        return 1
+    per_template = max(1, int(ai.second_opinion or 3))
+    print(f"Second opinion on stored samples (at most {per_template} per template; model {ai.model})\n")
+    report = second_opinion.check_samples(catalog, store, author, only, per_template)
+    for item in report:
+        verdict = "not available" if item["error"] else ("agrees" if item["agreed"] else "DIFFERS")
+        print(f"  {verdict:<13} {item['template']}  {item['document']} p{','.join(map(str, item['pages']))}")
+        for line in ([item["error"]] if item["error"] else [f for f in item["findings"] if "differs" in f or "read nothing" in f]):
+            print(f"                - {line[:170]}")
+    differs = sum(1 for i in report if not i["error"] and not i["agreed"])
+    print(f"\n{len(report)} document(s) asked; {differs} with differences"
+          + ("" if not differs else ": check them; when the template is right, python process_invoice.py --trust <template>"))
+    return 1 if differs else 0
 
 
 def read_settings(config_dir: Path) -> dict:
@@ -178,6 +292,21 @@ def main() -> int:
     parser.add_argument("--accept", metavar="TEMPLATE",
                         help="confirm a deliberate correction: check TEMPLATE again, allowing the values "
                              "it reads on its stored samples to change")
+    parser.add_argument("--variants", nargs="?", const="", metavar="TEMPLATE",
+                        help="show which variants (IGST / CGST+SGST, several items, several pages ...) each "
+                             "template (or only TEMPLATE) has read on real documents, and which documents to "
+                             "collect; also writes variants.xlsx in the output folder")
+    parser.add_argument("--trust", metavar="TEMPLATE",
+                        help="a person checked the text values TEMPLATE reads and they are right: stop the "
+                             "AI's second opinion on its documents (until the template file changes)")
+    parser.add_argument("--second-opinion", nargs="?", const="", metavar="TEMPLATE",
+                        help="let the AI read the text fields of the stored samples of every template (or "
+                             "only TEMPLATE) on its own and report where it reads them differently")
+    parser.add_argument("--no-ai", action="store_true", help="do not use the AI step in this run")
+    parser.add_argument("--ai-retry", action="store_true",
+                        help="give documents to the AI again even if it could not handle them before")
+    parser.add_argument("--ai-test", action="store_true", help="check the AI settings and connection, then exit")
+    parser.add_argument("--ai-models", action="store_true", help="list the models of the AI service, then exit")
     args = parser.parse_args()
 
     if hasattr(sys.stdout, "reconfigure"):
@@ -193,6 +322,8 @@ def main() -> int:
     report_templates(catalog)
     if args.lint:
         return 1 if catalog.rejected else 0
+    if args.variants is not None:
+        return report_variants(catalog, settings, args.variants, Path(args.output))
     try:
         tool = poppler.configure(Path(args.config))
     except poppler.PopplerError as exc:
@@ -203,6 +334,13 @@ def main() -> int:
         if focus and Path(focus).suffix.lower() not in (".yml", ".yaml", ".json"):
             focus, inputs = "", [focus] + inputs         # "--overlap samples": a folder, not a template
         return check_overlap(focus, collect_pdfs(inputs), catalog)
+    ai = AISettings.from_settings(settings)
+    if args.ai_models or args.ai_test:
+        return ai_tools(ai, args.ai_models)
+    if args.trust:
+        return trust_template(catalog, settings, args.trust)
+    if args.second_opinion is not None:
+        return second_opinion_on_samples(catalog, settings, ai, args)
     if args.accept:
         template = find_template(catalog, args.accept)
         if template is None:
@@ -246,7 +384,10 @@ def main() -> int:
     print(f"PDFs: {len(pdfs)}")
 
     store = SampleStore(sample_folder(settings), int(settings.get("samples_per_layout") or 20))
-    pipeline = Pipeline(catalog, store) if settings.get("automatic_checks", True) else None
+    author = make_author(ai, args, store) if settings.get("automatic_checks", True) else None
+    reload = lambda: load_catalog(Path(args.types), Path(args.config))   # noqa: E731
+    pipeline = (Pipeline(catalog, store, author=author, reload=reload, progress=lambda text: print(text, flush=True))
+                if settings.get("automatic_checks", True) else None)
     if pipeline:
         pipeline.prepare()                          # checks templates that are new or changed
     results = []
@@ -267,6 +408,8 @@ def main() -> int:
         print(f"documents.xlsx is open in another program; this run's workbook is {workbook.name}")
 
     held = report_template_checks(pipeline, store) if pipeline else []
+    if pipeline and pipeline.ai_results:
+        report_ai(pipeline.ai_results)
     documents = [d for r in results for d in r["documents"]]
     counts = {s: sum(d["status"] == s for d in documents) for s in ("OK", "CHECK", "FAIL")}
     crashed = [r["source_file"] for r in results if any(n.startswith("ERROR: processing stopped") for n in r["notes"])]

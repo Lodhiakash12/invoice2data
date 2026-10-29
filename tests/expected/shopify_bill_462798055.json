@@ -56,8 +56,6 @@
         },
         {
           "name": "Credit",
-          "hsn_sac": "",
-          "line_note": "",
           "price_subtotal": -20.0
         }
       ],
