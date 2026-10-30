@@ -42,6 +42,7 @@ class AISettings:
     max_tokens: int = 32000               # reasoning models think before they answer
     extra_body: dict | None = None        # extra request fields the service supports, as is
     second_opinion: int = 3               # first documents of each template the AI reads again (0 = off)
+    max_minutes: float = 10               # time for the AI step on one document (all its drafts)
 
     @classmethod
     def from_settings(cls, settings: dict) -> "AISettings":

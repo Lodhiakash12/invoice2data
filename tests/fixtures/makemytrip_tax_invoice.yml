@@ -1,0 +1,79 @@
+# Written by the AI template author on 2026-10-30 from pdf-makemytrip-tax-invoice-details_compress.pdf
+# Corrected by hand on 2026-10-30 after the second opinion: hsn_sac, supply_description and
+# buyer_tax_id are labels printed above their values in a grid of columns; their patterns took
+# text from the neighbouring column (the invoice number's digits, "REG/B2C", the buyer's surname).
+# They are read from the word positions now (parser: region), each under its own label.
+issuer: MakeMyTrip (India) Private Limited
+keywords:
+- MAKEMYTRIP (INDIA) PRIVATE LIMITED
+- TAX INVOICE
+- Booking ID
+- PAYMENT BREAKUP
+continuation_keywords:
+- Registered Office
+required_fields:
+- issuer
+- document_type
+- invoice_number
+- date
+- amount
+- seller_name
+- buyer_name
+optional_fields:
+- booking_reference
+- buyer_tax_id
+- seller_address
+- seller_tax_id
+- seller_pan
+- seller_company_reg
+- place_of_supply
+- hsn_sac
+- supply_description
+- reverse_charge
+- operator_name
+fields:
+  document_type:
+    parser: static
+    value: tax_invoice
+  invoice_number: (?m)^Invoice No\.\s+\S+\s*\n\s*(\S+)
+  date: (?m)^Date\s+\S+\s*\n\s*(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})
+  booking_reference: (?m)^Booking ID\s+\S+\s*\n\s*(\S+)
+  seller_name: (MAKEMYTRIP \(INDIA\) PRIVATE LIMITED)
+  seller_address:
+    parser: regex
+    regex: (?s)PRIVATE LIMITED\s*\n\s*(.*?)\n\s*Booking ID
+    replace:
+    - - TAX INVOICE\s+
+      - ''
+    - - \s+
+      - ' '
+  seller_tax_id: GSTIN\s*\n[^\n]*?(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})
+  seller_pan: PAN\s*\n[^\n]*?([A-Z]{5}\d{4}[A-Z])
+  seller_company_reg: CIN\s*\n[^\n]*?([LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6})
+  hsn_sac: {parser: region, heading: 'HSN/SAC', max_lines: 1}
+  place_of_supply: (?m)^Place of Supply\s+\S+\s*\n\s*(.+?)\s{2,}
+  supply_description: {parser: region, heading: 'Service Description', stop: '^(?:Tax Payable|Advanced Receipt)'}
+  reverse_charge: Tax Payable under RCM\s*\n\s*(\S+)
+  buyer_name: (?m)^Customer Name\s+Customer GSTIN\s*\n\s*(.+?)\s{2,}
+  buyer_tax_id: {parser: region, heading: 'Customer GSTIN', max_lines: 1}
+  operator_name:
+    parser: region
+    heading: ^Vendor Name
+    stop: ^\s*PAYMENT BREAKUP
+  amount: (?m)^\s*Grand Total\s+INR\s*(-?\d[\d,]*(?:\.\d{1,3})?)
+  lines:
+    parser: lines
+    start: PAYMENT BREAKUP
+    end: Grand Total
+    first_line: ^\s{2,}(?P<name>\S.*?)\s{2,}INR\s*(?P<price_total>-?\d[\d,]*(?:\.\d{1,3})?)\s*$
+    line: ^\s{2,}(?P<name>\S.*?)\s*$
+    types:
+      price_total: float
+options:
+  currency: INR
+  decimal_separator: .
+  date_formats:
+  - '%d %b %Y'
+  replace:
+  - - \r
+    - ''

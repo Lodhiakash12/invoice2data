@@ -32,6 +32,7 @@ import json
 import math
 import re
 import shutil
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -43,6 +44,7 @@ from .ai_provider import AIError
 from .catalog import load_catalog
 from .document import process_pdf
 from .samples import file_hash
+from .segment import page_texts
 from .templates import family_of, version_of
 
 MAX_TEXT = 24000            # characters of page text sent to the AI
@@ -108,6 +110,10 @@ fields:
   # Columns the document does not print are simply missing; a printed column you do not list is
   # not read. List every column a document of this issuer CAN print (IGST, or CGST + SGST/UTGST
   # when the seller is in the buyer's state, CESS, Discount), even if this document lacks some.
+  # Write each heading as the title reads ('Gross Amount', 'Taxable Amount'): a title printed over
+  # two or three header lines ("Gross" above "Amount") is matched the same way. A table without a
+  # description column (amounts only) prints the item name and its HSN line across the amount
+  # columns: read them with extra patterns.
   # lines:
   #   parser: table
   #   start: '(?m)^\s*Description\s+Qty'          # a regex on the first header line
@@ -150,7 +156,11 @@ PATTERN RULES
   at the left ("Pincode:") ends it:
     buyer_address: {parser: region, heading: '^Address:', same_line: true}
   The heading is a regex on the heading's line as it reads ("Address:" even when the PDF draws
-  the colon apart). Use region for left-aligned blocks; a block aligned right or centred under
+  the colon apart). Labels printed above their values in a grid of columns ("Invoice No.  HSN/SAC"
+  with "M06CR26I00621384  998551" on the next line) are read the same way, one field per label:
+    hsn_sac: {parser: region, heading: 'HSN/SAC', max_lines: 1}
+  A regex such as 'HSN/SAC\s*\n[^\n]*?(\d{4,8})' takes digits from the left column's value instead.
+  Use region for left-aligned blocks; a block aligned right or centred under
   its heading, or one without a heading, needs a regex.
 - Only field names from the FIELD LIST below. A field the list lacks may be declared in
   new_fields (document level) or new_line_fields (item table), with type text, date, money,
@@ -159,6 +169,14 @@ PATTERN RULES
 - invoice_number is the document's own number and contains digits. When the document prints its
   invoice number as N.A. or NA (e-tickets, booking slips), read the number that identifies this
   transaction instead (transaction ID, booking or order number), never a label or heading.
+- A value that can have several words (a place or state, a name, a description, a class of
+  travel) is never read with (\S+) or ([A-Z]+): "MADHYA PRADESH" would come out as "MADHYA". Read
+  it to the end of the line or the next column: 'Place of Supply:\s*(\S.*?)(?:\s{2,}|\s*$)' with
+  (?m). (\S+) is only for values without spaces: numbers, codes, registration numbers.
+- total_in_words is the whole amount in words, which often runs over two lines ("Indian Rupees
+  Nine Lakh Eighty Six Thousand Nine" / "Hundred Ninety Nine Only"): read up to its last word
+  (usually "Only" or "Paise"), joining the lines, and cut off any column printed beside it. The
+  engine turns the words into a number and compares it with the document's amounts.
 - amount is the final total payable of the document. Read every printed total you can (taxable
   value, each tax, round off) so the arithmetic checks can prove the values.
 - ASCII only in the YAML; write a non-ASCII character as an escape such as '₹'.
@@ -337,6 +355,19 @@ def _fit_keywords(data: dict, text: str) -> tuple[list[str], list[str]]:
     if not data.get("keywords"):
         problems.append("no keyword is left that is printed on this document")
     return problems, notes
+
+
+def _difference_problem(finding) -> str:
+    """A second-opinion difference as a correction for the AI."""
+    if finding.outcome == "template_missed":
+        return (f"{finding.field}: the template reads nothing, but the document shows "
+                f"{str(finding.ai_value)[:120]!r} (an independent reading of the page): read it, or "
+                f"remove the field if that text is something else")
+    return (f"{finding.field}: the template reads {str(finding.template_value)[:120]!r}, but the document "
+            f"shows {str(finding.ai_value)[:120]!r} (an independent reading of the page). Usually the pattern "
+            f"takes text from the neighbouring column or the wrong word of the line: for a label printed "
+            f"above its value in a grid of columns use parser: region with that label as the heading "
+            f"(max_lines: 1), or anchor the pattern on the value's own shape")
 
 
 def _rounding_hint(doc: dict) -> list[str]:
@@ -719,7 +750,12 @@ class TemplateAuthor:
         self.retry = retry
 
     # entry points --------------------------------------------------------------------------
+    def _start_clock(self) -> None:
+        minutes = float(getattr(self.settings, "max_minutes", 0) or 0)
+        self._deadline = time.monotonic() + minutes * 60 if minutes > 0 else None
+
     def new_template(self, pdf: Path, pages: list[int], texts: list[str], catalog) -> AuthorResult:
+        self._start_clock()
         result = AuthorResult(Path(pdf).name, pages, "new template", "failed")
         if self._seen(pdf, pages, result):
             return result
@@ -761,6 +797,7 @@ class TemplateAuthor:
                 "template_name": slug(first, "document")[:40], "reason": "routing by signal words"}
 
     def new_version(self, pdf: Path, doc: dict, texts: list[str], catalog) -> AuthorResult:
+        self._start_clock()
         result = AuthorResult(Path(pdf).name, doc["pages"], "new version", "failed")
         if self._seen(pdf, doc["pages"], result):
             return result
@@ -803,7 +840,8 @@ class TemplateAuthor:
                 answer = self._ask(prompt, f"write {name} (draft {attempt})", pdf)
                 try:
                     draft, data = _yaml(answer)
-                    problems, read = self._test(draft, data, target, type_dir, base, pdf, pages, undo, text)
+                    final = attempt >= max(1, self.settings.max_attempts)
+                    problems, read = self._test(draft, data, target, type_dir, base, pdf, pages, undo, text, final)
                 except (ValueError, yaml.YAMLError) as exc:
                     problems, read = [f"the answer is not a valid YAML template: {exc}"], None
                 except AIError:
@@ -830,8 +868,11 @@ class TemplateAuthor:
         return self._done(pdf, pages, result)
 
     def _test(self, draft: str, data: dict, target: Path, type_dir: Path, base, pdf, pages, undo,
-              text: str = "") -> tuple[list[str], dict | None]:
-        """Write the draft, load it, read the document, run the automatic checks."""
+              text: str = "", final: bool = True) -> tuple[list[str], dict | None]:
+        """Write the draft, load it, read the document, run the automatic checks. The text fields
+        are compared with an independent reading of the page (second opinion): a difference goes
+        back to the AI as a problem, except on the last draft, which may be admitted with the
+        difference shown on the document (CHECK) rather than lost."""
         new_fields = data.pop("new_fields", None) or {}
         new_line_fields = data.pop("new_line_fields", None) or {}
         from .lint import _shape_errors
@@ -906,6 +947,10 @@ class TemplateAuthor:
         problems += _keyword_problems(data, doc)
         if problems:
             return problems, doc
+        reading = self._second_opinion(pdf, pages, doc, template, catalog, text)
+        differences = [f for f in reading.findings if f.level == "WARN"] if reading else []
+        if differences and not final:
+            return [_difference_problem(f) for f in differences], doc
         trimmed = _needless_disables(template, doc, catalog, type_dir)
         if trimmed:
             data["checks"]["disable"] = [n for n in data["checks"]["disable"] if n not in trimmed]
@@ -926,7 +971,47 @@ class TemplateAuthor:
         if stressed:
             return stressed, doc
         record(self.store, catalog, template, verdict)
+        if reading is not None and not reading.error:
+            # the pipeline's second opinion on this document is this one: not asked again
+            from . import second_opinion as opinion
+            from .admission import template_hash
+            key = f"{file_hash(Path(pdf))}:{','.join(str(p) for p in doc['pages'])}"
+            registry = catalog.registry_for(template)
+            names = opinion.fields_to_check(template, registry)
+            opinion.record(self.store, template["template_name"], template_hash(catalog, template), key,
+                           reading, f"{Path(pdf).name} p{','.join(map(str, doc['pages']))} (while writing)",
+                           opinion.question_of(names, getattr(registry, "notes", {})))
         return [], doc
+
+    def _second_opinion(self, pdf, pages, doc: dict, template, catalog, text: str):
+        """The AI's own reading of this document's text fields, asked once per document (a later
+        draft that reads more fields asks only for those), compared with the draft's values.
+        None when the second opinion is off."""
+        from . import second_opinion as opinion
+        if int(getattr(self.settings, "second_opinion", 0) or 0) <= 0:
+            return None
+        registry = catalog.registry_for(template)
+        names = opinion.fields_to_check(template, registry)
+        if not names:
+            return None
+        notes = getattr(registry, "notes", {})
+        cache = self.__dict__.setdefault("_readings", {}).setdefault(self._key(pdf, pages), {})
+        missing = [n for n in names if n not in cache]
+        if missing:
+            page_text = text or opinion.page_text(page_texts(Path(pdf)), doc["pages"])
+            values, error = opinion.ask(self.provider, page_text, missing,
+                                        lambda purpose, prompt, answer: self._log(pdf, purpose, prompt, answer),
+                                        notes)
+            if values is None:
+                return opinion.Opinion(error=error)
+            cache.update({n: values.get(n) for n in missing})
+        page_text = text or opinion.page_text(page_texts(Path(pdf)), doc["pages"])
+        fields = doc.get("fields") or {}
+        findings = []
+        for name in names:
+            others = [str(v) for k, v in fields.items() if k != name and isinstance(v, str) and v.strip()]
+            findings.append(opinion.compare(name, fields.get(name), cache.get(name), page_text, others))
+        return opinion.Opinion(findings=findings)
 
     # files -----------------------------------------------------------------------------------
     def _create_type(self, folder: Path, spec: dict, undo) -> None:
@@ -1013,6 +1098,12 @@ class TemplateAuthor:
         return text[:MAX_TEXT]
 
     def _ask(self, prompt: str, purpose: str, pdf) -> str:
+        deadline = getattr(self, "_deadline", None)
+        if deadline is not None and time.monotonic() > deadline:
+            # one hard page must not hold up the run: stop here, the attempt is recorded and the
+            # page is tried again with other AI settings or --ai-retry
+            raise AITimeLimit(f"the AI step stopped after {self.settings.max_minutes:g} minutes on this "
+                              f"document (ai.max_minutes in config/settings.yml) before {purpose}")
         try:
             answer = self.provider.complete(SYSTEM, prompt)
         except AIError as exc:
@@ -1034,20 +1125,43 @@ class TemplateAuthor:
     def _key(self, pdf, pages) -> str:
         return f"{file_hash(Path(pdf))}:{','.join(str(p) for p in pages)}"
 
+    def _setup(self) -> str:
+        """The AI settings that decide what an attempt can produce: a document given to the AI
+        under other settings (another model, more room to answer) is tried again."""
+        return json.dumps([getattr(self.settings, "model", ""), getattr(self.settings, "max_tokens", None),
+                           getattr(self.settings, "extra_body", None)], sort_keys=True, default=str)
+
     def _seen(self, pdf, pages, result) -> bool:
+        """True when this document was given to the AI before and trying again would give the same
+        result: same settings, and the attempt did not stop on the AI service (an answer cut off,
+        the network, a usage limit: no fault of the document, so it is tried again)."""
         attempts = self.store.data.setdefault("ai_attempts", {})
-        if not self.retry and self._key(pdf, pages) in attempts:
-            result.action, result.outcome = "skipped", "skipped"
-            result.problems = ["already given to the AI before (run with --ai-retry to try again)"]
-            return True
-        return False
+        earlier = attempts.get(self._key(pdf, pages))
+        if self.retry or not earlier:
+            return False
+        if earlier.get("service_error") or earlier.get("setup") != self._setup():
+            return False
+        result.action, result.outcome = "skipped", "skipped"
+        reason = "; ".join((earlier.get("problems") or [])[:2])
+        result.problems = [f"given to the AI on {str(earlier.get('when', ''))[:16].replace('T', ' ')} "
+                           f"({earlier.get('outcome')}{': ' + reason[:200] if reason else ''}); not sent again "
+                           f"with the same AI settings (run with --ai-retry, or the test page's "
+                           f"'Send to the AI again', to try again)"]
+        return True
 
     def _done(self, pdf, pages, result) -> AuthorResult:
+        service = any(str(p).startswith(("AI service:", "AI step stopped:")) and "ai.max_minutes" not in str(p)
+                      for p in result.problems)
         self.store.data.setdefault("ai_attempts", {})[self._key(pdf, pages)] = {
             "when": datetime.now().isoformat(timespec="seconds"), "outcome": result.outcome,
-            "template": result.template, "problems": result.problems[:10]}
+            "template": result.template, "problems": result.problems[:10],
+            "setup": self._setup(), "service_error": service and result.outcome != "admitted"}
         self.store.save()
         return result
+
+
+class AITimeLimit(AIError):
+    """The AI step used up its time on one document (ai.max_minutes)."""
 
 
 class _Undo:

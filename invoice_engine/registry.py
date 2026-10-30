@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -46,8 +47,10 @@ class Registry:
         self.line: dict[str, FieldSpec] = {}
         self.line_rules: list[Rule] = []
         self.document_rules: list[Rule] = []
+        self.notes: dict[str, str] = {}     # the comment written after a field in fields.yml
         for folder in folders:
             fields = _read_yaml(folder / "fields.yml", required=folder == folders[0])
+            self.notes.update(_field_notes(folder / "fields.yml"))
             checks = _read_yaml(folder / "checks.yml", required=False)
             for level, target in (("document", self.document), ("line", self.line)):
                 for name, spec in self._specs(fields.get(level) or {}, level).items():
@@ -98,6 +101,20 @@ class Registry:
 
     def line_column_order(self) -> list[str]:
         return list(self.line)
+
+
+def _field_notes(path: Path) -> dict[str, str]:
+    """{field: note} from lines such as "  train_number: {type: text}   # number / name of the train"."""
+    notes = {}
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return notes
+    for line in text.splitlines():
+        found = re.match(r"^\s+([a-z][a-z0-9_]*):\s*\{[^#]*\}\s*#\s*(\S.*?)\s*$", line)
+        if found:
+            notes[found.group(1)] = found.group(2)
+    return notes
 
 
 def rule_from(entry: dict) -> Rule:

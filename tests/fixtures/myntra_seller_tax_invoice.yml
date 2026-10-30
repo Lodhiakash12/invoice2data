@@ -1,0 +1,113 @@
+# Myntra - the seller's tax invoice for goods bought on Myntra (the seller issues it: Bill From /
+# Ship From; Myntra's own convenience / platform fee invoice is myntra_tax_invoice.yml).
+# Item table: amount columns only; each item's name and its "HSN: ..., 5.0% IGST" line are printed
+# above its amounts (text: before) and read by the extra patterns. Column titles are printed over
+# up to three lines ("Gross" above "Amount"); the headings below match them either way.
+# One tax column (IGST, another state) or two (CGST + SGST/UGST, the seller's state).
+issuer: Myntra (seller invoice)
+
+keywords:
+  - 'Tax Invoice'
+  - 'Bill to / Ship to:'
+  - 'Bill From:'
+  - 'Ship From:'
+  - 'myntra.com'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+optional_fields: [order_number, date_order, place_of_supply, nature_of_transaction, nature_of_supply,
+                  seller_address, ship_from_address, seller_tax_id, seller_company_reg,
+                  buyer_name, buyer_address, amount_gross, amount_discount, amount_untaxed,
+                  amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+
+  invoice_number: 'Invoice Number:\s*(\S+)'
+  date: 'Invoice Date:\s*(\d{1,2} [A-Z][a-z]{2} \d{4})'
+  order_number: 'Order Number:\s*(\S+)'
+  date_order: 'Order Date:\s*(\d{1,2} [A-Z][a-z]{2} \d{4})'
+  # values may have several words (MADHYA PRADESH): read to the end of the line or the next column
+  place_of_supply: '(?m)Place of Supply:\s*(\S.*?)(?:\s{2,}|\s*$)'
+  nature_of_transaction: '(?m)Nature of Transaction:\s*(\S.*?)(?:\s{2,}|\s*$)'
+  nature_of_supply: '(?m)Nature of Supply:\s*(\S.*?)(?:\s{2,}|\s*$)'
+
+  # Bill From (the seller) | Ship From: two columns, read from the word positions
+  seller_name: {parser: region, heading: '^Bill From:', max_lines: 1}
+  seller_address: {parser: region, heading: '^Bill From:', skip: 1, stop: '^GSTIN', replace: [[',\s*,', ',']]}
+  ship_from_address: {parser: region, heading: 'Ship From:', skip: 1, stop: '^GSTIN', replace: [[',\s*,', ',']]}
+  seller_tax_id: 'GSTIN Number:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_company_reg: '(?m)^CIN:\s*([LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6})'
+
+  # Bill to / Ship to: name, then the address; "Customer Type:" is printed to the right
+  buyer_name: {parser: region, heading: '^Bill to / Ship to:', max_lines: 1}
+  buyer_address: {parser: region, heading: '^Bill to / Ship to:', skip: 1, stop: '^(?:Bill From|Customer Type)', join: ', ',
+                  replace: [[',\s*,', ',']]}
+
+  # TOTAL row: gross, discount, other charges, taxable, IGST (or CGST, SGST), total
+  amount_gross: '(?m)^TOTAL\s+Rs\s+(\d[\d,]*(?:\.\d{1,3})?)'
+  amount_discount: '(?m)^TOTAL\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?\s+Rs\s+(\d[\d,]*(?:\.\d{1,3})?)'
+  amount_untaxed: '(?m)^TOTAL(?:\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?){3}\s+Rs\s+(\d[\d,]*(?:\.\d{1,3})?)'
+  amount_igst: '(?m)^TOTAL(?:\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?){4}\s+Rs\s+(\d[\d,]*(?:\.\d{1,3})?)\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?\s*$'
+  amount_cgst: '(?m)^TOTAL(?:\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?){4}\s+Rs\s+(\d[\d,]*(?:\.\d{1,3})?)(?:\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?){2}\s*$'
+  amount_sgst: '(?m)^TOTAL(?:\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?){5}\s+Rs\s+(\d[\d,]*(?:\.\d{1,3})?)\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?\s*$'
+  amount: '(?m)^TOTAL(?:\s+Rs\s+\d[\d,]*(?:\.\d{1,3})?)+\s+Rs\s+(\d[\d,]*(?:\.\d{1,3})?)\s*$'
+
+  lines:
+    parser: table
+    start: '(?m)^\s*Gross\s+Other\s+Taxable\s+SGST/'
+    end: '(?m)^TOTAL\b'
+    columns: {qty: 'Qty', gross_amount: 'Gross Amount', discount: 'Discount', other_charges: 'Other Charges',
+              price_subtotal: 'Taxable Amount', cgst_amount: 'CGST', sgst_amount: 'SGST|UTGST|UGST',
+              igst_amount: 'IGST', cess_amount: 'Cess', price_total: 'Total Amount'}
+    row: [price_total]
+    text: before
+    extra:
+      - '^\s*HSN:\s*(?P<hsn_sac>\d+)(?:,\s*(?P<igst_rate>[\d.]+)%\s*IGST)?(?:,\s*(?P<cgst_rate>[\d.]+)%\s*CGST)?(?:,\s*(?P<sgst_rate>[\d.]+)%\s*(?:SGST|UTGST|UGST))?'
+      # the item's name: a line of its own above the HSN line (no amounts on it)
+      - '^\s*(?P<name>[^\d\s][^\n]*?)\s*$'
+    types: {qty: int, gross_amount: float, discount: float, other_charges: float,
+            price_subtotal: float, cgst_amount: float, sgst_amount: float, igst_amount: float,
+            cess_amount: float, price_total: float,
+            igst_rate: float, cgst_rate: float, sgst_rate: float}
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d %b %Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['tax', 0]
+    - ['invoice', 1]
+    - ['invoice', 0]
+    - ['number', 1]
+    - ['order', 0]
+    - ['number', 1]
+    - ['invoice', 9]
+    - ['date', 9]
+    - ['nature', 0]
+    - ['transaction', 1]
+    - ['order', 9]
+    - ['date', 9]
+    - ['place', 0]
+    - ['supply', 1]
+    - ['nature', 9]
+    - ['supply', 9]
+    - ['bill', 0]
+    - ['ship', 1]
+    - ['bill', 0]
+    - ['from', 1]
+    - ['ship', 6]
+    - ['from', 6]
+    - ['gstin', 0]
+    - ['number', 1]
+    - ['gross', 1]
+    - ['other', 4]
+    - ['taxable', 5]
+    - ['total', 9]
+    - ['total', 0]
+    - ['cin', 0]

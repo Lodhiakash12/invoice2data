@@ -215,3 +215,29 @@ def zomato_restaurant_igst(t):
 
 
 CONVERT['zomato_restaurant_invoice.yml'] = zomato_restaurant_igst
+
+
+def myntra_cgst(t):
+    """Myntra prints empty CGST and SGST/UGST columns on an IGST invoice: the same document from a
+    seller in the buyer's state has the tax under those two headings and "9.0% CGST, 9.0% SGST"."""
+    lines = t.split("\n")
+    head = next(i for i, l in enumerate(lines) if re.search(r"\bCGST\b", l) and re.search(r"\bIGST\b", l))
+    c_col, i_col = re.search(r"\bCGST\b", lines[head]).start(), re.search(r"\bIGST\b", lines[head]).start()
+    s_col = re.search(r"\bSGST/", "\n".join(lines[:head])).start() - len("\n".join(lines[:head - 1])) - 1
+    out = []
+    for line in lines:
+        m = re.search(r"Rs (\d[\d,]*\.\d{2})", line[i_col - 6:i_col + 12]) if len(line) > i_col else None
+        if m and line.lstrip()[:1].isdigit() or (m and line.startswith("TOTAL")):
+            start = i_col - 6 + m.start()
+            a, b = half(m.group(1))
+            line = line[:start] + " " * len(m.group()) + line[start + len(m.group()):]
+            for col, text in ((c_col, f"Rs {a}"), (s_col, f"Rs {b}")):
+                line = line[:col] + text + line[col + len(text):]
+        line = re.sub(r"(\d+(?:\.\d+)?)% IGST", lambda r: f"{Decimal(r.group(1)) / 2}% CGST, {Decimal(r.group(1)) / 2}% SGST", line)
+        out.append(line)
+    return "\n".join(out)
+
+
+CONVERT['myntra_tax_invoice.yml'] = myntra_cgst
+
+CONVERT['myntra_seller_tax_invoice.yml'] = myntra_cgst

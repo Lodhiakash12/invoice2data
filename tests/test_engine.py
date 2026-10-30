@@ -1705,6 +1705,8 @@ _GST_CASES = [   # template, sample pdf, pages, the kind the converted document 
     ("blinkit_fee_invoice.yml", "ForwardInvoice_ORD85101206944.pdf", [2], "igst"),
     ("flipkart_grocery_invoice.yml", "OD435477552035539200.pdf", [4, 5], "igst"),
     ("vodafone_idea_postpaid_bill.yml", "VIL_bill_7573001478_2026-08-22_statement.pdf", [1, 2, 3, 4, 5], "igst"),
+    ("myntra_tax_invoice.yml", "pdf-myntra-tax-invoice-details_compress.pdf", [1], "cgst"),
+    ("myntra_seller_tax_invoice.yml", "pdf-myntra-tax-invoice-details_compress (1).pdf", [1], "cgst"),
 ]
 
 
@@ -2160,7 +2162,8 @@ def test_region_join_and_settings_are_checked():
         value = words.parse(None, "buyer_address", {"heading": "^Invoice To:", "skip": 1, "join": ", "}, "")
     finally:
         words.current.reset(token)
-    assert value == "Plot 9, Sector 21, Opposite Railway Station Road,, Vashi, Navi Mumbai, Maharashtra - 400703"
+    # a line that already ends with a comma is not given a second one
+    assert value == "Plot 9, Sector 21, Opposite Railway Station Road, Vashi, Navi Mumbai, Maharashtra - 400703"
     template = dict(yaml.safe_load(CESS_TEMPLATE))
     template["fields"] = dict(template["fields"], buyer_address={"parser": "region", "heading": "Bill To",
                                                                  "stops": "^Phone", "join": 1})
@@ -2195,3 +2198,299 @@ def test_a_wrong_igst_value_in_the_other_kind_fails(template_name, pdf_name, pag
             tried += 1
             assert result["status"] != "OK", [i["message"] for i in result["issues"]]
     assert tried, "no printed value changed amount_igst"
+
+
+# --- second opinion inside the AI author's draft tests ---------------------------------------------
+
+class ReadingAI(FakeAI):
+    """FakeAI whose second-opinion answers are the given values (an independent reading)."""
+
+    def __init__(self, classify, drafts, reading: dict):
+        super().__init__(classify, drafts)
+        self.reading, self.readings = reading, 0
+
+    def complete(self, system: str, prompt: str) -> str:
+        if prompt.startswith("Read this document and copy the value"):
+            self.readings += 1
+            names = re.findall(r"(?m)^- (\w+): ", prompt.split("DOCUMENT TEXT")[0])
+            return "```json\n" + json.dumps({n: self.reading.get(n) for n in names}) + "\n```"
+        return super().complete(system, prompt)
+
+
+def _mmt_pdf() -> Path:
+    for folder in (ROOT, ROOT / "Docs"):
+        pdf = folder / "pdf-makemytrip-tax-invoice-details_compress.pdf"
+        if pdf.exists():
+            return pdf
+    pytest.skip("pdf-makemytrip-tax-invoice-details_compress.pdf not in the project folder or Docs")
+
+
+def test_ai_draft_with_text_misreads_is_sent_back_before_it_is_admitted(tmp_path: Path):
+    """The MakeMyTrip draft of 2026-10-30: the sums were right, three text fields took text from
+    the neighbouring column. The independent reading sends them back; the corrected draft is
+    admitted, and the pipeline does not ask the AI about the document again."""
+    pdf = _mmt_pdf()
+    types, config = _project(tmp_path, drop=["makemytrip_tax_invoice.yml"])
+    good = (FIXTURES / "makemytrip_tax_invoice.yml").read_text(encoding="utf-8")
+    wrong = (good.replace("  hsn_sac: {parser: region, heading: 'HSN/SAC', max_lines: 1}",
+                          "  hsn_sac: HSN/SAC\\s*\\n[^\\n]*?(\\d{4,8})")
+                 .replace("  buyer_tax_id: {parser: region, heading: 'Customer GSTIN', max_lines: 1}",
+                          "  buyer_tax_id: Customer GSTIN\\s*\\n\\s*\\S+\\s+(\\S+)"))
+    assert wrong != good
+    reading = {"invoice_number": "M06CR26I00621384", "date": "2025-09-02", "hsn_sac": "998551",
+               "buyer_name": "Anshu Kumar", "buyer_tax_id": "Unregistered", "place_of_supply": "Haryana",
+               "supply_description": "Reservation service for transportation", "seller_tax_id": "06AADCM5146R1ZZ"}
+    fake = ReadingAI({"document_type": "invoice", "is_new_type": False, "issuer": "MakeMyTrip",
+                      "variant_of": None, "template_name": "makemytrip_tax_invoice"}, [wrong, good], reading)
+    pipe = _ai_pipeline(tmp_path, types, config, fake)
+    result = pipe.process(pdf)
+    ai = result["ai"][0]
+    assert (ai["outcome"], ai["attempts"]) == ("admitted", 2), ai
+    feedback = fake.prompts[-1]
+    assert "hsn_sac: the template reads '00621384', but the document shows '998551'" in feedback
+    assert "buyer_tax_id: the template reads 'Kumar', but the document shows 'Unregistered'" in feedback
+    doc = result["documents"][0]
+    assert doc["status"] == "OK" and doc["fields"]["hsn_sac"] == "998551"
+    assert fake.readings == 1               # one reading for both drafts and the pipeline's check
+
+
+def test_ai_last_draft_with_a_text_difference_is_admitted_as_check(tmp_path: Path):
+    """When the AI's reading and every draft disagree (either may be wrong), the last draft is
+    admitted and the document shows the difference (CHECK) instead of losing the template."""
+    pdf = _mmt_pdf()
+    types, config = _project(tmp_path, drop=["makemytrip_tax_invoice.yml"])
+    good = (FIXTURES / "makemytrip_tax_invoice.yml").read_text(encoding="utf-8")
+    reading = {"hsn_sac": "122001"}            # a misreading AI: a number printed on the page, the pincode
+    fake = ReadingAI({"document_type": "invoice", "is_new_type": False, "issuer": "MakeMyTrip",
+                      "variant_of": None, "template_name": "makemytrip_tax_invoice"}, [good, good, good], reading)
+    result = _ai_pipeline(tmp_path, types, config, fake).process(pdf)
+    ai = result["ai"][0]
+    assert (ai["outcome"], ai["attempts"]) == ("admitted", 3), ai
+    doc = result["documents"][0]
+    assert doc["status"] == "CHECK"
+    assert any("hsn_sac differs" in i["message"] for i in doc["issues"])
+    assert fake.readings == 1
+
+
+def test_ai_tries_a_document_again_after_a_service_error_or_new_settings(tmp_path: Path):
+    from invoice_engine.ai_author import AuthorResult, TemplateAuthor
+    from invoice_engine.ai_provider import AISettings
+    from invoice_engine.samples import SampleStore
+    pdf = tmp_path / "x.pdf"
+    pdf.write_bytes(b"%PDF-1.4 test")
+    store = SampleStore(tmp_path / "samples")
+    settings = AISettings(enabled=True, model="m1", max_tokens=32000)
+    author = TemplateAuthor(None, settings, ROOT / "document_types", ROOT / "config", store)
+
+    def attempt(problems, outcome="failed"):
+        author._done(pdf, [1], AuthorResult(pdf.name, [1], "new template", outcome, problems=problems))
+
+    def skipped():
+        result = AuthorResult(pdf.name, [1], "new template", "failed")
+        return author._seen(pdf, [1], result), result
+
+    attempt(["AI service: the answer was cut off at ai.max_tokens (32000) while the model was still thinking"])
+    assert skipped()[0] is False                         # the service failed, not the document
+    attempt(["the document is read with status FAIL, it must be OK"])
+    seen, result = skipped()
+    assert seen and "not sent again with the same AI settings" in result.problems[0] and "status FAIL" in result.problems[0]
+    settings.max_tokens = 64000                          # more room: worth another try
+    assert skipped()[0] is False
+    settings.max_tokens = 32000
+    author.retry = True
+    assert skipped()[0] is False
+
+
+
+# --- short decimals keep the columns; tables without a description column; blocks below a heading --
+
+def test_short_decimals_rewrite_keeps_columns_in_place():
+    from invoice_engine.stress import _short_decimals
+    assert _short_decimals("Rs 20.00   Rs 0.00   Rs 16.95") == "Rs 20      Rs 0      Rs 16.95"   # columns stay
+    assert _short_decimals("18.00% IGST") == "18% IGST"                    # printed together: shorter
+    assert _short_decimals("₹20.00 INR") == "₹20 INR"
+    assert _short_decimals("Total 212.10") == "Total 212.1 "
+
+
+def test_stress_still_catches_a_pattern_that_needs_two_decimals(tmp_path: Path):
+    from invoice_engine import stress
+    pdf = need("Invoice_8626225731.pdf")                     # "Item(s) Total  179.00 ..."
+    types, config = _project(tmp_path)
+    path = types / "invoice" / "templates" / "zomato_restaurant_invoice.yml"
+    text = path.read_text(encoding="utf-8")
+    old = "amount_gross: '(?m)^\\s*Item\\(s\\) Total\\s+(\\d[\\d,]*(?:\\.\\d+)?)\\s"
+    assert old in text
+    path.write_text(text.replace(old, "amount_gross: '(?m)^\\s*Item\\(s\\) Total\\s+(\\d+\\.\\d{2})\\s"), encoding="utf-8")
+    reports = stress.stress(load_catalog(types, config), [pdf], {"zomato_restaurant_invoice.yml"})
+    assert any(o.rewrite == "short decimals" and o.result != "same" for r in reports for o in r.outcomes)
+
+
+def test_myntra_item_without_a_description_column_keeps_its_name_and_hsn():
+    """Myntra's table has amount columns only: the item name and its "HSN: ..., 18.0% IGST" line
+    are printed across them, above the amounts. The template's own patterns read them."""
+    pdf = need("pdf-myntra-tax-invoice-details_compress.pdf")
+    doc = process_pdf(pdf, CATALOG)["documents"][0]
+    assert (doc["template"], doc["status"]) == ("myntra_tax_invoice.yml", "OK")
+    assert doc["lines"] == [{"name": "Platform Fee", "hsn_sac": "999799", "igst_rate": 18.0, "qty": 1,
+                             "gross_amount": 20.0, "discount": 0.0, "other_charges": 0.0,
+                             "price_subtotal": 16.95, "igst_amount": 3.05, "price_total": 20.0}]
+    assert doc["fields"]["buyer_name"] == "Kavish kumar"
+    assert doc["fields"]["buyer_address"].endswith("Khagaria Khagaria - 851204 BR, India")
+
+
+def test_second_opinion_describes_fields_with_their_fields_yml_note(tmp_path: Path):
+    """train_number is "number / name of the train" in fields.yml: told only "train number", the
+    AI read 12957 where the ticket prints "12957 / SBIB NDLS RAJ" and the template was right."""
+    from invoice_engine.samples import SampleStore
+    registry = INVOICE.registry
+    assert registry.notes["train_number"] == "number / name of the train"
+    assert "number / name of the train" in so.prompt("text", ["train_number"], registry.notes)
+    # an answer to an earlier, different question does not stand for the new one
+    store = SampleStore(tmp_path / "samples")
+    old_question = so.question_of(["train_number"])
+    new_question = so.question_of(["train_number"], registry.notes)
+    assert old_question != new_question
+    so.record(store, "t.yml", "h", "doc:1", so.Opinion(findings=[so.Finding("train_number", "differ", "a", "b")]),
+              "doc", old_question)
+    assert so.previous(store, "t.yml", "h", "doc:1", old_question) is not None
+    assert so.previous(store, "t.yml", "h", "doc:1", new_question) is None
+
+
+def test_ishwam_reads_the_amount_in_words_over_two_lines():
+    for name, words_ in (("SALES_1_ISHWAM.pdf", "Indian Rupees Five Lakh Thirty One Thousand Only"),
+                         ("SALES 2 ISHWAM.pdf", "Indian Rupees Nine Lakh Eighty Six Thousand Nine Hundred Ninety Nine Only")):
+        pdf = next((p for p in (ROOT / name, ROOT / "Docs" / name) if p.exists()), None)
+        if pdf is None:
+            continue
+        doc = process_pdf(pdf, CATALOG)["documents"][0]
+        assert doc["fields"]["total_in_words"] == words_
+
+
+@pytest.mark.parametrize("words, value", [
+    ("Indian Rupees Nine Lakh Eighty Six Thousand Nine Hundred Ninety Nine Only", "986999"),
+    ("Sixty One Rupees And Ninety Five Paisa Only", "61.95"),
+    ("Ninety Nine Rupees And Forty Paisa(s)", "99.40"),
+    ("Rupees Seven Thousand Three Hundred Seventy-Five Only", "7375"),
+    ("Two Hundred And Nine Rupees And Zero Paisa Only", "209"),
+    ("Nine Hundred Thirty Three Rupees and Ninety Six Paise", "933.96"),
+    ("Rupees One Crore Two Lakh Only", "10200000"),
+])
+def test_amount_in_words_is_read_as_a_number(words, value):
+    from decimal import Decimal
+    from invoice_engine.textchecks import amount_in_words
+    assert amount_in_words(words) == Decimal(value)
+
+
+def test_amount_in_words_cut_at_its_first_line_is_flagged_for_any_template():
+    """SALES 2 ISHWAM: the words run over two lines and a template read only the first. The check
+    is the engine's, so the same mistake in any template (hand- or AI-written) is caught."""
+    from invoice_engine.textchecks import text_issues
+    cut = {"total_in_words": "Indian Rupees Nine Lakh Eighty Six Thousand Nine", "amount": 986999.0}
+    assert any("total_in_words says 986,009.00" in m for _, m in text_issues(cut))
+    whole = dict(cut, total_in_words=cut["total_in_words"] + " Hundred Ninety Nine Only")
+    assert not text_issues(whole)
+    other_text = dict(cut, total_in_words="Indian Rupees Nine Lakh Company's Bank Details")
+    assert any("is not an amount in words" in m for _, m in text_issues(other_text))
+
+
+@pytest.mark.parametrize("value, flagged", [
+    ("MADHYA", True), ("Uttar", True), ("WEST", True), ("Tamil", True), ("Jammu", True),
+    ("MADHYA PRADESH", False), ("Gujarat(24)", False), ("24 - Gujarat", False), ("BIHAR", False),
+    ("Gurgaon,", False), ("IN-MH", False),
+])
+def test_a_state_cut_after_its_first_word_is_flagged_for_any_template(value, flagged):
+    """Myntra read "MADHYA" for MADHYA PRADESH with (\\S+); the engine's check catches the same cut
+    in any template's place or state field."""
+    from invoice_engine.textchecks import text_issues
+    for name in ("place_of_supply", "buyer_state", "seller_state"):
+        found = any("only the start of a state name" in m for _, m in text_issues({name: value}))
+        assert found is flagged, (name, value)
+
+
+def test_myntra_reads_a_state_of_two_words():
+    from invoice_engine.document import attempt
+    from invoice_engine.segment import canonical, page_texts
+    pdf = need("pdf-myntra-tax-invoice-details_compress.pdf")
+    template = next(t for t in CATALOG.templates if t["template_name"] == "myntra_tax_invoice.yml")
+    text = canonical(page_texts(pdf)[0]).replace("Place of Supply:                             BIHAR",
+                                                 "Place of Supply:                             MADHYA PRADESH")
+    assert "MADHYA PRADESH" in text
+    result = attempt(template, [text], pdf, REGISTRY, [1], positions=True)
+    assert result["fields"]["place_of_supply"] == "MADHYA PRADESH"
+
+
+def test_ai_step_stops_at_its_time_limit_and_is_not_retried_with_the_same_settings(tmp_path: Path):
+    """A page the AI keeps failing on must not hold up the run (15 minutes on one Myntra page)."""
+    import time as _time
+    pdf = need("TI26-2701230.pdf")
+    types, config = _project(tmp_path, drop=["mtalkz_tax_invoice.yml"])
+    good = _body("mtalkz_tax_invoice.yml")
+    wrong = good.replace("Sub Total\\s+([\\d,]+(?:\\.\\d{1,2})?)", "IGST\\d*\\s*\\(([\\d.]+)%\\)")
+
+    class SlowAI(FakeAI):
+        def complete(self, system, prompt):
+            answer = super().complete(system, prompt)
+            if not prompt.startswith(("Classify", "Read this document")):
+                _time.sleep(0.4)                       # each draft takes longer than the whole budget
+            return answer
+
+    fake = SlowAI({"document_type": "invoice", "is_new_type": False, "issuer": "Mtalkz",
+                   "variant_of": None, "template_name": "mtalkz_invoice"}, [wrong, good, good])
+    pipe = _ai_pipeline(tmp_path, types, config, fake)
+    pipe.author.settings.max_minutes = 0.005          # 0.3 seconds
+    ai = pipe.process(pdf)["ai"][0]
+    assert ai["outcome"] == "failed" and ai["attempts"] == 1
+    assert any("ai.max_minutes" in p for p in ai["problems"])
+    again = _ai_pipeline(tmp_path, types, config, FakeAI(None, []))
+    assert again.process(pdf)["ai"][0]["outcome"] == "skipped"       # same settings: not again
+
+
+def test_table_headings_printed_over_several_lines_are_found():
+    """Myntra's goods invoice prints "Gross" above "Amount", "Taxable" above "Amount", "SGST/"
+    above "UGST"; its fee invoice prints "Gross Amount" on one line. One heading matches both."""
+    from invoice_engine import table
+    header = ["              Gross              Other          Taxable            SGST/",
+              "Qty                 Discount                             CGST          IGST   Total Amount",
+              "              Amount             Charges          Amount             UGST"]
+    columns = table.find_columns(header, {"qty": "Qty", "gross_amount": "Gross Amount", "discount": "Discount",
+                                          "other_charges": "Other Charges", "price_subtotal": "Taxable Amount",
+                                          "cgst_amount": "CGST", "sgst_amount": "SGST|UGST", "igst_amount": "IGST",
+                                          "price_total": "Total Amount"}, {})
+    assert [c.field for c in columns] == ["qty", "gross_amount", "discount", "other_charges", "price_subtotal",
+                                          "cgst_amount", "sgst_amount", "igst_amount", "price_total"]
+
+
+def test_myntra_two_layouts_in_one_file():
+    pdf = need("pdf-myntra-tax-invoice-details_compress (1).pdf")
+    result = process_pdf(pdf, CATALOG)
+    goods, fee = result["documents"]
+    assert (goods["template"], goods["status"], fee["template"], fee["status"]) == \
+        ("myntra_seller_tax_invoice.yml", "OK", "myntra_tax_invoice.yml", "OK")
+    assert [l["price_total"] for l in goods["lines"]] == [546.0, 503.0]
+    assert goods["fields"]["seller_name"] == "Consulting Rooms Pvt Ltd" and goods["fields"]["amount"] == 1049.0
+    assert fee["fields"]["buyer_address"] == "Crest House, Near BMW Gallops Makarba Ahmedabad - 380051 GJ, India"
+
+
+def test_a_garbled_text_layer_is_reported_and_not_given_to_the_ai(tmp_path: Path):
+    """A PDF re-saved by a compressor with broken fonts: "Tax Invoice" comes out as "Tmx @jvk`go".
+    No template or AI can read it: the page says why, and the AI is not asked."""
+    from invoice_engine.document import garbled_pages
+    garbled = ("Tmx @jvk`go/H`cc ke Wuppcy/Gmsb Aoak (Kr`i`jmc ekr Xog`p`ojt) Wkcd Hy 6 H`cc`ji Mddross 6 "
+               "OTXMDO AMXLOT@JI ^X@UMTO C@A@TOD Mfmy Xmfhbmr * _j`t Jk. =, Lbowmt/ Lbmtm Jk6 797/ "
+               "Austmt`c Jk 7=,, U`ccmio Tmkru, Tobs`c Tmkru, D`str`gt Aowmt,, Kj H`cmspur Tmkru Xkmd "
+               "Aowmt, Bmrymjm, @J ^MJ Jk6 MMDGU48?4B IWT Xoi`strmt`kj Jk6 Wb`pp`ji Mddross 6 ") * 2
+    assert [n for n, _ in garbled_pages([garbled])] == [1]
+    # real pages are not garbled: English, German, Dutch, file listings with underscores, e-mails
+    for pdf in sorted(ROOT.glob("*.pdf")):
+        if "laptop-bill_compress" not in pdf.name:                # the garbled one
+            assert garbled_pages(page_texts(pdf)) == [], pdf.name
+    pdf = next((p for p in (ROOT / "pdf-laptop-bill_compress.pdf", ROOT / "Docs" / "pdf-laptop-bill_compress.pdf")
+                if p.exists()), None)
+    if pdf is None:
+        return
+    types, config = _project(tmp_path)
+    fake = FakeAI(None, [])
+    result = _ai_pipeline(tmp_path, types, config, fake).process(pdf)
+    assert result["unrecognized_pages"][0]["reason"] == "garbled text layer: use the original PDF"
+    assert any("text layer is garbled" in n for n in result["notes"])
+    assert fake.prompts == [] and not result.get("ai")

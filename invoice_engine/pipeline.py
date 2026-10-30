@@ -157,6 +157,8 @@ class Pipeline:
                         + (", new type" if r.new_type else "") + f", {r.attempts} draft(s)); it passed the checks")
             elif r.outcome == "failed":
                 text = f"AI could not write a template for pages {r.pages}: " + "; ".join(r.problems[:3])
+            elif r.outcome == "skipped" and r.problems:
+                text = f"AI step for pages {r.pages}: " + r.problems[0]
             else:
                 continue
             result.setdefault("notes", []).append(text)
@@ -166,7 +168,7 @@ class Pipeline:
         """Give unrecognized pages and FAIL documents of admitted templates to the AI author."""
         work = []
         for group in result.get("unrecognized_pages", []):
-            if "scanned" not in str(group.get("reason", "")):
+            if not any(word in str(group.get("reason", "")) for word in ("scanned", "garbled")):   # nothing to read
                 work.append(("new", group))
         for doc in result.get("documents", []):
             if doc["status"] == "FAIL" and self.state.get(doc["template"]) == ADMITTED:
@@ -247,17 +249,20 @@ class Pipeline:
         digest = template_hash(self.full, template)
         if opinion.trusted(self.store, name, digest):
             return
+        registry = self.full.registry_for(template)
+        names = opinion.fields_to_check(template, registry)
+        if not names:
+            return
+        notes = getattr(registry, "notes", {})
+        question = opinion.question_of(names, notes)
         key = f"{file_hash(pdf)}:{','.join(str(p) for p in doc['pages'])}"
-        earlier = opinion.previous(self.store, name, digest, key)
+        earlier = opinion.previous(self.store, name, digest, key, question)
         if earlier is not None:                         # asked before: the same answer, no new question
             opinion.apply_previous(doc, earlier)
             if not earlier.get("agreed"):
                 self._trust_hint(doc, name)
             return
         if not opinion.wanted(self.store, name, digest, limit):
-            return
-        names = opinion.fields_to_check(template, self.full.registry_for(template))
-        if not names:
             return
         if not texts:
             try:
@@ -267,11 +272,11 @@ class Pipeline:
                 return
         log = lambda purpose, prompt, answer: self.author._log(pdf, purpose, prompt, answer)  # noqa: E731
         try:
-            found = opinion.review(self.author.provider, doc, opinion.page_text(texts, doc["pages"]), names, log)
+            found = opinion.review(self.author.provider, doc, opinion.page_text(texts, doc["pages"]), names, log, notes)
         except Exception as exc:  # the second opinion never stops the reading of a file
             found = opinion.Opinion(error=f"{type(exc).__name__}: {exc}")
         opinion.apply(doc, found)
-        opinion.record(self.store, name, digest, key, found, opinion.source_name(pdf, doc["pages"]))
+        opinion.record(self.store, name, digest, key, found, opinion.source_name(pdf, doc["pages"]), question)
         if found.error:
             return
         if not found.agreed:

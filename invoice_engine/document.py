@@ -299,6 +299,34 @@ def picture_coverage(pdf: Path) -> dict[int, float] | None:
     return {page: min(covered.get(page, 0.0) / a, 1.0) for page, a in area.items() if a > 0}
 
 
+# A garbled text layer: the letters come out as other characters ("Tax Invoice" -> "Tmx @jvk`go").
+# A PDF re-saved by a compressor or converter that rebuilt its fonts with a wrong character map
+# looks right on screen, but its text cannot be read by any template or by the AI. Two signs
+# together mark it: almost none of its words is a common invoice word (English, Hindi-English
+# invoice terms, German, Dutch), and many words have characters such as ` @ ^ | inside them.
+_COMMON_WORDS = set("""the and of to in for on is are with by from at as or this that be not your you our all any
+invoice tax total date amount number gst gstin pan no bill ship address name state code place supply
+qty quantity price rate value discount payment order customer seller buyer details item description
+rs inr only rupees paise round off charges fee service goods hsn sac igst cgst sgst
+de der die das und van het een en voor op te met rechnung datum betrag factuur totaal bedrag""".split())
+_ODD_INSIDE = re.compile(r"[`^|\\{}~@]")
+
+
+def garbled_pages(pages: list[str]) -> list[tuple[int, str]]:
+    """(page, sample of its text) for pages whose text layer is garbled (see above). Short pages
+    (under 40 words) are not judged."""
+    found = []
+    for number, text in enumerate(pages, start=1):
+        tokens = [t for t in re.findall(r"\S+", text) if re.search(r"[A-Za-z]", t)]
+        if len(tokens) < 40:
+            continue
+        common = sum(1 for t in tokens if re.sub(r"[^a-z]", "", t.lower()) in _COMMON_WORDS) / len(tokens)
+        odd = sum(1 for t in tokens if _ODD_INSIDE.search(t) and not re.fullmatch(r"\S+@\S+\.\S+", t)) / len(tokens)
+        if common < 0.03 and odd > 0.15:
+            found.append((number, " ".join(tokens[:4])))
+    return found
+
+
 def scanned_pages(pdf: Path, pages: list[str]) -> list[tuple[int, int, float]]:
     """(page, characters of text, picture coverage) for pages that look scanned: little or no
     text and a picture over at least half the page. Checked only when a page has little text."""
@@ -341,6 +369,14 @@ def process_pdf(pdf: Path, catalog, registry: Registry | None = None) -> dict:
         for n, count, cover in scanned:
             result["notes"].append(f"page {n} looks scanned: {count} characters of text and a picture over "
                                    f"{cover:.0%} of the page. OCR is needed, which is not supported yet")
+    garbled = garbled_pages(pages)
+    garbled_numbers = {n for n, _ in garbled}
+    for n, sample in garbled:
+        result["notes"].append(
+            f"page {n}: the text layer is garbled ({sample!r}...): the letters come out as other characters, "
+            "so no template and no AI can read it. This happens when a PDF is re-saved by a compressor or "
+            "converter that rebuilds its fonts wrongly. Use the original PDF from the issuer (or OCR, not "
+            "supported yet)")
     groups, notes = split_into_documents(pages, catalog)
     result["notes"].extend(notes)
 
@@ -349,6 +385,7 @@ def process_pdf(pdf: Path, catalog, registry: Registry | None = None) -> dict:
             text = "\n".join(group["texts"])
             preview = [ln.strip() for ln in text.splitlines() if ln.strip()][:3]
             reason = ("scanned page: OCR needed" if any(n in scanned_numbers for n in group["pages"])
+                      else "garbled text layer: use the original PDF" if any(n in garbled_numbers for n in group["pages"])
                       else "no template matches")
             result["unrecognized_pages"].append(
                 {"pages": group["pages"], "reason": reason,

@@ -11,6 +11,10 @@ checks catch the misreads that have a recognisable shape:
   GSTIN are the party's state code
 - no labels inside values: a name or an address that contains another field's label ("Invoice
   Number #", "PAN:", "GSTIN -") has run into the next field
+- the amount in words spells one of the document's amounts: words cut short (a second line not
+  read) or taken from another line do not
+- a place or state is not just the first word(s) of a state name ("MADHYA" for Madhya Pradesh:
+  a pattern that reads one word)
 
 Each finding is a warning (the document becomes CHECK): the value is probably misread, but an
 issuer can also print it wrong. Placeholders printed instead of a number (NA, UNREGISTERED, URP)
@@ -63,6 +67,117 @@ LABEL = re.compile(
 _LABEL_FIELDS = ("_name", "_trade_name", "_address")
 
 
+# --- an amount written in words ---------------------------------------------------------------
+_UNITS = {w: i for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen "
+    "sixteen seventeen eighteen nineteen".split())}
+_TENS = {w: 10 * i for i, w in enumerate("_ _ twenty thirty forty fifty sixty seventy eighty ninety".split()) if i >= 2}
+_SCALES = {"thousand": 1000, "lakh": 100000, "lakhs": 100000, "lac": 100000, "lacs": 100000,
+           "crore": 10000000, "crores": 10000000, "million": 1000000, "billion": 1000000000}
+_CURRENCY = {"indian", "rupee", "rupees", "inr", "rs", "only", "s"}
+_PAISE = {"paise", "paisa", "paisas"}
+
+
+def _whole_number(words: list[str]) -> int | None:
+    total = current = 0
+    seen = False
+    for word in words:
+        if word == "and":
+            continue
+        if word in _UNITS:
+            current += _UNITS[word]
+        elif word in _TENS:
+            current += _TENS[word]
+        elif word == "hundred":
+            current = (current or 1) * 100
+        elif word in _SCALES:
+            total += (current or 1) * _SCALES[word]
+            current = 0
+        else:
+            return None                                   # a word that is not part of a number
+        seen = True
+    return total + current if seen else None
+
+
+def amount_in_words(text: str):
+    """'Indian Rupees Nine Lakh Eighty Six Thousand Nine Hundred Ninety Nine Only' -> 986999;
+    'Sixty One Rupees And Ninety Five Paisa Only' -> 61.95. None when the text is not an amount
+    in words (other words in it, or no number)."""
+    from decimal import Decimal
+    words = [w for w in re.split(r"[^a-z]+", str(text).lower()) if w]
+    if not words:
+        return None
+    paise = 0
+    if any(w in _PAISE for w in words):
+        end = next(i for i, w in enumerate(words) if w in _PAISE)
+        before = words[:end]
+        # the paise are the number words between the last "and" (or the currency word) and "paise"
+        cut = max((i for i, w in enumerate(before) if w in ("and",) or w in _CURRENCY), default=-1)
+        paise_words, words = before[cut + 1:], before[:cut + 1]
+        value = _whole_number(paise_words)
+        if value is None or value >= 100:
+            return None
+        paise = value
+    rupees = _whole_number([w for w in words if w not in _CURRENCY])
+    if rupees is None:
+        return None
+    return Decimal(rupees) + Decimal(paise) / 100
+
+
+_PLACE_FIELDS = ("place_of_supply", "place_of_origin")
+
+
+def _cut_state(value: str) -> str | None:
+    """The full state name when the value is only its first word(s): 'MADHYA' -> 'madhya pradesh'
+    ('Uttar', 'WEST', 'Tamil', 'Jammu and' ...). None when the value is a whole state or not one."""
+    name = re.sub(r"\s+", " ", re.sub(r"[^a-z ]", " ", value.lower().replace("&", " and "))).strip()
+    name = re.sub(r"^(?:in )?", "", name)
+    if not name or name in STATE_CODES:
+        return None
+    longer = [state for state in STATE_CODES if state.startswith(name + " ")]
+    return min(longer, key=len) if longer else None
+
+
+def _place_issues(fields: dict) -> list[tuple[str, str]]:
+    """A place or state value that is only the first word(s) of a state name has been cut off at a
+    space (a pattern that reads one word): 'MADHYA' for MADHYA PRADESH. Caught for every template."""
+    issues = []
+    for name, raw in fields.items():
+        if not (name in _PLACE_FIELDS or name.endswith("_state")):
+            continue
+        value = _text(raw)
+        full = _cut_state(value) if value else None
+        if full:
+            issues.append(("WARN", f"{name} {value!r} is only the start of a state name ({full.title()}): the "
+                                   f"pattern probably reads one word; read the value up to the next column"))
+    return issues
+
+
+def _words_issue(fields: dict) -> list[tuple[str, str]]:
+    """The amount in words must spell one of the document's printed amounts. A value cut short
+    (a second line not read: "... Thousand Nine" for 9,86,999) or taken from another line fails."""
+    from decimal import Decimal, InvalidOperation
+    words = _text(fields.get("total_in_words"))
+    if not words:
+        return []
+    spelled = amount_in_words(words)
+    if spelled is None:
+        return [("WARN", f"total_in_words {words[:80]!r} is not an amount in words (other text in it, or "
+                         f"cut off in the middle): probably misread")]
+    amounts = []
+    for name, value in fields.items():
+        if name == "amount" or name.startswith("amount_"):
+            try:
+                amounts.append(Decimal(str(value)).quantize(Decimal("0.01")))
+            except (InvalidOperation, ValueError, TypeError):
+                continue
+    if amounts and spelled.quantize(Decimal("0.01")) not in amounts:
+        return [("WARN", f"total_in_words says {spelled:,.2f} ({words[:80]!r}), but no amount of the "
+                         f"document is {spelled:,.2f}: the words are probably cut off (a second line not "
+                         f"read) or taken from somewhere else")]
+    return []
+
+
 def gstin_check_character(first14: str) -> str:
     total = 0
     for i, char in enumerate(first14):
@@ -101,7 +216,7 @@ def _text(value) -> str | None:
 
 
 def text_issues(fields: dict) -> list[tuple[str, str]]:
-    issues: list[tuple[str, str]] = []
+    issues: list[tuple[str, str]] = list(_words_issue(fields)) + _place_issues(fields)
     gstins = {}
     for name, raw in fields.items():
         value = _text(raw)

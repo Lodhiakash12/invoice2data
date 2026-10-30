@@ -75,7 +75,7 @@ def _store(config_dir: Path) -> SampleStore | None:
     return SampleStore(folder, int(settings.get("samples_per_layout") or 20))
 
 
-def run_pdf(data: bytes, filename: str, types_dir: Path, config_dir: Path) -> dict:
+def run_pdf(data: bytes, filename: str, types_dir: Path, config_dir: Path, retry: bool = False) -> dict:
     safe_name = re.sub(r"[^A-Za-z0-9._ -]", "_", Path(filename).name)[:120] or "upload.pdf"
     if not safe_name.lower().endswith(".pdf"):
         safe_name += ".pdf"
@@ -88,7 +88,8 @@ def run_pdf(data: bytes, filename: str, types_dir: Path, config_dir: Path) -> di
         if store is None:
             result = process_pdf(path, catalog)
         else:                                                      # same automatic checks as the CLI
-            author, ai_problems = author_from_settings(_settings(config_dir), types_dir, config_dir, store)
+            author, ai_problems = author_from_settings(_settings(config_dir), types_dir, config_dir, store,
+                                                       retry=retry)
             pipeline = Pipeline(catalog, store, author=author,
                                 reload=lambda: load_catalog(types_dir, config_dir),
                                 progress=lambda text: print(text, flush=True))   # in the console window
@@ -217,7 +218,8 @@ class Handler(BaseHTTPRequestHandler):
         name = self.headers.get("X-Filename", "upload.pdf")
         try:
             from urllib.parse import unquote
-            result = run_pdf(data, unquote(name), self.types_dir, self.config_dir)
+            result = run_pdf(data, unquote(name), self.types_dir, self.config_dir,
+                             retry=self.headers.get("X-AI-Retry") == "1")
             self._send(200, json.dumps(result, ensure_ascii=False).encode("utf-8"), "application/json")
         except Exception as exc:
             self._send(500, json.dumps({"error": f"{type(exc).__name__}: {exc}"}).encode(), "application/json")
@@ -294,11 +296,11 @@ document.getElementById('variants').onclick=async()=>{
   </table></div><div class="meta" style="margin-top:8px">Cannot read: the template has no fields for that kind; such a document fails and goes to the AI repair. Not expected: listed in document_types/&lt;type&gt;/variants.yml.</div></div>`}
  catch(e){box.innerHTML=`<div class="err">${esc(e.message)}</div>`}};
 async function run(files){for(const f of files.filter(f=>/\.pdf$/i.test(f.name)||f.type==='application/pdf'))await one(f)}
-async function one(file){
- const box=document.createElement('section');box.className='file';
- box.innerHTML=`<div class="filehead"><h2>${esc(file.name)}</h2><span class="meta">${(file.size/1024).toFixed(0)} KB</span></div><div class="spin">Processing…</div>`;
- out.prepend(box);
- try{const r=await fetch('/process',{method:'POST',headers:{'X-Filename':encodeURIComponent(file.name)},body:file});
+async function one(file,retry,box){
+ if(!box){box=document.createElement('section');box.className='file';out.prepend(box)}
+ box.file=file;
+ box.innerHTML=`<div class="filehead"><h2>${esc(file.name)}</h2><span class="meta">${(file.size/1024).toFixed(0)} KB</span></div><div class="spin">${retry?'Sending to the AI again… (this can take several minutes)':'Processing…'}</div>`;
+ try{const r=await fetch('/process',{method:'POST',headers:{'X-Filename':encodeURIComponent(file.name),'X-AI-Retry':retry?'1':'0'},body:file});
   const data=await r.json();if(!r.ok||data.error)throw new Error(data.error||r.statusText);render(box,file.name,data)}
  catch(e){box.querySelector('.spin').outerHTML=`<div class="err">${esc(e.message)}</div>`}}
 function render(box,name,d){
@@ -314,9 +316,11 @@ function render(box,name,d){
  if(notes.length)h+=`<div class="notes"><b>Notes</b>${notes.map(n=>`<div>${esc(n)}</div>`).join('')}</div>`;
  docs.forEach((doc,i)=>h+=docHtml(doc,i));
  un.forEach(u=>h+=`<div class="unrec"><b>Pages ${u.pages.join(', ')}: ${esc(u.reason||'no template matches')}</b>
-  <div class="meta" style="margin:4px 0 8px">${esc((u.preview||[]).join(' | '))}</div><details><summary>Page text (for writing a template)</summary><pre>${esc(u.text||'')}</pre></details></div>`);
+  <div class="meta" style="margin:4px 0 8px">${esc((u.preview||[]).join(' | '))}</div>
+  <div style="margin:0 0 8px"><button class="btn" data-retry>Send to the AI again</button> <span class="meta">writes a template for these pages even if the AI was given this file before</span></div><details><summary>Page text (for writing a template)</summary><pre>${esc(u.text||'')}</pre></details></div>`);
  if(!docs.length&&!un.length)h+='<div class="notes">No pages were read.</div>';
  box.innerHTML=h+'</div>';
+ box.querySelectorAll('[data-retry]').forEach(b=>b.onclick=()=>one(box.file,true,box));
  box.querySelectorAll('[data-trust]').forEach(b=>b.onclick=async()=>{b.disabled=true;
   try{const r=await fetch('/trust?template='+encodeURIComponent(b.dataset.trust),{method:'POST'});const a=await r.json();
    b.outerHTML=a.error?`<span class="err">${esc(a.error)}</span>`:'<b>Trusted.</b> Drop the PDF again to read it without the second opinion.'}

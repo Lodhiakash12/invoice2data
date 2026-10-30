@@ -399,6 +399,12 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
     - numbers: 1,23,456.78 / 1.234,56 (decimal_separator ',') / (135.00) and 135.00- as minus,
       but (18.0) under a rate column stays 18 / currency before or after (Rs, INR, $, EUR) /
       "-" or "NA" as an empty value / "2 Nos" as 2 / "1 Pigeon ..." as serial 1 + description
+    - a column title printed over two or three header lines ("Gross" above "Amount", "SGST/"
+      above "UGST") is matched by the heading as it reads ('Gross Amount'), the same pattern as
+      for a print with the title on one line
+    - a table without a description column (Myntra: amount columns only) prints the item name
+      and its "HSN: ..." line across the amount columns: such a line is read by the table's own
+      extra patterns (a line no pattern reads there is text outside the table, such as a footer)
     - descriptions printed above their amounts with text: after: error asking for text: before
       (unless row_end is set, which places the text of each row explicitly)
     - not handled: a description line long enough to run under the amount columns is left out of
@@ -441,6 +447,11 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
       Maharashtra, Gujarat(24), IN-GJ, "Bangalore, Karnataka")
     - a name or address (*_name, *_trade_name, *_address) contains no other field's label
       ("Invoice Number #", "PAN: ...", "Sold By:", "Phone:")
+    - total_in_words, turned into a number (lakh, crore, thousand, "... Rupees And ... Paisa"),
+      equals one of the document's amounts: words cut short (a second line not read) or taken
+      from another line are caught in every template
+    - a place or state (place_of_supply, place_of_origin, *_state) that is only the first
+      word(s) of a state name ("MADHYA" for Madhya Pradesh: a pattern that reads one word)
   Placeholders (NA, UNREGISTERED, URP) and other countries' numbers (DE..., NL...B01, HRB ...) are
   not checked. A finding is a warning, not an error: an issuer can also print a value wrong.
 
@@ -461,7 +472,8 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
   block) gives no value rather than part of one. Without the PDF (a template run on text alone)
   a region field is empty.
   join: what goes between the lines (default one space; ', ' for an address block printed
-  without commas).
+  without commas); a line that already ends with a separator ("Ahmedabad -", "Road,") is joined
+  by a space.
   Label and value on one line ("Address : Flat 12, ..." with more lines hanging under the value,
   "Place of Supply:" further right): same_line: true. The column runs from the value to the next
   column (found on that line, or where the lines just above and below start their next column,
@@ -480,6 +492,9 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
   Kept on patterns: blinkit_goods_invoice (its address takes the pincode from the next label),
   zomato_* (continuation lines start under the label, not under the value), blocks without a
   heading (bol.com, Shopify, Vodafone, QualityHosting) and right-aligned blocks (Amazon).
+  A block's lines may have lines of the next column printed between them (Myntra: the seller's
+  name on the line between "Bill to / Ship to:" and the buyer's name): the block ends at empty
+  space, not at those lines, and never reaches more than a few lines past its last line.
   Tables keep reading the page text: pdftotext widens its columns to fit a crowded row, which
   rebuilt text at one scale does not (tested).
 
@@ -541,6 +556,12 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
                                                         are right (the AI misreads that layout):
                                                         no more second opinions for this file
   The test page (gui.py) shows a "Template values are right" button on such a document.
+  The AI template author uses the same reading while it writes: each draft's text fields are
+  compared with it, and a difference goes back to the AI with the value the page shows (a
+  pattern that takes the neighbouring column's text, the wrong word of a line). The reading is
+  asked once per document, for every draft and for the check after admission. When the last
+  draft still differs, it is admitted and the document shows the difference (CHECK): the AI's
+  reading can also be the wrong one.
   Every question and answer is in samples\ai_log.jsonl (purpose: second_opinion).
 
 24. BOTH GST KINDS IN EVERY INDIAN TEMPLATE
@@ -553,3 +574,6 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
   differently fails visibly and goes to the AI repair. Meesho, whose seller-same-state print was
   never seen, is read with CGST on the item's line and SGST/UTGST after it or on the line below.
   An item row has only the columns it prints: a CGST row has no IGST column (no empty value).
+  Stress test, short decimals: a number standing in its own column keeps its width (212.10 ->
+  "212.1 "), because in a PDF the next column does not move; a number printed together with what
+  follows just gets shorter ("18.00%" -> "18%", "20.00 INR" -> "20 INR").

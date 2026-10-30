@@ -163,25 +163,58 @@ def unlisted_headings(header: list[str], columns: list[Column]) -> list[Column]:
     return unknown
 
 
+def stacked_headings(header: list[str]) -> list[tuple[int, int, str]]:
+    """Headings printed over several header lines, read top to bottom: words of different lines
+    that stand over one another form one heading ("Gross" over "Amount" -> "Gross Amount",
+    "SGST/" over "UGST" -> "SGST/ UGST"). (start, end, text) for every such stack."""
+    words = [(n, m.start(), m.end(), m.group()) for n, line in enumerate(header) for m in re.finditer(r"\S+", line)]
+    groups: list[list[tuple]] = []
+    for word in words:
+        touching = [g for g in groups if any(o[0] != word[0] and word[1] < o[2] and o[1] < word[2] for o in g)]
+        merged = [word] + [w for g in touching for w in g]
+        groups = [g for g in groups if g not in touching] + [merged]
+    stacks = []
+    for group in groups:
+        if len({w[0] for w in group}) < 2:
+            continue
+        ordered = sorted(group, key=lambda w: (w[0], w[1]))
+        stacks.append((min(w[1] for w in group), max(w[2] for w in group), " ".join(w[3] for w in ordered)))
+    return sorted(stacks)
+
+
 def find_columns(header: list[str], columns: dict, types: dict) -> list[Column]:
-    """Columns whose heading is printed in the header lines, left to right. Two columns whose
-    headings are the same printed word are a template error: the values would be shared out by
-    position instead of by heading."""
+    """Columns whose heading is printed in the header lines, left to right. A heading is matched on
+    one header line, or, when it is printed over several lines, on the words stacked over one
+    another ("Gross Amount" printed as "Gross" above "Amount"). Two columns whose headings are the
+    same printed word are a template error: the values would be shared out by position instead of
+    by heading."""
     found, where = [], {}
+    stacks = None
     for field, heading in columns.items():
-        for number, line in enumerate(header):
+        candidates = [(number, line) for number, line in enumerate(header)]
+        column = None
+        for number, line in candidates:
             match = re.search(heading, line)
             if match:
-                column = Column(field, match.start(), match.end(), types.get(field) in _NUMERIC_TYPES)
-                for other in found:
-                    if where[other.field] == number and column.start < other.end and other.start < column.end:
-                        raise TemplateSyntaxError(
-                            f"`table` columns {other.field} and {field} match the same heading "
-                            f"{line[min(column.start, other.start):max(column.end, other.end)]!r}: make "
-                            "each heading pattern match only its own column")
-                found.append(column)
-                where[field] = number
+                column, place = Column(field, match.start(), match.end(), types.get(field) in _NUMERIC_TYPES), number
                 break
+        if column is None:
+            stacks = stacked_headings(header) if stacks is None else stacks
+            for start, end, text in stacks:
+                if re.search(heading, text):
+                    column, place = Column(field, start, end, types.get(field) in _NUMERIC_TYPES), -1
+                    break
+        if column is None:
+            continue
+        for other in found:
+            same_line = where[other.field] == place or -1 in (where[other.field], place)
+            if same_line and column.start < other.end and other.start < column.end:
+                raise TemplateSyntaxError(
+                    f"`table` columns {other.field} and {field} match the same heading at columns "
+                    f"{min(column.start, other.start)}-{max(column.end, other.end)}: make each heading "
+                    "pattern match only its own column")
+        found.append(column)
+        where[field] = place
     return sorted(found, key=lambda c: c.start)
 
 
@@ -359,6 +392,14 @@ def parse_block(settings: dict, header: list[str], body: list[str]) -> list[dict
         if isinstance(values, dict):
             values = {**prefixed, **values}
         if values is _OUTSIDE:
+            # text across the amount columns belongs to no row, unless the template's own pattern
+            # for such lines reads it (a table without a description column prints the item name
+            # and its "HSN: ..." line across the amount columns, above or below the amounts)
+            extra_values = next(({k: v for k, v in m.groupdict().items() if v}
+                                 for m in (re.search(p, line) for p in extra) if m), None)
+            if extra_values:
+                target = current if (current is not None and is_open and mode == "after") else pending
+                merge(target, extra_values)
             continue
         if values is None and unknown and sum(c.numeric for c in cells(line)) > len(row_fields):
             # an amounts line whose values do not fit the listed columns: one more column is printed

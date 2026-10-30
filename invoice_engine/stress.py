@@ -52,12 +52,28 @@ REWRITES: dict[str, tuple[str, callable]] = {
     "wider column gaps": ("columns 2 characters further apart",
                           lambda t: _INNER_GAP.sub(lambda m: m.group(1) + "  ", t)),
     "short decimals": ("212.10 printed as 212.1, 202.00 as 202",
-                       lambda t: _TRAILING_ZERO.sub(r"\1", _ZERO_DECIMALS.sub(r"\1", t))),
+                       lambda t: _short_decimals(t)),
     "page shifted right": ("every line indented 6 more characters",
                            lambda t: _per_line(t, lambda l: ("      " + l) if l.strip() else l)),
     "more space between sections": ("every blank line printed twice",
                                     lambda t: re.sub(r"\n[ \t]*\n", "\n\n\n", t)),
 }
+
+
+def _short_decimals(text: str) -> str:
+    """212.10 -> 212.1, 202.00 -> 202. A number standing in its own column (a gap of two spaces or
+    more, or the line end, after it) keeps its width with spaces: in a PDF every column is drawn at
+    its own position, so a shorter number does not move the columns after it. A number printed
+    together with what follows ("18.00%", "(5.00)", "20.00 INR") just becomes shorter, as it
+    prints."""
+    def shorten(match, kept):
+        after = text_of[0][match.end():match.end() + 2]
+        column = after in ("", "\n") or after.startswith("\n") or after.isspace() and len(after) == 2
+        freed = len(match.group(0)) - len(kept)
+        return kept + (" " * freed if column else "")
+    text_of = [text]
+    text_of[0] = _ZERO_DECIMALS.sub(lambda m: shorten(m, m.group(1)), text_of[0])
+    return _TRAILING_ZERO.sub(lambda m: shorten(m, m.group(1)), text_of[0])
 
 
 # --- comparison --------------------------------------------------------------------------------

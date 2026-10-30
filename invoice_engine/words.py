@@ -273,12 +273,16 @@ def region(pages: list[list[Word]], heading: str, stop: str | None = None, max_l
                 right = min(right, _staggered_right(lines, index, value[0].x0, value[0].x0, unit, height, left))
             else:
                 right = min(right, _staggered_right(lines, index, covered[0].x0, covered[-1].x1, unit, height))
-            last_y = statistics.fmean(w.yc for w in row)
+            last_y = previous_y = statistics.fmean(w.yc for w in row)
             for below in (lines[index + 1:] if len(collected) < max_lines + skip else []):
                 y = statistics.fmean(w.yc for w in below)
-                # a heading is often set apart from its first line: a little more room there
-                if y - last_y > height * (2.6 if collected else 3.4):
+                # the block ends at empty space: a vertical gap with nothing printed in it (a
+                # heading is often set apart from its first line: a little more room there).
+                # Lines of the next column printed between the block's lines are not empty
+                # space, but the block does not reach further than a few lines past its last one.
+                if y - previous_y > height * (2.6 if collected else 3.4) or y - last_y > height * 6:
                     break
+                previous_y = y
                 if same_line and any(w.x1 <= left for w in below):
                     break               # a new label in the label column: the next field
                 if any(w.x0 < left < w.x1 - unit for w in below):
@@ -325,7 +329,15 @@ def parse(template, field: str, settings: dict, content: str):
         return None
     if settings.get("first_line"):
         lines = lines[:1]
-    value = str(settings.get("join", " ")).join(lines)
+    joiner = str(settings.get("join", " "))
+    value = lines[0]
+    for line in lines[1:]:
+        # a line that already ends with a separator ("Ahmedabad -", "Road,") or the next one that
+        # starts with one is joined by a space: no ", " on top of it
+        if joiner.strip() and (re.search(r"[,;:/&\-]\s*$", value) or re.match(r"\s*[,;:/&\-]", line)):
+            value += " " + line
+        else:
+            value += joiner + line
     for pair in settings.get("replace") or []:
         value = re.sub(pair[0], pair[1], value)
     return value.strip() or None

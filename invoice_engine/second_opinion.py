@@ -68,8 +68,15 @@ _KINDS = {
 }
 
 
-def describe(name: str) -> str:
-    """A short description of a field for the AI, from its name."""
+def describe(name: str, notes: dict | None = None) -> str:
+    """A short description of a field for the AI: the note written after it in fields.yml when
+    there is one ("number / name of the train"), else one made from its name."""
+    note = (notes or {}).get(name)
+    base = _describe_name(name)
+    return f"{base} ({note})" if note and note.lower() not in base.lower() else base
+
+
+def _describe_name(name: str) -> str:
     for party, who in sorted(_PARTIES.items(), key=lambda item: -len(item[0])):
         if name.startswith(party + "_"):
             kind = name[len(party) + 1:]
@@ -230,8 +237,8 @@ def fields_to_check(template, registry) -> list[str]:
     return names[:MAX_FIELDS]
 
 
-def prompt(page_text: str, names: list[str]) -> str:
-    listing = "\n".join(f"- {name}: {describe(name)}" for name in names)
+def prompt(page_text: str, names: list[str], notes: dict | None = None) -> str:
+    listing = "\n".join(f"- {name}: {describe(name, notes)}" for name in names)
     return (f"""Read this document and copy the value of each field below exactly as printed (same
 spelling, same characters; dates as YYYY-MM-DD). A field that is not printed on the document is
 null. Do not take a value of one party for another (seller and buyer are different parties).
@@ -258,11 +265,11 @@ class Opinion:
         return not self.error and not any(f.level == "WARN" for f in self.findings)
 
 
-def ask(provider, page_text: str, names: list[str], log=None) -> tuple[dict | None, str]:
+def ask(provider, page_text: str, names: list[str], log=None, notes: dict | None = None) -> tuple[dict | None, str]:
     """The AI's own reading of the fields (no template values are sent): (values, error)."""
     from .ai_author import _json
     from .ai_provider import AIError
-    question = prompt(page_text, names)
+    question = prompt(page_text, names, notes)
     problem = ""
     for attempt in range(2):
         try:
@@ -280,16 +287,16 @@ def ask(provider, page_text: str, names: list[str], log=None) -> tuple[dict | No
             problem = "the answer is not a JSON object"
         except ValueError as exc:
             problem = str(exc)
-        question = (prompt(page_text, names) + f"\n\nYour previous answer could not be read ({problem}). "
+        question = (prompt(page_text, names, notes) + f"\n\nYour previous answer could not be read ({problem}). "
                     "Answer with the JSON object only.")
     return None, f"the AI's answer could not be read twice ({problem})"
 
 
-def review(provider, document: dict, page_text: str, names: list[str], log=None) -> Opinion:
+def review(provider, document: dict, page_text: str, names: list[str], log=None, notes: dict | None = None) -> Opinion:
     """Ask the AI and compare its reading with the document's fields."""
     if not names:
         return Opinion()
-    data, error = ask(provider, page_text, names, log)
+    data, error = ask(provider, page_text, names, log, notes)
     if data is None:
         return Opinion(error=error)
     fields = document.get("fields") or {}
@@ -322,12 +329,24 @@ def agreed_count(store, name: str, template_hash: str) -> int:
     return sum(1 for d in (saved.get("documents") or {}).values() if d.get("agreed"))
 
 
-def previous(store, name: str, template_hash: str, document_key: str) -> dict | None:
-    """The result of an earlier second opinion on this document by this template file."""
+def question_of(names: list[str], notes: dict | None = None) -> str:
+    """A fingerprint of the question asked (fields and their descriptions): an answer to an earlier,
+    different question (a field described better since) does not stand for this one."""
+    import hashlib
+    text = json.dumps([[n, describe(n, notes)] for n in names])
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+
+
+def previous(store, name: str, template_hash: str, document_key: str, question: str | None = None) -> dict | None:
+    """The result of an earlier second opinion on this document by this template file (and, when
+    given, the same question)."""
     saved = store.data.get("second_opinions", {}).get(name) or {}
     if saved.get("hash") != template_hash:
         return None
-    return (saved.get("documents") or {}).get(document_key)
+    found = (saved.get("documents") or {}).get(document_key)
+    if found is not None and question is not None and found.get("question") != question:
+        return None
+    return found
 
 
 def wanted(store, name: str, template_hash: str, limit: int) -> bool:
@@ -340,13 +359,15 @@ def wanted(store, name: str, template_hash: str, limit: int) -> bool:
     return agreed_count(store, name, template_hash) < limit
 
 
-def record(store, name: str, template_hash: str, document_key: str, opinion: Opinion, source: str) -> None:
+def record(store, name: str, template_hash: str, document_key: str, opinion: Opinion, source: str,
+           question: str | None = None) -> None:
     """Keep the result of one document (not when the AI could not answer: asked again next time)."""
     if opinion.error:
         return
     saved = _entry(store, name, template_hash)
     saved["documents"][document_key] = {
         "agreed": opinion.agreed, "source": source, "when": datetime.now().isoformat(timespec="seconds"),
+        "question": question,
         "issues": [{"level": f.level, "message": f.message()} for f in opinion.findings
                    if f.outcome != "agree"][:20]}
     store.save()
@@ -415,23 +436,27 @@ def check_samples(catalog, store, author, only: str | None = None, per_template:
         digest = template_hash(catalog, template)
         if trusted(store, name, digest):
             continue
-        names = fields_to_check(template, catalog.registry_for(template))
+        registry = catalog.registry_for(template)
+        names = fields_to_check(template, registry)
         if not names:
             continue
+        notes = getattr(registry, "notes", {})
+        question = question_of(names, notes)
         samples = sorted((s for s in store.data["samples"] if s.get("template") == name and store.pdf_path(s).is_file()),
                          key=lambda s: s.get("added", ""), reverse=True)
         asked = 0
         for sample in samples:
             key = f"{sample['pdf']}:{','.join(str(p) for p in sample['pages'])}"
-            if previous(store, name, digest, key) is not None:
+            if previous(store, name, digest, key, question) is not None:
                 continue
             if asked >= per_template or agreed_count(store, name, digest) >= per_template:
                 break
             pdf = store.pdf_path(sample)
             texts = page_texts(pdf)
             log = lambda purpose, prompt, answer, pdf=pdf: author._log(pdf, purpose, prompt, answer)  # noqa: E731
-            found = review(author.provider, sample, page_text(texts, sample["pages"]), names, log)
-            record(store, name, digest, key, found, f"{sample.get('name', pdf.name)} p{','.join(map(str, sample['pages']))} (stored sample)")
+            found = review(author.provider, sample, page_text(texts, sample["pages"]), names, log, notes)
+            record(store, name, digest, key, found, f"{sample.get('name', pdf.name)} p{','.join(map(str, sample['pages']))} (stored sample)",
+                   question)
             asked += 1
             report.append({"template": name, "document": sample.get("name", pdf.name), "pages": sample["pages"],
                            "error": found.error, "agreed": found.agreed,
