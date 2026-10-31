@@ -27,6 +27,8 @@ Usage (PowerShell, from the project folder)
   python process_invoice.py --accept x.yml           # confirm a deliberate change of values read by x.yml
   python process_invoice.py --ai-test                # check the AI settings and connection
   python process_invoice.py --ai-models              # list the models of the AI service
+  python process_invoice.py --waiting                # documents waiting for the AI, and the last AI jobs
+  python process_invoice.py --ai-now                 # hand every waiting group to the AI now
   python process_invoice.py --no-ai ...              # a run without the AI step
   python process_invoice.py --debug ...              # also show invoice2data's own log
 """
@@ -183,6 +185,91 @@ def report_ai(results) -> None:
             print(f"  skipped   {r.pdf} p{r.pages}: {r.problems[0] if r.problems else ''}")
 
 
+def make_room(store, catalog, ai: AISettings):
+    """The waiting room, or None when the AI works at once (ai.batch_size: 0)."""
+    from invoice_engine.templates import family_of
+    from invoice_engine.waiting import WaitingRoom
+    if int(ai.batch_size or 0) <= 0:
+        return None
+    issuers = {family_of(t): t.get("issuer") for t in catalog.templates}
+    return WaitingRoom(store, ai.batch_size, ai.max_wait_days, issuers)
+
+
+def background_jobs(room, store, author, args, pipeline, pdfs, results, names, out_dir, reload) -> list[dict]:
+    """After the run: the AI works on the waiting groups that are due (all with --ai-now). The
+    documents of this run that a job changed are read again and their output written again."""
+    from invoice_engine import jobs
+    due = room.due(force=args.ai_now, setup=author._setup())
+    waiting = len(room.documents)
+    if not due:
+        if waiting:
+            print(f"\nWaiting for the AI: {waiting} document(s) in {len(room.groups())} group(s); none is due "
+                  f"(python process_invoice.py --waiting shows them, --ai-now sends them now)")
+        return results
+    print(f"\nAI jobs: {len(due)} group(s) are due")
+    reports = jobs.run_due(store, room, author, Path(args.types), Path(args.config), force=args.ai_now,
+                           progress=lambda text: print(text, flush=True))
+    touched = {r["name"] for report in reports for r in report.get("reread", [])}
+    if not touched:
+        return results
+    pipeline.full = reload()
+    pipeline.state, pipeline._prepared = {}, False
+    print("\nRead again after the AI jobs:")
+    updated = []
+    for pdf, result in zip(pdfs, results):
+        if pdf.name in touched:
+            try:
+                result = pipeline.process(pdf)
+            except Exception as exc:  # keep the first reading
+                print(f"  {pdf.name}: could not be read again ({type(exc).__name__}: {exc})")
+            else:
+                result["source_path"] = str(pdf)
+                write_json(result, out_dir, names[pdf])
+                print_summary(result)
+        updated.append(result)
+    return updated
+
+
+def run_jobs_only(catalog, settings: dict, ai: AISettings, args) -> int:
+    """--ai-now without PDFs: hand every waiting group to the AI."""
+    from invoice_engine import jobs
+    store = SampleStore(sample_folder(settings), int(settings.get("samples_per_layout") or 20))
+    author = make_author(ai, args, store)
+    if author is None:
+        print("The AI step is off or cannot run: nothing is sent.")
+        return 1
+    room = make_room(store, catalog, ai)
+    if room is None or not room.documents:
+        print("No document is waiting for the AI.")
+        return 0
+    reports = jobs.run_due(store, room, author, Path(args.types), Path(args.config), force=True,
+                           progress=lambda text: print(text, flush=True))
+    print(f"\n{len(reports)} job(s) done; {len(room.documents)} document(s) still waiting")
+    return 0
+
+
+def report_waiting(catalog, settings: dict, ai: AISettings) -> int:
+    from invoice_engine import jobs
+    store = SampleStore(sample_folder(settings), int(settings.get("samples_per_layout") or 20))
+    room = make_room(store, catalog, ai) or make_room(store, catalog, AISettings(batch_size=3))
+    groups = room.groups()
+    if not groups:
+        print("No document is waiting for the AI.")
+    for group, members in groups.items():
+        print(f"\n{group}")
+        print(f"  {room.status_line(members[0])}")
+        for entry in members:
+            print(f"  - {entry['name']} p{','.join(map(str, entry['pages']))}  ({entry.get('status') or entry['kind']}, "
+                  f"since {entry.get('added', '')[:16].replace('T', ' ')})"
+                  + (f": {entry['reason'][:120]}" if entry.get("reason") else ""))
+    history = room.data.get("jobs", [])[-10:]
+    if history:
+        print("\nLast AI jobs:")
+        for report in history:
+            print(f"  {str(report.get('when', ''))[:16].replace('T', ' ')}  {report.get('group')}: {jobs.describe(report)[:200]}")
+    return 0
+
+
 def sample_folder(settings: dict) -> Path:
     folder = Path(settings.get("sample_store") or "samples")
     return folder if folder.is_absolute() else BASE_DIR / folder
@@ -303,6 +390,10 @@ def main() -> int:
                         help="let the AI read the text fields of the stored samples of every template (or "
                              "only TEMPLATE) on its own and report where it reads them differently")
     parser.add_argument("--no-ai", action="store_true", help="do not use the AI step in this run")
+    parser.add_argument("--waiting", action="store_true",
+                        help="list the documents waiting for the AI and the last AI jobs, then exit")
+    parser.add_argument("--ai-now", action="store_true",
+                        help="hand every waiting group to the AI now, whatever its size (also without PDFs)")
     parser.add_argument("--ai-retry", action="store_true",
                         help="give documents to the AI again even if it could not handle them before")
     parser.add_argument("--ai-test", action="store_true", help="check the AI settings and connection, then exit")
@@ -373,9 +464,13 @@ def main() -> int:
         if focus and Path(focus).suffix.lower() not in (".yml", ".yaml", ".json"):
             focus, inputs = "", [focus] + inputs         # "--fingerprint samples": a folder
         return store_fingerprints(focus, collect_pdfs(inputs), catalog)
+    if args.waiting:
+        return report_waiting(catalog, settings, ai)
     if not catalog.templates:
         sys.exit("No usable templates.")
 
+    if args.ai_now and not args.inputs:
+        return run_jobs_only(catalog, settings, ai, args)
     pdfs = collect_pdfs(args.inputs)
     if not pdfs:
         sys.exit("No PDF files to process.")
@@ -386,7 +481,9 @@ def main() -> int:
     store = SampleStore(sample_folder(settings), int(settings.get("samples_per_layout") or 20))
     author = make_author(ai, args, store) if settings.get("automatic_checks", True) else None
     reload = lambda: load_catalog(Path(args.types), Path(args.config))   # noqa: E731
-    pipeline = (Pipeline(catalog, store, author=author, reload=reload, progress=lambda text: print(text, flush=True))
+    room = make_room(store, catalog, ai) if author is not None else None
+    pipeline = (Pipeline(catalog, store, author=author, reload=reload, progress=lambda text: print(text, flush=True),
+                         waiting=room)
                 if settings.get("automatic_checks", True) else None)
     if pipeline:
         pipeline.prepare()                          # checks templates that are new or changed
@@ -403,6 +500,9 @@ def main() -> int:
         write_json(result, out_dir, names[pdf])
         print_summary(result)
         results.append(result)
+    if room is not None:
+        results = background_jobs(room, store, author, args, pipeline, pdfs, results, names, out_dir, reload)
+        catalog = pipeline.full
     workbook = write_excel(results, out_dir / "documents.xlsx", catalog)
     if workbook.name != "documents.xlsx":
         print(f"documents.xlsx is open in another program; this run's workbook is {workbook.name}")
@@ -416,8 +516,10 @@ def main() -> int:
     if crashed:
         print(f"Files that could not be processed: {', '.join(crashed)}")
     unrecognized = sum(len(r["unrecognized_pages"]) for r in results)
+    pending = sum(u.get("status") == "PENDING" for r in results for u in r["unrecognized_pages"])
     print(f"\nDocuments: {len(documents)}   OK: {counts['OK']}   CHECK: {counts['CHECK']}   "
-          f"FAIL: {counts['FAIL']}   unrecognized page groups: {unrecognized}")
+          f"FAIL: {counts['FAIL']}   unrecognized page groups: {unrecognized}"
+          + (f" ({pending} PENDING: waiting for the AI)" if pending else ""))
     print_attention(results)
     if unrecognized:
         print(f"Text of unrecognized pages: {out_dir / 'unrecognized'}")
@@ -442,7 +544,10 @@ def print_attention(results: list[dict]) -> None:
                          f"pages {pages}  {number}  [{doc['template']}]", reasons[0] if reasons else ""))
         for u in r["unrecognized_pages"]:
             pages = ",".join(str(p) for p in u["pages"])
-            rows.append((2, name, "NO MATCH", f"pages {pages}", u.get("reason") or "no template matches"))
+            if u.get("status") == "PENDING":
+                rows.append((3, name, "PENDING", f"pages {pages}", u.get("waiting") or "waiting for the AI"))
+            else:
+                rows.append((2, name, "NO MATCH", f"pages {pages}", u.get("reason") or "no template matches"))
         if any(n.startswith("ERROR") for n in r["notes"]) and not r["documents"] and not r["unrecognized_pages"]:
             rows.append((0, name, "ERROR", "", next(n for n in r["notes"] if n.startswith("ERROR"))))
     if not rows:

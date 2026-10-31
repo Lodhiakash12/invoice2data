@@ -1,0 +1,159 @@
+# Blinkit - tax invoice for goods, issued by the store (seller) that sold them. The seller is
+# Blink Commerce or another company (Zomato Hyperpure); Blink Commerce is printed at the bottom
+# as the e-commerce operator. One page per seller; an order can have several.
+# The item table: the UPC column and the item description wrap over several lines; MRP and
+# discount are per unit; the cess is printed only as a rate, its amount is in the line total.
+# Since 2026 every item can be followed by a "Delivery and other charges" row (dashes instead of
+# MRP, discount and quantity), and an "Annexure" page splitting those charges by tax rate
+# follows the invoice; it is attached to it.
+issuer: Blinkit
+
+keywords:
+  - 'Sold By / Seller'
+  - 'Blinkit'
+  - 'Additional Cess Val'
+continuation_keywords:
+  - 'Annexure'
+  - 'Nature of charge'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name, buyer_name]
+optional_fields: [amount_cgst, amount_sgst, amount_igst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice Number:\s*(\S+)'
+  # "Invoice:   02-Dec-2025" (the label "Invoice Date" is printed over two lines)
+  date: 'Invoice:\s+(\d{2}-[A-Z][a-z]{2}-\d{4})'
+  order_number: 'Order Id:\s+(\S+)'
+  place_of_supply: '(?m)Place of:\s+(\S.*?)\s*$'
+  reverse_charge: 'reverse charge\s*-\s*(\w+)'
+
+  # Seller: name, store, address lines up to GSTIN (the invoice number on the right is dropped)
+  seller_name: '(?m)^Sold By / Seller\s*\n(\S.*?)\s*$'
+  seller_trade_name: '(?m)^Sold By / Seller\s*\n[^\n]*\n(\S.*?)\s*$'
+  seller_address: {parser: regex, regex: '(?s)Sold By / Seller\s*\n[^\n]*\n[^\n]*\n(.*?)\nGSTIN:', replace: [['\s*Invoice Number:\s*\S+', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  seller_tax_id: '(?m)^GSTIN:\s+(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_fssai: '(?m)^FSSAI License Number:\s+(\d+)'
+  seller_company_reg: '(?m)^CIN:\s+(\S+)'
+  seller_pan: '(?m)^PAN:\s+([A-Z]{5}\d{4}[A-Z])'
+
+  # Operator: Blink Commerce, printed below the table (labels without colons)
+  operator_name: '(?m)^(Blink Commerce Private Limited) \(formerly'
+  operator_tax_id: '(?m)^GSTIN\s{2,}(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  operator_fssai: '(?m)^GSTIN\s{2,}\S+\s{2,}FSSAI License Number\s{2,}(\d+)'
+  operator_company_reg: '(?m)^CIN\s{2,}(\S+)'
+  operator_pan: '(?m)^CIN\s{2,}\S+\s{2,}PAN\s{2,}([A-Z]{5}\d{4}[A-Z])'
+
+  # Buyer: left column; the right column (Date / Place of Supply) is dropped
+  buyer_name: '(?m)^Name:\s+(\S.*?)\s{2,}'
+  buyer_address: {parser: regex, regex: '(?s)\nAddress:\s+(.*?\nPin code:\s*\d{6})', replace: [['Pin code:\s*', ''], ['(?m)(?<=\S)[ \t]{3,}\S[^\n]*$', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  buyer_state: '(?m)^State:\s+(\S.*?)\s*$'
+
+  # Total row: quantity, CGST, SGST, total; or quantity, IGST, total (no taxable total is printed)
+  amount_cgst: '(?m)^Total\s+\d+\s+(\d[\d,]*(?:\.\d+)?)\s+\d[\d,]*(?:\.\d+)?\s+\d[\d,]*(?:\.\d+)?\s*$'
+  amount_sgst: '(?m)^Total\s+\d+\s+\d[\d,]*(?:\.\d+)?\s+(\d[\d,]*(?:\.\d+)?)\s+\d[\d,]*(?:\.\d+)?\s*$'
+  amount_igst: '(?m)^Total\s+\d+\s+(\d[\d,]*(?:\.\d+)?)\s+\d[\d,]*(?:\.\d+)?\s*$'
+  amount: '(?m)^Total\s+\d+\s+(?:\d[\d,]*(?:\.\d+)?\s+)?\d[\d,]*(?:\.\d+)?\s+(\d[\d,]*(?:\.\d+)?)\s*$'
+  total_in_words: 'Amount in\s+(\S[^\n]*?Only)'
+
+  lines:
+    parser: lines
+    start: 'Sr\. no\s+UPC\s+Item Description'
+    end: '(?m)^Total\s+\d'
+    # "1   890   Coca-Cola Zero   40.00   2.50   4   107.14   20.00   21.43   20.00   21.43   0.00   0.00   150.00"
+    # "-   Delivery and other   -   -   -   2.51   2.50   0.06   2.50   0.06   0   0.00   2.64"
+    # columns: UPC part, description, MRP, discount (per unit), qty, taxable value, CGST %, CGST,
+    # SGST %, SGST (or IGST %, IGST), cess %, additional cess value, total. The UPC continues on the next lines with
+    # the description; it is not read (its parts are split over several lines).
+    first_line: '^\s*(?:(?P<pos>\d+)\s+\d{1,4}|-)\s+(?P<name>\S.*?)\s{2,}(?:(?P<price_unit>\d[\d,]*(?:\.\d+)?)|-)\s+(?:(?P<discount_unit>\d[\d,]*(?:\.\d+)?)|-)\s+(?:(?P<qty>\d+)|-)\s+(?P<price_subtotal>\d[\d,]*(?:\.\d+)?)\s+(?:(?P<igst_rate>\d+(?:\.\d+)?)\s+(?P<igst_amount>\d[\d,]*(?:\.\d+)?)|(?P<cgst_rate>\d+(?:\.\d+)?)\s+(?P<cgst_amount>\d[\d,]*(?:\.\d+)?)\s+(?P<sgst_rate>\d+(?:\.\d+)?)\s+(?P<sgst_amount>\d[\d,]*(?:\.\d+)?))\s+(?P<cess_rate>\d+(?:\.\d+)?)\s+(?P<additional_cess>\d[\d,]*(?:\.\d+)?)\s+(?P<price_total>\d[\d,]*(?:\.\d+)?)\s*$'
+    # continuation: a UPC part alone, or (a UPC part and) more of the description
+    line: '^\s+(?:\d{1,4}(?=\s*$)|(?:\d{1,4}\s+)?(?P<name>\S.*?))\s*$'
+    types:
+      pos: int
+      qty: int
+      price_unit: float
+      discount_unit: float
+      price_subtotal: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      cess_rate: float
+      additional_cess: float
+      price_total: float
+
+checks:
+  # MRP and discount are per unit; the cess amount is not printed, only its rate
+  disable: [qty x unit price, taxable value + tax, untaxed + tax + adjustments = total]
+  line:
+    - {name: qty x (MRP - discount) = total, rule: "qty * (price_unit - discount_unit) == price_total", tolerance: "0.01"}
+    - name: taxable + GST + cess = total
+      rule: "price_subtotal + taxes() + round2(price_subtotal * cess_rate / 100) == price_total"
+      tolerance: "0.02"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%b-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 7
+  order:
+    - ['invoice', 9]
+    - ['sold', 0]
+    - ['seller', 1]
+    - ['private', 2]
+    - ['limited', 2]
+    - ['gstin', 0]
+    - ['fssai', 0]
+    - ['license', 1]
+    - ['number', 1]
+    - ['cin', 0]
+    - ['pan', 0]
+    - ['invoice', 0]
+    - ['order', 7]
+    - ['name', 0]
+    - ['invoice', 7]
+    - ['address', 0]
+    - ['place', 7]
+    - ['pin', 0]
+    - ['code', 0]
+    - ['state', 0]
+    - ['upc', 1]
+    - ['item', 1]
+    - ['description', 1]
+    - ['cess', 8]
+    - ['additional', 9]
+    - ['cess', 10]
+    - ['val', 10]
+    - ['total', 10]
+    - ['total', 0]
+    - ['amount', 0]
+    - ['blink', 0]
+    - ['commerce', 1]
+    - ['private', 1]
+    - ['limited', 2]
+    - ['formerly', 3]
+    - ['private', 5]
+    - ['limited', 6]
+    - ['gstin', 0]
+    - ['fssai', 3]
+    - ['license', 4]
+    - ['number', 5]
+    - ['cin', 0]
+    - ['pan', 3]
+    - ['charge', 3]
+    - ['order', 4]
+    - ['blinkit', 7]
+    - ['fssai', 5]
+    - ['fssai', 0]
+    - ['license', 1]
+    - ['number', 2]
+    - ['number', 6]
+    - ['pin', 6]
+    - ['amount', 6]

@@ -1,0 +1,115 @@
+# Shiprocket - tax invoice for shipping-related charges (SAC / Description / Total table,
+# tax shown as a line below the items, ends with "Grand Total Value").
+# The services invoice with Qty / HSN columns is shiprocket_services_invoice.yml.
+issuer: Shiprocket
+
+keywords:
+  - 'Shiprocket Limited'
+  - 'TAX INVOICE'
+  - 'Grand Total Value'
+exclude_keywords:
+  - 'Total Invoice Amount:'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+# IGST when the customer is in another state, CGST + SGST (UTGST) in Shiprocket's state
+optional_fields: [tax_rate, amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice No\.\s*:\s*(\S+)'
+  date: 'Invoice Date\s*:\s*(\d{2}/\d{2}/\d{4})'
+  irn: 'IRN:\s*([0-9a-f]{64})'
+
+  seller_name: '(Shiprocket Limited)'
+  # Address line follows the former-name note
+  seller_address: '(?s)Bigfoot Retail Solutions Private Limited\)\s*\n\s*(\S[^\n]*?)\s*\n'
+  seller_pan: 'PAN Number:\s*([A-Z]{5}\d{4}[A-Z])'
+  seller_company_reg: 'CIN Number:\s*(\S+)'
+  # Shiprocket's GSTIN is in the left column; the customer's is far right
+  # (on some invoices the Due Date is printed on the same line, far right)
+  seller_tax_id: '(?m)^[ \t]{0,20}GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})(?:\s|$)'
+  seller_email: 'Email:\s*(\S+@\S+)'
+
+  # Buyer: left column below "Invoice To:", read from the word positions; the right column
+  # (state code, place of supply, GSTIN, reverse charge) is printed half a line lower and is
+  # left out by its position
+  buyer_name: {parser: region, heading: '^Invoice To:', max_lines: 1}
+  buyer_address: {parser: region, heading: '^Invoice To:', skip: 1}
+  buyer_state_code: 'State Code:\s*(\d{2})'
+  place_of_supply: 'Place of Supply:\s*(\S[^\n]*?)\s*\n'
+  buyer_tax_id: '(?m)Place of Supply:[^\n]*\n(?:[^\n]*\n)*?[^\n]*GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  reverse_charge: 'Reverse Charge:\s*(\S+)'
+
+  # the rate of the tax printed: the IGST rate, or the CGST rate (the SGST rate is the same)
+  tax_rate: {parser: regex, regex: ['([\d.]+)%\s+IGST\s+[\d,]+(?:\.\d{1,2})?', '([\d.]+)%\s+CGST\s+[\d,]+(?:\.\d{1,2})?'], type: float}
+  amount_igst: '[\d.]+%\s+IGST\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_cgst: '[\d.]+%\s+CGST\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_sgst: '[\d.]+%\s+(?:SGST|UTGST)\s+([\d,]+(?:\.\d{1,2})?)'
+  amount: 'Grand Total Value\s+([\d,]+(?:\.\d{1,2})?)'
+
+  lines:
+    parser: lines
+    # the code column is headed "SAC No." on freight invoices and "HSN" on plan invoices
+    start: '(?:SAC No\.|HSN)\s+Description\s+Total'
+    end: '[\d.]+%\s+(?:IGST|CGST|SGST|UTGST)'
+    # "996812     EARLY COD/ Instant COD CHARGES*     13.19"
+    first_line: '^\s*(?P<hsn_sac>\d{6})\s+(?P<name>\S.*?)\s{2,}(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s*$'
+    line: '^\s{20,}(?P<name>[A-Za-z].*?)\s*$'
+    types:
+      price_subtotal: float
+
+checks:
+  document:
+    - name: igst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_igst"
+    - name: cgst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_cgst"
+    - name: sgst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_sgst"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d/%m/%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 6
+  order:
+    - ['shiprocket', 0]
+    - ['limited', 1]
+    - ['shiprocket', 2]
+    - ['private', 3]
+    - ['limited', 3]
+    - ['bigfoot', 2]
+    - ['retail', 2]
+    - ['solutions', 3]
+    - ['limited', 4]
+    - ['pan', 0]
+    - ['number', 1]
+    - ['invoice', 7]
+    - ['cin', 0]
+    - ['number', 1]
+    - ['invoice', 7]
+    - ['date', 7]
+    - ['gstin', 0]
+    - ['irn', 0]
+    - ['invoice', 0]
+    - ['state', 7]
+    - ['code', 7]
+    - ['private', 2]
+    - ['limited', 3]
+    - ['place', 7]
+    - ['supply', 7]
+    - ['gstin', 7]
+    - ['reverse', 7]
+    - ['charge', 7]
+    - ['sac', 1]
+    - ['description', 4]
+    - ['total', 10]
+    - ['igst', 4]
+    - ['grand', 3]
+    - ['total', 4]
+    - ['value', 4]

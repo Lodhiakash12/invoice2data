@@ -1,0 +1,112 @@
+# Flipkart - Flipkart Internet's own service invoice (platform fee), "Billing Address" layout.
+# The 2026 print ends the address with "State:", the 2025 print with the phone line and no state.
+issuer: Flipkart
+
+keywords:
+  - 'Tax Invoice'
+  - 'Sold By:'
+  - 'Invoice Number #'
+  - 'Billing Address'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+optional_fields: [buyer_state, amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice Number #\s*(\S+)'
+  order_number: 'Order ID:\s*(OD\d+)'
+  date_order: 'Order Date:\s*(\d{2}-\d{2}-\d{4})'
+  date: 'Invoice Date:\s*(\d{2}-\d{2}-\d{4})'
+
+  seller_name: 'Sold By:\s*(.+?)\s*,?\s*\n'
+  seller_address: {parser: regex, regex: '(?s)Ship-from Address:\s*(.*?),\s*CIN:', replace: ['\s+', ' ']}
+  seller_company_reg: 'Ship-from Address:[\s\S]*?CIN:\s*(\S+)'
+  seller_tax_id: 'GSTIN - (\S+)'
+
+  # the Billing Address column (right of the Order ID / dates column), read from the word positions
+  buyer_name: {parser: region, heading: 'Billing Address', max_lines: 1}
+  buyer_address: {parser: region, heading: 'Billing Address', skip: 1, stop: '^(?:Phone|State:)', replace: [['\s*Phone:\s*\S*', '']]}
+  buyer_state: '(?m)^\s+State:\s*(\S.*?)\s*$'
+
+  # Totals row: qty, gross, discount (printed negative), taxable, IGST or CGST + SGST, total
+  amount_gross: '(?m)^\s+Total\s+\d+\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?(?:\s+-?[\d,]+(?:\.\d{1,2})?)?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_discount: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?(?:\s+-?[\d,]+(?:\.\d{1,2})?)?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_untaxed: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?(?:\s+-?[\d,]+(?:\.\d{1,2})?)?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_igst: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_cgst: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_sgst: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount: 'Grand Total\s+\D*?([\d,]+(?:\.\d{1,2})?)'
+
+  # read by its column headings: IGST (customer in another state) or CGST + SGST columns
+  lines:
+    parser: table
+    start: '(?m)^\s*Description\s+Qty\s+Gross'
+    end: '(?m)^\s+Total\s+\d'
+    columns:
+      name: 'Description'
+      qty: 'Qty'
+      gross_amount: 'Gross'
+      discount: 'Discount'
+      price_subtotal: 'Taxable'
+      igst_amount: 'IGST'
+      cgst_amount: 'CGST'
+      sgst_amount: 'SGST|UTGST'
+      cess_amount: 'CESS'
+      price_total: 'Total'
+    row: [qty, price_total]
+    # "SAC: 998599" is printed in front of each row, under no heading
+    prefix: '^SAC:\s*(?P<hsn_sac>\d+)'
+    extra:
+      - '^\s+IGST:\s*(?P<igst_rate>[\d.]+)\s*%'
+      - '^\s+CGST:\s*(?P<cgst_rate>[\d.]+)\s*%'
+      - '^\s+SGST(?:/UTGST)?:\s*(?P<sgst_rate>[\d.]+)\s*%'
+      - '^\s+\d+\.\s*\[IMEI/Serial No:\s*(?P<serial_no>[^\]]*?)\s*\]'
+    types:
+      qty: int
+      gross_amount: float
+      discount: float
+      price_subtotal: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      cess_amount: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 6
+  order:
+    - ['tax', 5]
+    - ['invoice', 5]
+    - ['sold', 0]
+    - ['address', 0]
+    - ['cin', 3]
+    - ['gstin', 0]
+    - ['invoice', 8]
+    - ['number', 8]
+    - ['order', 0]
+    - ['billing', 3]
+    - ['address', 3]
+    - ['order', 0]
+    - ['date', 0]
+    - ['invoice', 0]
+    - ['date', 0]
+    - ['state', 3]
+    - ['description', 2]
+    - ['qty', 5]
+    - ['gross', 6]
+    - ['total', 10]
+    - ['total', 3]
+    - ['grand', 6]
+    - ['total', 7]
+    - ['cin', 0]

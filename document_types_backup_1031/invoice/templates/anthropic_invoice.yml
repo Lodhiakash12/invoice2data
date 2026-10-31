@@ -1,0 +1,97 @@
+# Anthropic, PBC - subscription invoice (Stripe-style layout).
+issuer: Anthropic, PBC
+
+keywords:
+  - 'Anthropic, PBC'
+  - 'Invoice number'
+  - 'Date of issue'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice number\s+(\S+)'
+  date: 'Date of issue\s+([A-Z][a-z]+ \d{1,2}, \d{4})'
+  date_due: 'Date due\s+([A-Z][a-z]+ \d{1,2}, \d{4})'
+
+  # Seller (left column)
+  seller_name: '(?m)^(Anthropic, PBC)'
+  seller_address: {parser: regex, regex: '(?s)Anthropic, PBC[^\n]*\n\s*\n(.*?)\n\S+@anthropic\.com', replace: [['[ \t]{2,}[^\n]*', ''], ['\s*\n\s*', ', ']]}
+  seller_email: '(\S+@anthropic\.com)'
+  seller_tax_id: 'India GST:\s*(\S+)'
+
+  # Buyer (right column, next to the seller's address), read from the word positions
+  buyer_name: {parser: region, heading: 'Bill to', max_lines: 1}
+  buyer_address: {parser: region, heading: 'Bill to', skip: 1, stop: '@', join: ', '}
+  buyer_email: '\n[ \t]{10,}(\S+@\S+)[ \t]*\n'
+
+  # Currency from the symbol in the "... due" headline (written as \u escapes, not the symbol itself)
+  currency: {parser: regex, regex: '(?m)^(\S)[\d,]+(?:\.\d{1,2})? due', replace: [['\u20b9', 'INR'], ['\$', 'USD'], ['\u20ac', 'EUR'], ['\u00a3', 'GBP']]}
+
+  amount_subtotal: 'Subtotal\s+\D?([\d,]+(?:\.\d{1,2})?)'
+  amount_untaxed: 'Total excluding tax\s+\D?([\d,]+(?:\.\d{1,2})?)'
+  tax_label: '(?m)^\s+(\S[^\n(]*?)\s*\([\d.]+% on '
+  tax_rate: {parser: regex, regex: '\(([\d.]+)% on ', type: float}
+  amount_tax: '\([\d.]+% on [^)]*\)\s+\D?([\d,]+(?:\.\d{1,2})?)'
+  amount: '(?m)^\s+Total[ \t]{2,}\D?([\d,]+(?:\.\d{1,2})?)\s*$'
+  amount_due: 'Amount due\s+\D?([\d,]+(?:\.\d{1,2})?)'
+  hsn_sac: 'HSN Code:\s*(\d+)'
+
+  lines:
+    parser: lines
+    start: 'Description\s+Qty\s+Unit price'
+    end: '(?m)^\s+Subtotal'
+    # "Claude Pro   1   <sym>2,033.05   18%   <sym>2,033.05"  (\D? skips the currency sign)
+    first_line: '^(?P<name>\S.*?)\s{2,}(?P<qty>\d+)\s+\D?(?P<price_unit>[\d,]+(?:\.\d{1,2})?)\s+(?P<line_tax_percent>\d+(?:\.\d+)?)%\s+\D?(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s*$'
+    # Service period under the item, e.g. "Oct 5 - Nov 5, 2026"
+    line: '^(?P<line_note>\S.*?)\s*$'
+    types:
+      qty: int
+      price_unit: float
+      line_tax_percent: float
+      price_subtotal: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%B %d, %Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['invoice', 0]
+    - ['invoice', 0]
+    - ['number', 1]
+    - ['date', 0]
+    - ['issue', 1]
+    - ['date', 0]
+    - ['due', 1]
+    - ['india', 2]
+    - ['gst', 2]
+    - ['bill', 4]
+    - ['anthropic', 0]
+    - ['pbc', 1]
+    - ['india', 4]
+    - ['due', 1]
+    - ['description', 0]
+    - ['qty', 7]
+    - ['unit', 8]
+    - ['price', 8]
+    - ['tax', 9]
+    - ['amount', 10]
+    - ['subtotal', 5]
+    - ['total', 5]
+    - ['excluding', 6]
+    - ['tax', 7]
+    - ['gst', 5]
+    - ['india', 6]
+    - ['total', 5]
+    - ['amount', 5]
+    - ['due', 6]
+    - ['hsn', 0]
+    - ['code', 1]
+    - ['tax', 0]
+    - ['invoice', 0]

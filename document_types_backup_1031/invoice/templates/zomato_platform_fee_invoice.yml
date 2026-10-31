@@ -1,0 +1,128 @@
+# Zomato / Eternal - Eternal's own service invoice (platform fee and similar charges).
+issuer: Zomato (Eternal Limited)
+
+keywords:
+  - 'ETERNAL LIMITED (FORMERLY KNOWN AS ZOMATO LIMITED)'
+  - 'Customer Details'
+  - 'Service Details'
+exclude_keywords:
+  - 'Tax Invoice on behalf of'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+optional_fields: [amount_cgst, amount_sgst, amount_igst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice No:\s*(\S+)'
+  date: 'Invoice Date:\s*(\d{4}-\d{2}-\d{2})'
+  # "Order id 8626225731 dated 2026-09-24" or "Order id (8261790801) dated (2026-06-21)"
+  order_number: 'Order id\s+\(?(\d+)'
+  date_order: 'Order id\s+\(?\d+\)?\s+dated\s+\(?(\d{4}-\d{2}-\d{2})'
+
+  # Seller = Eternal Limited
+  seller_name: '(?m)^\s*(ETERNAL LIMITED) \(FORMERLY KNOWN AS ZOMATO LIMITED\)\s*$'
+  # The right-hand PAN / CIN / GSTIN column is on its own lines (2026) or on the same lines as
+  # the address and state (2025): drop it either way
+  seller_address: {parser: regex, regex: '(?s)\n[ \t]*Address:\s*(.*?)\n\s*State:', replace: [['\s+(?:PAN|CIN|GSTIN):[ \t]*\S+', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  seller_state: '(?m)^\s*State:\s*(\S.*?)(?:\s{2,}\S.*)?$'
+  seller_email: 'Email ID:\s*(\S+)'
+  seller_pan: 'PAN:\s*(\S+)'
+  seller_company_reg: 'CIN:\s*(\S+)'
+  # The first well-formed GSTIN on the page is Eternal's; the customer's says UNREGISTERED
+  seller_tax_id: 'GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+
+  # Buyer
+  buyer_name: '(?m)^\s*Name:\s*(.+?)\s*$'
+  buyer_tax_id: '(?s)Customer Details.*?GSTIN:\s*(\S+)'
+  # Address can wrap below the right-hand "Place of Supply" column: drop that column's line
+  buyer_address: {parser: regex, regex: '(?s)Delivery Address:\s*(.*?)\n\s*\n', replace: [['\n[ \t]*Place of Supply:[^\n]*', ''], ['\s+', ' ']]}
+  place_of_supply: '(?m)Place of Supply:\s*(.+?)\s*$'
+
+  hsn_sac: 'HSN Code:\s*(\d+)'
+  supply_description: '(?m)Supply Description:\s*(.+?)\s*$'
+
+  # Totals row: taxable, CGST, SGST, total; or taxable, IGST, total (customer in another state). The total is sometimes printed with three decimals
+  # (17.582), so amounts accept two or three.
+  amount_untaxed: '(?m)^\s*Total\s+([\d,]+(?:\.\d{1,3})?)\s+(?:[\d,]+(?:\.\d{1,3})?\s+)?[\d,]+(?:\.\d{1,3})?\s+[\d,]+(?:\.\d{1,3})?\s*$'
+  amount_cgst: '(?m)^\s*Total\s+[\d,]+(?:\.\d{1,3})?\s+([\d,]+(?:\.\d{1,3})?)\s+[\d,]+(?:\.\d{1,3})?\s+[\d,]+(?:\.\d{1,3})?\s*$'
+  amount_sgst: '(?m)^\s*Total\s+[\d,]+(?:\.\d{1,3})?\s+[\d,]+(?:\.\d{1,3})?\s+([\d,]+(?:\.\d{1,3})?)\s+[\d,]+(?:\.\d{1,3})?\s*$'
+  amount_igst: '(?m)^\s*Total\s+[\d,]+(?:\.\d{1,3})?\s+([\d,]+(?:\.\d{1,3})?)\s+[\d,]+(?:\.\d{1,3})?\s*$'
+  amount: '(?m)^\s*Total\s+[\d,]+(?:\.\d{1,3})?\s+(?:[\d,]+(?:\.\d{1,3})?\s+)?[\d,]+(?:\.\d{1,3})?\s+([\d,]+(?:\.\d{1,3})?)\s*$'
+  # Independent second total; the currency sign is skipped so its encoding never matters
+  amount_paid: 'Amount of \D*?([\d,]+(?:\.\d{1,3})?) settled'
+
+  lines:
+    parser: lines
+    start: 'Sr\.No\s+Particulars'
+    # (?m) is required: without it ^ only matches at the very start of the text
+    end: '(?m)^\s*Total\s+\d'
+    # "1   Platform fee   14.99   1.35   1.35   17.69"
+    first_line: '^\s*(?P<pos>\d+)\s+(?P<name>\S.*?)\s+(?P<price_subtotal>\d[\d,]*(?:\.\d{1,3})?)\s+(?:(?P<igst_amount>\d[\d,]*(?:\.\d{1,3})?)|(?P<cgst_amount>\d[\d,]*(?:\.\d{1,3})?)\s+(?P<sgst_amount>\d[\d,]*(?:\.\d{1,3})?))\s+(?P<price_total>\d[\d,]*(?:\.\d{1,3})?)\s*$'
+    line: '^\s+(?P<name>\S.*?)\s*$'
+    types:
+      pos: int
+      price_subtotal: float
+      igst_amount: float
+      cgst_amount: float
+      sgst_amount: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%Y-%m-%d']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 2
+  order:
+    - ['tax', 0]
+    - ['invoice', 1]
+    - ['eternal', 1]
+    - ['limited', 1]
+    - ['formerly', 2]
+    - ['known', 3]
+    - ['zomato', 4]
+    - ['limited', 5]
+    - ['address', 0]
+    - ['pan', 7]
+    - ['state', 0]
+    - ['cin', 7]
+    - ['gstin', 7]
+    - ['email', 0]
+    - ['invoice', 7]
+    - ['date', 7]
+    - ['invoice', 0]
+    - ['customer', 1]
+    - ['details', 1]
+    - ['name', 0]
+    - ['gstin', 7]
+    - ['delivery', 0]
+    - ['address', 1]
+    - ['place', 7]
+    - ['supply', 7]
+    - ['service', 1]
+    - ['details', 1]
+    - ['hsn', 0]
+    - ['code', 1]
+    - ['supply', 7]
+    - ['description', 7]
+    - ['particulars', 2]
+    - ['amount', 5]
+    - ['total', 10]
+    - ['total', 1]
+    - ['amount', 0]
+    - ['settled', 2]
+    - ['order', 6]
+    - ['dated', 8]
+    - ['tax', 0]
+    - ['eternal', 5]
+    - ['limited', 6]
+    - ['formerly', 6]
+    - ['known', 8]
+    - ['zomato', 9]
+    - ['limited', 9]
+    - ['address', 3]
+    - ['invoice', 9]

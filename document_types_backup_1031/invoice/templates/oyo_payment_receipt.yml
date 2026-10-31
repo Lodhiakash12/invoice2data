@@ -1,0 +1,109 @@
+# OYO (Oravel Stays) - hotel payment receipt. It has no invoice number of its own:
+# the booking ID is its reference, so invoice_number holds the booking ID.
+issuer: OYO (Oravel Stays)
+
+keywords:
+  - 'PAYMENT RECEIPT'
+  - 'Booking ID'
+  - 'Oravel Stays'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: payment_receipt}
+  invoice_number: 'Booking ID\s+Payment Mode\s*\n\s*(\S+)'
+  date: '(?m)Date:\s*(\d{2}/\d{2}/\d{4})'
+  payment_mode: 'Booking ID\s+Payment Mode\s*\n\s*\S+\s+(.+?)\s*\n'
+
+  buyer_name: 'Guest Name:\s*(.+?)\s{2,}'
+  hotel_name: 'Hotel Details[^\n]*\n\s*(.+?),?\s{2,}'
+  hotel_address: 'Hotel Details[^\n]*\n[^\n]*\n\s*(\S.*?)\s*\n'
+  date_check_in: 'Check In\s+Check Out\s+Rooms\s*\n[^\n]*?(\d{2}/\d{2}/\d{4})\s+\d{2}/\d{2}/\d{4}'
+  date_check_out: 'Check In\s+Check Out\s+Rooms\s*\n[^\n]*?\d{2}/\d{2}/\d{4}\s+(\d{2}/\d{2}/\d{4})'
+  rooms: {parser: regex, regex: 'Check In\s+Check Out\s+Rooms\s*\n[^\n]*?\d{2}/\d{2}/\d{4}\s+\d{2}/\d{2}/\d{4}\s+(\d+)', type: int}
+
+  seller_name: '(?m)^\s+(Oravel Stays Private Limited)\s*$'
+  seller_address: 'Registered Office:\s*(.+?)\s*\n'
+  seller_tax_id: 'GSTIN\s+CIN\s*\n\s*\n?\s*(\S+)\s+\S+'
+  seller_company_reg: 'GSTIN\s+CIN\s*\n\s*\n?\s*\S+\s+(\S+)'
+
+  amount: 'Grand Total\s+Rs\s?([\d,]+(?:\.\d+)?)'
+  amount_paid: '(?m)^\s*Payment received by[^\n]*Rs\s?([\d,]+(?:\.\d+)?)\s*$'
+  amount_due: 'Balance \( if any \)\s+Rs\s?([\d,]+(?:\.\d+)?)'
+  tax_note: {parser: regex, regex: '(?s)Please Note:\s*(.*?)\n\s*\n', replace: ['\s+', ' ']}
+
+  lines:
+    parser: lines
+    start: 'DESCRIPTION\s+RATE\s+AMOUNT'
+    end: 'Grand Total'
+    # "Room Charges   Rs 1939 x 1 Night x 1 Room   Rs 1939"
+    first_line: '^\s*(?P<name>\S.*?)\s{2,}Rs\s?(?P<price_unit>[\d,]+(?:\.\d+)?)\s+x\s+(?P<qty>\d+)\s+Nights?\s+x\s+(?P<rooms>\d+)\s+Rooms?\s+Rs\s?(?P<price_total>[\d,]+(?:\.\d+)?)\s*$'
+    line: '^\s+(?P<line_note>\S.*?)\s*$'
+    types:
+      price_unit: float
+      qty: int
+      rooms: int
+      price_total: float
+
+  # The rate is per night per room, so the default "qty x unit price" check is replaced
+checks:
+  disable: [qty x unit price]
+  line:
+    - name: nights x rooms x rate
+      rule: "qty * rooms * price_unit == price_total"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d/%m/%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['payment', 2]
+    - ['receipt', 3]
+    - ['guest', 0]
+    - ['name', 1]
+    - ['date', 8]
+    - ['hotel', 0]
+    - ['details', 1]
+    - ['check', 6]
+    - ['check', 8]
+    - ['out', 8]
+    - ['rooms', 9]
+    - ['booking', 6]
+    - ['payment', 8]
+    - ['mode', 8]
+    - ['hotel', 8]
+    - ['description', 1]
+    - ['rate', 9]
+    - ['amount', 10]
+    - ['grand', 1]
+    - ['total', 1]
+    - ['payment', 1]
+    - ['received', 1]
+    - ['hotel', 8]
+    - ['balance', 1]
+    - ['any', 2]
+    - ['please', 0]
+    - ['note', 1]
+    - ['amount', 1]
+    - ['please', 9]
+    - ['hotel', 10]
+    - ['note', 1]
+    - ['payment', 1]
+    - ['oravel', 1]
+    - ['stays', 1]
+    - ['name', 1]
+    - ['gstin', 1]
+    - ['cin', 6]
+    - ['oravel', 4]
+    - ['stays', 5]
+    - ['private', 5]
+    - ['limited', 6]
+    - ['registered', 1]
+    - ['office', 2]
+    - ['office', 1]

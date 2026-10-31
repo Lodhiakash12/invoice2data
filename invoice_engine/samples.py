@@ -28,6 +28,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -48,6 +49,7 @@ class SampleStore:
     def __init__(self, folder: Path, per_family: int = PER_FAMILY):
         self.folder = Path(folder)
         self.per_family = per_family
+        self.lock = threading.RLock()                 # the test page's background jobs share the store
         self.data = {"samples": [], "templates": {}}
         index = self.folder / INDEX
         if index.is_file():
@@ -58,6 +60,7 @@ class SampleStore:
         self.data.setdefault("samples", [])
         self.data.setdefault("templates", {})
         self.data.setdefault("problems", [])
+        self.mtime = index.stat().st_mtime if index.is_file() else None   # changed by another program?
 
     # --- samples -------------------------------------------------------------------------------
     def pdf_path(self, sample: dict) -> Path:
@@ -164,7 +167,16 @@ class SampleStore:
         self.save()
 
     def save(self) -> None:
-        self.folder.mkdir(parents=True, exist_ok=True)
-        tmp = self.folder / (INDEX + ".tmp")
-        tmp.write_text(json.dumps(self.data, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
-        tmp.replace(self.folder / INDEX)
+        with self.lock:
+            self.folder.mkdir(parents=True, exist_ok=True)
+            for attempt in range(5):
+                try:                                  # another thread may change the data meanwhile
+                    text = json.dumps(self.data, indent=1, ensure_ascii=False, default=str)
+                    break
+                except RuntimeError:
+                    if attempt == 4:
+                        raise
+            tmp = self.folder / (INDEX + ".tmp")
+            tmp.write_text(text, encoding="utf-8")
+            tmp.replace(self.folder / INDEX)
+            self.mtime = (self.folder / INDEX).stat().st_mtime

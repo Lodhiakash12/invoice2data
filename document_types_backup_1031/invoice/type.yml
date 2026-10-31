@@ -1,0 +1,17 @@
+# DOCUMENT TYPE: invoice
+# Invoices, credit notes, bills of supply, receipts, proforma invoices, telecom bills, consignment
+# notes: documents that sell or charge something.
+name: invoice
+description: Invoices, credit notes, receipts and bills
+
+# Routing: a page is matched against this type's templates when at least min_signals of these
+# words appear on it (any case). A page that carries the signals of no type is matched against
+# every type, so a missing signal costs time, never a document.
+signals: [invoice, bill, receipt, credit note, debit note, gstin, consignment, factuur, rechnung,
+          taxable, grand total, amount due, total due]
+min_signals: 1
+
+# Columns of this type's sheet in the Excel summary, in order. tax_total = the document's total
+# tax (amount_tax, else the sum of its tax fields).
+summary_columns: [issuer, document_type, invoice_number, date, seller_name, buyer_name, currency,
+                  amount_untaxed, tax_total, amount]

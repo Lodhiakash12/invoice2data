@@ -1,0 +1,127 @@
+# Blinkit - Blink Commerce's own tax invoice for its charges on an order (handling charge, late
+# night convenience charge ...). Amounts are printed with three decimals.
+# The goods of the same order are on separate pages: blinkit_goods_invoice.yml.
+issuer: Blinkit
+
+keywords:
+  - 'Sold By'
+  - 'Blink Commerce Private Limited'
+  - 'Delivery confirmation OTP'
+exclude_keywords:
+  - 'Sold By / Seller'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name, buyer_name]
+optional_fields: [amount_cgst, amount_sgst, amount_igst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice Number:\s*(\S+)'
+  date: 'Invoice Date:\s+(\d{2}-\d{2}-\d{4})'
+  order_number: 'Order Id:\s+(\S+)'
+  place_of_supply: '(?m)Place of Supply:\s+(\S.*?)\s*$'
+  reverse_charge: 'reverse charge\s*-\s*(\w+)'
+
+  seller_name: '(?m)^Sold By\s*\n(\S.*?)\s*$'
+  seller_address: {parser: regex, regex: '(?s)Sold By\s*\n[^\n]*\n(.*?)\nGSTIN:', replace: [['\s+', ' '], ['^\s|\s$', '']]}
+  seller_tax_id: '(?m)^GSTIN:\s+(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_fssai: '(?m)^FSSAI License Number:\s+(\d+)'
+  seller_company_reg: '(?m)^CIN:\s+(\S+)'
+  seller_pan: '(?m)^PAN:\s+([A-Z]{5}\d{4}[A-Z])'
+
+  # Buyer: label and value (Name: / Address:), read from the word positions: the right column
+  # (Invoice Date / Place of Supply) cannot run into it; the Pincode: label ends the address
+  buyer_name: {parser: region, heading: '^Name:', same_line: true, max_lines: 1}
+  buyer_address: {parser: region, heading: '^Address:', same_line: true}
+
+  # Total row: discount, quantity, taxable value, CGST, SGST, total (or IGST instead of CGST, SGST)
+  amount_untaxed: '(?m)^Total\s+[\d.]+\s+\d+\s+(\d[\d,]*(?:\.\d+)?)\s+[\d.]+\s+(?:[\d.]+\s+)?[\d.]+\s*$'
+  amount_cgst: '(?m)^Total\s+[\d.]+\s+\d+\s+[\d.]+\s+(\d[\d,]*(?:\.\d+)?)\s+[\d.]+\s+[\d.]+\s*$'
+  amount_sgst: '(?m)^Total\s+[\d.]+\s+\d+\s+[\d.]+\s+[\d.]+\s+(\d[\d,]*(?:\.\d+)?)\s+[\d.]+\s*$'
+  amount_igst: '(?m)^Total\s+[\d.]+\s+\d+\s+[\d.]+\s+(\d[\d,]*(?:\.\d+)?)\s+[\d.]+\s*$'
+  amount: '(?m)^Total\s+[\d.]+\s+\d+\s+[\d.]+\s+(?:[\d.]+\s+)?[\d.]+\s+(\d[\d,]*(?:\.\d+)?)\s*$'
+  total_in_words: 'Amount in Words:\s*(\S[^\n]*?Only)'
+
+  lines:
+    parser: lines
+    start: 'Sr\. no\s+HSN Code\s+Item Description'
+    end: '(?m)^Total\s+[\d.]+\s+\d'
+    # "1   998549   Handling charge   11.000   0   1   9.320   9   0.840   9   0.840   11.000"
+    first_line: '^\s*(?P<pos>\d+)\s+(?P<hsn_sac>\d{4,8})\s+(?P<name>\S.*?)\s{2,}(?P<price_unit>\d[\d,]*(?:\.\d+)?)\s+(?P<discount>\d[\d,]*(?:\.\d+)?)\s+(?P<qty>\d+)\s+(?P<price_subtotal>\d[\d,]*(?:\.\d+)?)\s+(?:(?P<igst_rate>\d+(?:\.\d+)?)\s+(?P<igst_amount>\d[\d,]*(?:\.\d+)?)|(?P<cgst_rate>\d+(?:\.\d+)?)\s+(?P<cgst_amount>\d[\d,]*(?:\.\d+)?)\s+(?P<sgst_rate>\d+(?:\.\d+)?)\s+(?P<sgst_amount>\d[\d,]*(?:\.\d+)?))\s+(?P<price_total>\d[\d,]*(?:\.\d+)?)\s*$'
+    line: '^\s{8,}(?P<name>[A-Za-z]\S*(?:\s\S+)*)\s*$'
+    types:
+      pos: int
+      qty: int
+      price_unit: float
+      discount: float
+      price_subtotal: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      price_total: float
+
+checks:
+  # The MRP includes the tax: quantity x (MRP - discount) is the line total, not the taxable value
+  disable: [qty x unit price]
+  line:
+    - {name: qty x (MRP - discount) = total, rule: "qty * (price_unit - discount) == price_total", tolerance: "0.01"}
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 4
+  order:
+    - ['invoice', 9]
+    - ['sold', 0]
+    - ['blink', 0]
+    - ['commerce', 0]
+    - ['private', 1]
+    - ['limited', 2]
+    - ['gstin', 0]
+    - ['fssai', 0]
+    - ['license', 0]
+    - ['number', 1]
+    - ['invoice', 8]
+    - ['number', 8]
+    - ['cin', 0]
+    - ['pan', 0]
+    - ['invoice', 0]
+    - ['order', 7]
+    - ['invoice', 7]
+    - ['date', 8]
+    - ['place', 7]
+    - ['supply', 8]
+    - ['hsn', 1]
+    - ['code', 1]
+    - ['item', 2]
+    - ['description', 2]
+    - ['total', 11]
+    - ['charge', 2]
+    - ['total', 0]
+    - ['amount', 0]
+    - ['words', 1]
+    - ['only', 4]
+    - ['blink', 0]
+    - ['commerce', 1]
+    - ['private', 2]
+    - ['limited', 3]
+    - ['delivery', 0]
+    - ['confirmation', 1]
+    - ['otp', 2]
+    - ['reverse', 3]
+    - ['charge', 4]
+    - ['order', 5]
+    - ['fssai', 5]
+    - ['fssai', 2]
+    - ['license', 3]
+    - ['number', 5]
+    - ['number', 7]
+    - ['amount', 8]

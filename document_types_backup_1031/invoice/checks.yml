@@ -1,0 +1,73 @@
+# DEFAULT CHECKS
+# Arithmetic rules applied to every document. A rule is "left == right"; it passes when
+# both sides differ by no more than the tolerance (default 0.01). A rule whose values are
+# not on the document is skipped, so these defaults are safe for every layout.
+#
+# A template can switch a default off and add its own rules:
+#   checks:
+#     disable: [qty x unit price]
+#     line:     [{name: ..., rule: "...", tolerance: "..."}]
+#     document: [{name: ..., rule: "..."}]
+#
+# Names in a rule are field names. Functions:
+#   default(x, v)    x, or v when x is not on the document
+#   first(a, b, ..)  first of the values that is present
+#   any(a, b, ..)    (right side only) passes if the left side equals any of them
+#   abs(x), round2(x)
+#   Line rules:      taxes()  = sum of this line's tax amounts (fields with role tax)
+#                    n_taxes  = how many tax amounts this line has
+#   Document rules:  lines("field")    = sum of a line column (every line must have it)
+#                    taxlines("field") = sum of a column of the tax summary table
+#                    role("tax")       = sum of document fields with that role
+#                    tax_total()       = amount_tax, else role("tax")
+#                    untaxed()         = amount_untaxed, else lines("price_subtotal")
+#                    line_taxes()      = sum of all tax amounts on all lines
+#                    line_rate_tax()   = sum of rate x taxable value over the lines
+#                    n_lines, n_tax_lines
+# "unless": skip the rule when any of these values is present.
+# Line columns with "sums_to" in fields.yml get a "sum of line X vs Y" rule automatically.
+
+line:
+  - name: qty x unit price
+    rule: "qty * price_unit - abs(default(discount, 0)) == first(price_subtotal, price_total)"
+  - name: gross - discount
+    rule: "gross_amount - abs(discount) == any(price_subtotal, price_total)"
+  - name: taxable value + tax
+    rule: "price_subtotal + taxes() == price_total"
+    tolerance: "0.01 * n_taxes"
+  - name: line tax rate
+    rule: "round2(price_subtotal * line_tax_percent / 100) == line_tax_amount"
+  - name: cgst rate
+    rule: "round2(price_subtotal * cgst_rate / 100) == cgst_amount"
+  - name: sgst rate
+    rule: "round2(price_subtotal * sgst_rate / 100) == sgst_amount"
+  - name: igst rate
+    rule: "round2(price_subtotal * igst_rate / 100) == igst_amount"
+  - name: cess rate
+    rule: "round2(price_subtotal * cess_rate / 100) == cess_amount"
+
+document:
+  - name: line tax vs document tax
+    rule: "line_taxes() == tax_total()"
+    tolerance: "0.01 * n_lines"
+  - name: line tax rates vs document tax
+    rule: "line_rate_tax() == tax_total()"
+    unless: ["line_taxes()"]
+    tolerance: "0.01 * n_lines"
+  - name: untaxed + tax + adjustments = total
+    rule: "untaxed() + tax_total() + default(role('adjustment'), 0) == amount"
+    tolerance: "0.01 * n_lines"
+  - name: paid + due = total
+    rule: "amount_paid + default(amount_due, 0) == amount"
+  - name: due = total
+    rule: "amount_due == amount"
+    unless: ["amount_paid"]
+  - name: tax summary taxable vs untaxed
+    rule: "taxlines('price_subtotal') == amount_untaxed"
+    tolerance: "0.01 * n_tax_lines"
+  - name: tax summary tax vs tax
+    rule: "taxlines('line_tax_amount') == amount_tax"
+    tolerance: "0.01 * n_tax_lines"
+  - name: tax summary total vs total
+    rule: "taxlines('price_total') == amount"
+    tolerance: "0.01 * n_tax_lines"

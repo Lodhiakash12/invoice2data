@@ -1,0 +1,110 @@
+# bol.com b.v. (Netherlands) - customer invoice in Dutch. Comma decimals; month names need dateparser.
+issuer: bol.com b.v.
+
+keywords:
+  - 'bol.com b.v.'
+  - 'Factuurnummer:'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: invoice}
+  invoice_number: 'Factuurnummer:\s*(\S+)'
+  date: '(?m)^Datum:\s*(\d{1,2} \w+ \d{4})'
+  date_due: 'Vervaldatum:\s*(\d{1,2} \w+ \d{4})'
+  date_order: 'Besteldatum:\s*(\d{1,2} \w+ \d{4})'
+  customer_number: 'Klantnummer:\s*(\S+)'
+  order_number: '(?m)^(\d+) \(Verzenddatum'
+  date_shipped: 'Verzenddatum (\d{2}-\d{2}-\d{4})'
+
+  # Seller (left column at the top)
+  seller_name: '\A(bol\.com b\.v\.)'
+  seller_address: '\A[^\n]*\n(\S.*?)\s{2,}'
+  seller_company_reg: 'KvK \w+:\s*(\d+)'
+  seller_tax_id: 'BTW nr\.:\s*(\S+)'
+  iban: 'IBAN:\s*(\S+)'
+  bic: 'BIC:\s*(\S+)'
+
+  # Buyer (right column at the top)
+  buyer_name: '\A[^\n]*?\s{2,}(\S[^\n]*?)\s*\n'
+  buyer_address: {parser: regex, regex: '(?s)\A[^\n]*\n(.*?)\nBTW nr', replace: [['(?m)^[^\n]*?[ \t]{2,}(?=\S)', ''], ['\s*\n\s*', ', ']]}
+
+  # Totals (\u20ac is the euro sign)
+  amount_subtotal: 'Subtotaal\s+\u20ac\s?([\d.]+,\d{2})'
+  amount_untaxed: 'Totaal exclusief BTW\s+\u20ac\s?([\d.]+,\d{2})'
+  amount_tax: '(?m)^\s+BTW\s+\u20ac\s?([\d.]+,\d{2})\s*$'
+  amount: 'Bedrag inclusief BTW\s+\u20ac\s?([\d.]+,\d{2})'
+  amount_paid: 'Betaald met \S+\s+\u20ac\s?([\d.]+,\d{2})-'
+  payment_method: 'Betaald met (\S+)'
+  amount_due: 'Te betalen\s+\u20ac\s?([\d.]+,\d{2})'
+
+  # VAT summary table at the bottom: rate, ex VAT, VAT, incl VAT
+  tax_lines:
+    parser: lines
+    start: 'Ex BTW\s+BTW\s+Incl BTW'
+    end: '(?m)^Totaal\s'
+    line: '^\s*(?P<line_tax_percent>\d+)%\s+\u20ac\s?(?P<price_subtotal>[\d.]+,\d{2})\s+\u20ac\s?(?P<line_tax_amount>[\d.]+,\d{2})\s+\u20ac\s?(?P<price_total>[\d.]+,\d{2})'
+    types:
+      line_tax_percent: float
+      price_subtotal: float
+      line_tax_amount: float
+      price_total: float
+
+  lines:
+    parser: lines
+    start: 'ISBN/EAN'
+    end: 'Subtotaal'
+    # "4718755045813 BenQ RL2455HM - Gaming Monitor   1   EUR 156,20   [discount]   EUR 156,20   21%   EUR 32,80"
+    first_line: '^\s*(?P<code>\d{8,14})\s+(?P<name>\S.*?)\s{2,}(?P<qty>\d+)\s+\u20ac\s?(?P<price_unit>[\d.]+,\d{2})\s+(?:\u20ac\s?(?P<discount>[\d.]+,\d{2})\s+)?\u20ac\s?(?P<price_subtotal>[\d.]+,\d{2})\s+(?P<line_tax_percent>\d+(?:,\d+)?)%\s+\u20ac\s?(?P<line_tax_amount>[\d.]+,\d{2})\s*$'
+    line: '^\s+(?P<name>[A-Za-z][^\n]*?)\s*$'
+    types:
+      qty: int
+      price_unit: float
+      discount: float
+      price_subtotal: float
+      line_tax_percent: float
+      line_tax_amount: float
+
+options:
+  currency: EUR
+  decimal_separator: ','
+  languages: [nl]
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['kvk', 0]
+    - ['btw', 0]
+    - ['iban', 0]
+    - ['bic', 0]
+    - ['datum', 0]
+    - ['vervaldatum', 0]
+    - ['besteldatum', 0]
+    - ['factuurnummer', 0]
+    - ['klantnummer', 0]
+    - ['bedrag', 8]
+    - ['btw', 9]
+    - ['btw', 6]
+    - ['btw', 7]
+    - ['btw', 8]
+    - ['verzenddatum', 1]
+    - ['subtotaal', 6]
+    - ['totaal', 5]
+    - ['exclusief', 6]
+    - ['btw', 6]
+    - ['btw', 5]
+    - ['bedrag', 5]
+    - ['inclusief', 6]
+    - ['btw', 6]
+    - ['betaald', 5]
+    - ['met', 6]
+    - ['betalen', 5]
+    - ['btw', 2]
+    - ['btw', 4]
+    - ['incl', 5]
+    - ['btw', 5]
+    - ['totaal', 0]

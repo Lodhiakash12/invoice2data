@@ -65,14 +65,116 @@ def _settings(config_dir: Path) -> dict:
     return (yaml.safe_load(path.read_text(encoding="utf-8")) or {}) if path.is_file() else {}
 
 
+_stores: dict = {}
+
+
 def _store(config_dir: Path) -> SampleStore | None:
-    """The sample store of process_invoice.py (same settings), or None when checks are off."""
+    """The sample store of process_invoice.py (same settings), or None when checks are off. One
+    store object is shared by the requests and the background AI jobs; it is read again from disk
+    when another program (process_invoice.py) changed it."""
     settings = _settings(config_dir)
     if not settings.get("automatic_checks", True):
         return None
     folder = Path(settings.get("sample_store") or "samples")
     folder = folder if folder.is_absolute() else BASE_DIR / folder
-    return SampleStore(folder, int(settings.get("samples_per_layout") or 20))
+    index = folder / "index.json"
+    cached = _stores.get(str(folder))
+    if cached is not None:
+        current = index.stat().st_mtime if index.is_file() else None
+        if current == cached.mtime:
+            return cached
+    store = SampleStore(folder, int(settings.get("samples_per_layout") or 20))
+    _stores[str(folder)] = store
+    return store
+
+
+def _room(store, catalog, config_dir: Path):
+    """The waiting room (documents collected for the AI), or None when the AI works at once."""
+    from invoice_engine.ai_provider import AISettings
+    from invoice_engine.templates import family_of
+    from invoice_engine.waiting import WaitingRoom
+    ai = AISettings.from_settings(_settings(config_dir))
+    if not ai.enabled or int(ai.batch_size or 0) <= 0:
+        return None
+    return WaitingRoom(store, ai.batch_size, ai.max_wait_days,
+                       {family_of(t): t.get("issuer") for t in catalog.templates})
+
+
+class _Worker(threading.Thread):
+    """Runs the due AI jobs in the background: after every upload, and every few minutes (a group
+    can become due by waiting). The page keeps reading uploads meanwhile."""
+    INTERVAL = 300
+
+    def __init__(self):
+        super().__init__(daemon=True, name="ai-jobs")
+        self.signal = threading.Event()
+        self.forced: set[str] = set()
+        self.force_all = False
+        self.running: dict | None = None
+        self.last_error = ""
+        self.types_dir: Path = BASE_DIR / "document_types"
+        self.config_dir: Path = BASE_DIR / "config"
+
+    def wake(self, groups: set[str] = (), everything: bool = False) -> None:
+        self.forced |= set(groups)
+        self.force_all = self.force_all or everything
+        self.signal.set()
+
+    def run(self) -> None:
+        while True:
+            self.signal.wait(self.INTERVAL)
+            self.signal.clear()
+            try:
+                self._once()
+            except Exception as exc:  # the worker must never die
+                self.last_error = f"{type(exc).__name__}: {exc}"
+                print(f"AI jobs: stopped on {self.last_error}", flush=True)
+            finally:
+                self.running = None
+
+    def _once(self) -> None:
+        from invoice_engine import jobs
+        with _lock:
+            catalog = load_catalog(self.types_dir, self.config_dir)
+            store = _store(self.config_dir)
+            if store is None:
+                return
+            author, problems = author_from_settings(_settings(self.config_dir), self.types_dir, self.config_dir, store)
+            room = _room(store, catalog, self.config_dir) if author is not None else None
+            if room is None:
+                return
+            forced, everything = self.forced, self.force_all
+            self.forced, self.force_all = set(), False
+            due = room.due(force=everything, setup=author._setup())
+            due += [g for g in forced if g not in due and room.members(g)]
+        for group in due:
+            self.running = {"group": group, "started": time.strftime("%H:%M:%S"),
+                            "documents": [m["name"] for m in room.members(group)]}
+            jobs.run_due(store, room, author, self.types_dir, self.config_dir, groups=[group], lock=_lock,
+                         progress=lambda text: print(text, flush=True))
+
+
+WORKER = _Worker()
+
+
+def waiting_report(types_dir: Path, config_dir: Path) -> dict:
+    """The documents waiting for the AI, the job running now and the last jobs."""
+    from invoice_engine import jobs
+    with _lock:
+        catalog = load_catalog(types_dir, config_dir)
+        store = _store(config_dir)
+        if store is None:
+            return {"error": "automatic checks are switched off in settings.yml: there is no sample store"}
+        room = _room(store, catalog, config_dir)
+        if room is None:
+            return {"error": "the AI step is off, or ai.batch_size is 0 (the AI works while a document is read)"}
+        groups = [{"group": g, "status": room.status_line(m[0]), "kind": m[0]["kind"],
+                   "documents": [{"name": e["name"], "pages": e["pages"], "status": e.get("status") or e["kind"],
+                                  "since": e.get("added", ""), "reason": e.get("reason", "")} for e in m]}
+                  for g, m in room.groups().items()]
+        history = [dict(r, line=jobs.describe(r)) for r in reversed(room.data.get("jobs", [])[-20:])]
+        return {"groups": groups, "jobs": history, "running": WORKER.running, "error_last": WORKER.last_error,
+                "batch_size": room.batch_size, "max_wait_days": room.max_wait.days}
 
 
 def run_pdf(data: bytes, filename: str, types_dir: Path, config_dir: Path, retry: bool = False) -> dict:
@@ -90,10 +192,22 @@ def run_pdf(data: bytes, filename: str, types_dir: Path, config_dir: Path, retry
         else:                                                      # same automatic checks as the CLI
             author, ai_problems = author_from_settings(_settings(config_dir), types_dir, config_dir, store,
                                                        retry=retry)
+            room = _room(store, catalog, config_dir) if author is not None else None
             pipeline = Pipeline(catalog, store, author=author,
                                 reload=lambda: load_catalog(types_dir, config_dir),
-                                progress=lambda text: print(text, flush=True))   # in the console window
+                                progress=lambda text: print(text, flush=True),   # in the console window
+                                waiting=room)
             result = pipeline.process(path)
+            if room is not None:
+                from invoice_engine.samples import file_hash
+                digest = file_hash(path)
+                mine = {e["group"] for e in room.documents if e["pdf"] == digest}
+                WORKER.wake(mine if retry else ())
+                if mine:
+                    result.setdefault("notes", []).append(
+                        "the AI works on waiting documents in the background"
+                        + (": this file's group(s) were sent now" if retry else
+                           " (see 'Waiting for the AI'; drop the file again later to see the new result)"))
             for problem in ai_problems:
                 result.setdefault("notes", []).append(f"AI step switched on but cannot run: {problem}")
             for event in pipeline.events:
@@ -173,6 +287,12 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == "/version":
             body = {"folder": str(BASE_DIR), "code": CODE_AT_START, "outdated": _outdated()}
             self._send(200, json.dumps(body).encode("utf-8"), "application/json")
+        elif self.path == "/waiting":
+            try:
+                answer = waiting_report(self.types_dir, self.config_dir)
+                self._send(200, json.dumps(answer, ensure_ascii=False, default=str).encode("utf-8"), "application/json")
+            except Exception as exc:
+                self._send(500, json.dumps({"error": f"{type(exc).__name__}: {exc}"}).encode(), "application/json")
         elif self.path == "/variants" and _outdated():
             self._send(409, json.dumps({"error": RESTART}).encode("utf-8"), "application/json")
         elif self.path == "/variants":
@@ -187,6 +307,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if _outdated():
             self._send(409, json.dumps({"error": RESTART}).encode("utf-8"), "application/json")
+            return
+        if self.path == "/ai-now":
+            WORKER.wake(everything=True)
+            self._send(200, json.dumps({"started": True}).encode("utf-8"), "application/json")
             return
         if self.path.startswith("/trust"):
             from urllib.parse import parse_qs, urlparse
@@ -265,11 +389,12 @@ td.pg{color:var(--quiet);text-align:center}pre{background:var(--code);padding:10
 @media (max-width:640px){header,main{padding-left:16px;padding-right:16px}}
 </style></head><body>
 <header><h1>PDF Parser Test Bench</h1><p>Runs on this computer only. Drop PDFs to see what the engine extracts, which template it used, and why.
-<button class="btn" id="variants" style="margin-left:8px">Variant coverage</button></p>
+<button class="btn" id="variants" style="margin-left:8px">Variant coverage</button>
+<button class="btn" id="waiting">Waiting for the AI</button></p>
 <p id="ver" class="meta" style="margin-top:4px"></p></header>
 <main>
 <label id="drop"><input id="pick" type="file" accept="application/pdf,.pdf" multiple hidden>
-<b>Drop PDF files here</b> or click to choose<small>Templates are re-read for every file, so template edits apply immediately. Nothing is stored.</small></label>
+<b>Drop PDF files here</b> or click to choose<small>Templates are re-read for every file, so template edits apply immediately. Documents read OK are kept in the sample store; documents that need the AI wait in the waiting room.</small></label>
 <div id="out"></div>
 </main>
 <script>
@@ -295,6 +420,22 @@ document.getElementById('variants').onclick=async()=>{
    <td>${x.problems.slice(-3).map(p=>`<div><span class="pill ${p.status}">${p.status}</span> ${esc(p.name)}: ${esc(p.reason.slice(0,90))}</div>`).join('')}</td></tr>`).join('')}
   </table></div><div class="meta" style="margin-top:8px">Cannot read: the template has no fields for that kind; such a document fails and goes to the AI repair. Not expected: listed in document_types/&lt;type&gt;/variants.yml.</div></div>`}
  catch(e){box.innerHTML=`<div class="err">${esc(e.message)}</div>`}};
+document.getElementById('waiting').onclick=()=>waitingPanel();
+async function waitingPanel(box){
+ if(!box){box=document.createElement('section');box.className='file';out.prepend(box)}
+ box.innerHTML='<div class="spin">Reading the waiting room…</div>';
+ try{const r=await fetch('/waiting');const d=await r.json();if(!r.ok||d.error)throw new Error(d.error||r.statusText);
+  const G=d.groups,n=G.reduce((a,g)=>a+g.documents.length,0);
+  box.innerHTML=`<div class="filehead"><h2>Waiting for the AI</h2><span class="meta">${n} document(s) in ${G.length} group(s) · sent when ${d.batch_size} of a layout are collected or after ${d.max_wait_days} days</span>
+  <span class="toolbar"><button class="btn" data-now>Send all to the AI now</button><button class="btn" data-again>Refresh</button></span></div><div class="body">
+  ${d.running?`<div class="notes" style="border-left:3px solid var(--accent)"><b>Working now</b> (since ${esc(d.running.started)}): ${esc(d.running.group)}: ${esc(d.running.documents.join(', '))}</div>`:''}
+  ${d.error_last?`<div class="notes" style="border-left:3px solid var(--fail)">Last background error: ${esc(d.error_last)}</div>`:''}
+  ${G.length?G.map(g=>`<div class="unrec"><b>${esc(g.group)}</b><div class="meta" style="margin:4px 0 6px">${esc(g.status)}</div>
+   <table><tr><th>Document</th><th>Pages</th><th>Read as</th><th>Since</th><th>Reason</th></tr>${g.documents.map(x=>`<tr><td>${esc(x.name)}</td><td class="pg">${x.pages.join(',')}</td><td><span class="pill ${x.status==='FAIL'?'FAIL':x.status==='OK'?'OK':'NONE'}">${esc(x.status)}</span></td><td class="k">${esc(String(x.since).slice(0,16).replace('T',' '))}</td><td>${esc(x.reason)}</td></tr>`).join('')}</table></div>`).join(''):'<div class="notes">No document is waiting.</div>'}
+  <h3 style="font-size:14px;margin:16px 0 6px">Last AI jobs</h3>${d.jobs.length?`<table><tr><th>When</th><th>Group</th><th>Result</th></tr>${d.jobs.map(j=>`<tr><td class="k">${esc(String(j.when||'').slice(0,16).replace('T',' '))}</td><td class="k">${esc(j.group)}</td><td>${esc(j.line)}${(j.reread||[]).length?`<div class="meta">${j.reread.map(x=>`${esc(x.name)}: ${esc(x.status)}`).join(' · ')}</div>`:''}</td></tr>`).join('')}</table>`:'<div class="meta">None yet.</div>'}</div>`;
+  box.querySelector('[data-again]').onclick=()=>waitingPanel(box);
+  box.querySelector('[data-now]').onclick=async()=>{await fetch('/ai-now',{method:'POST'});setTimeout(()=>waitingPanel(box),1500)}}
+ catch(e){box.innerHTML=`<div class="err">${esc(e.message)}</div>`}}
 async function run(files){for(const f of files.filter(f=>/\.pdf$/i.test(f.name)||f.type==='application/pdf'))await one(f)}
 async function one(file,retry,box){
  if(!box){box=document.createElement('section');box.className='file';out.prepend(box)}
@@ -306,7 +447,7 @@ async function one(file,retry,box){
 function render(box,name,d){
  const docs=d.documents||[],un=d.unrecognized_pages||[];
  const counts=['OK','CHECK','FAIL'].map(s=>[s,docs.filter(x=>x.status===s).length]).filter(x=>x[1]);
- let h=`<div class="filehead"><h2>${esc(name)}</h2>${counts.map(([s,n])=>`<span class="pill ${s}">${n} ${s}</span>`).join('')}${un.length?`<span class="pill NONE">${un.length} unrecognized</span>`:''}
+ let h=`<div class="filehead"><h2>${esc(name)}</h2>${counts.map(([s,n])=>`<span class="pill ${s}">${n} ${s}</span>`).join('')}${un.length?`<span class="pill NONE">${un.length} ${un.every(u=>u.status==='PENDING')?'PENDING':'unrecognized'}</span>`:''}
  <span class="meta">${d.page_count} page(s) · ${d.elapsed_ms} ms · ${d.templates_loaded} templates</span>
  <span class="toolbar"><button class="btn" data-dl>Download JSON</button></span></div><div class="body">`;
  const rej=Object.entries(d.templates_rejected||{});
@@ -315,9 +456,9 @@ function render(box,name,d){
  const notes=(d.notes||[]).filter(n=>!/is held by the automatic checks/.test(n));
  if(notes.length)h+=`<div class="notes"><b>Notes</b>${notes.map(n=>`<div>${esc(n)}</div>`).join('')}</div>`;
  docs.forEach((doc,i)=>h+=docHtml(doc,i));
- un.forEach(u=>h+=`<div class="unrec"><b>Pages ${u.pages.join(', ')}: ${esc(u.reason||'no template matches')}</b>
+ un.forEach(u=>h+=`<div class="unrec"><b>${u.status==='PENDING'?'<span class="pill NONE">PENDING</span> ':''}Pages ${u.pages.join(', ')}: ${esc(u.reason||'no template matches')}</b>${u.waiting?`<div class="meta" style="margin-top:4px">${esc(u.waiting)}</div>`:''}
   <div class="meta" style="margin:4px 0 8px">${esc((u.preview||[]).join(' | '))}</div>
-  <div style="margin:0 0 8px"><button class="btn" data-retry>Send to the AI again</button> <span class="meta">writes a template for these pages even if the AI was given this file before</span></div><details><summary>Page text (for writing a template)</summary><pre>${esc(u.text||'')}</pre></details></div>`);
+  <div style="margin:0 0 8px"><button class="btn" data-retry>Send to the AI now</button> <span class="meta">hands this file's group to the AI at once, without waiting for more documents of the layout</span></div><details><summary>Page text (for writing a template)</summary><pre>${esc(u.text||'')}</pre></details></div>`);
  if(!docs.length&&!un.length)h+='<div class="notes">No pages were read.</div>';
  box.innerHTML=h+'</div>';
  box.querySelectorAll('[data-retry]').forEach(b=>b.onclick=()=>one(box.file,true,box));
@@ -405,6 +546,7 @@ def main() -> int:
           f"pdftotext {tool.version}")
 
     Handler.types_dir, Handler.config_dir = Path(args.types), config
+    WORKER.types_dir, WORKER.config_dir = Path(args.types), config
     running = _already_running(args.port)
     if running:
         sys.exit(f"Another test page is already running on port {args.port} ({running}). On Windows a second "
@@ -419,6 +561,8 @@ def main() -> int:
         sys.exit(f"Port {args.port} cannot be opened ({exc}). Close the program that uses it, or start with "
                  f"another port: python gui.py --port {args.port + 1}")
     url = f"http://127.0.0.1:{args.port}"
+    WORKER.start()
+    WORKER.wake()                                   # groups that became due while the page was closed
     print(f"Test page: {url}   (Ctrl+C to stop)")
     if not args.no_browser:
         threading.Timer(0.5, lambda: webbrowser.open(url)).start()

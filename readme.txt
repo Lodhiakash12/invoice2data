@@ -577,3 +577,65 @@ PDF DOCUMENT PARSER - TEMPLATE AND CONFIGURATION REFERENCE
   Stress test, short decimals: a number standing in its own column keeps its width (212.10 ->
   "212.1 "), because in a PDF the next column does not move; a number printed together with what
   follows just gets shorter ("18.00%" -> "18%", "20.00 INR" -> "20 INR").
+
+25. GARBLED TEXT LAYERS (document.py)
+  A PDF re-saved by a compressor or converter that rebuilt its fonts with a wrong character map
+  looks right on screen, but its text comes out scrambled ("Tax Invoice" -> "Tmx @jvk`go"). Such
+  a page is reported ("the text layer is garbled ... use the original PDF from the issuer") and is
+  not given to the AI: no template and no AI can read it. A page counts as garbled when almost none
+  of its words is a common invoice word and many words have characters such as ` @ ^ | inside
+  them (pages under 40 words are not judged). The fix is the original PDF, or OCR (not yet).
+
+26. TEMPLATE MANAGEMENT: THE WAITING ROOM AND BACKGROUND AI JOBS (waiting.py, jobs.py)
+  Reading never waits for the AI. Every document is read at once with the templates there are;
+  what needs the AI is put in the waiting room (samples\waiting\, listed in samples\index.json)
+  and the AI works on several documents of one layout together, later:
+    a template reads it OK           OK, stored as a sample. Same layout: nothing for the AI, however
+                                     many small differences the documents have (an extra line such as
+                                     "Advanced Receipt Voucher No.", another item count)
+    a template matches, reads FAIL   FAIL now; waits for that family's template to be EXTENDED
+    no template matches              PENDING now; waits for a NEW template
+    OK, but the template's first     OK now, stored; waits for the AI's second opinion (section 23),
+    documents (second opinion)       asked for several documents in one request
+  A group goes to the AI when it holds ai.batch_size documents (default 3), when its oldest
+  document has waited ai.max_wait_days (default 7), or when you ask:
+    python process_invoice.py --waiting            what is waiting, and the last AI jobs
+    python process_invoice.py --ai-now             every waiting group now (also with PDFs: then
+                                                   the run's files the jobs changed are read again)
+    test page: "Waiting for the AI" (Send all to the AI now), or "Send to the AI now" on a PENDING page
+  process_invoice.py runs the due jobs at the end of a run and writes the changed results again;
+  the test page runs them in the background (after every upload and every 5 minutes) and keeps
+  reading uploads meanwhile. The AI drafts in a copy of document_types (samples\staging); only an
+  admitted template is copied back, and never over a file a person changed during the job.
+
+  Same layout, variant or new? Decided by outcome, not by a percentage of difference:
+    - a document a template reads OK is that layout;
+    - a document a template matches but cannot read is a variant of that family. The AI first
+      EXTENDS the template (given the family's stored samples as documents it must keep reading
+      the same, and the waiting documents with their problems): one template that reads every
+      print of the layout. Only when no draft passes is a NEW VERSION written (family_v2), and the
+      old version stays for the documents it reads;
+    - a document no template matches is grouped with other such documents by look (signature.py:
+      the short fixed texts of the page, and the issuer's PAN / CIN). Measured on the stored
+      samples, documents of one layout share 50% or more of these texts, other layouts mostly
+      less, but an issuer's sibling layouts (invoice and credit note) can share 90%: so the look
+      only groups, and the group is confirmed by one template reading all of them OK. When none
+      does, a template is written for the oldest document alone and the others are read again
+      with it: what it reads is that layout, what it cannot read regroups by the result.
+      A document printed with a known issuer's PAN that none of the issuer's templates matches is
+      grouped by issuer, and gets a new template (the AI may call it a version of that family).
+  A wrong grouping costs an AI attempt, never a wrong value: every template still has to pass
+  the regression on all stored samples of its family, the stress test and the overlap test.
+
+  Optional fields come from the documents: when a template is written or extended from several
+  documents, a required field that some of them print and others do not is moved to
+  optional_fields by the engine (identity fields and the total never are). A field none of them
+  prints is reported to the AI as a broken pattern.
+
+  Settings (config\settings.yml, section ai; the defaults apply when the lines are missing):
+    batch_size: 3          # documents of one layout collected first; 0 = the AI works at once,
+                           # while the document is read (as before)
+    max_wait_days: 7       # a smaller group goes to the AI after this long
+  A group the AI could not handle is tried again when batch_size new documents of it arrive or
+  the AI settings change (after an AI service error: after 15 minutes). The template a job
+  extended is kept as it was before in samples\template_history\.

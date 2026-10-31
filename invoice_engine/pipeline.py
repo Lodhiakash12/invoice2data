@@ -16,6 +16,10 @@ For every PDF, with nobody running a separate command:
   5. With the AI step switched on (ai_author.py): pages no template recognizes get a new template,
      and a document a template reads with FAIL gets a new version of that template. A template
      the AI writes is used only after it passes the checks of step 1; the PDF is then read again.
+     With a waiting room (waiting.py; the setting ai.batch_size, default 3) nothing waits for the
+     AI: the document is reported as read now (PENDING for pages no template recognizes), put in
+     the waiting room, and the AI works on several documents of a layout together later
+     (jobs.py). The second opinion on a template's first documents is collected the same way.
 
 Everything stays on this computer. Nothing here changes how a document is read; it decides
 which templates are trusted and keeps the evidence for the next check.
@@ -51,13 +55,15 @@ REPORTED = NEEDED | IF_AVAILABLE | {ZERO, MIXED}
 
 
 class Pipeline:
-    def __init__(self, catalog, store, write_layouts: bool = True, author=None, reload=None, progress=None):
+    def __init__(self, catalog, store, write_layouts: bool = True, author=None, reload=None, progress=None,
+                 waiting=None):
         self.full = catalog                            # every usable template
         self.store = store
         self.write_layouts = write_layouts
         self.author = author                           # TemplateAuthor, or None: no AI step
         self.reload = reload                           # () -> Catalog, after the AI added templates
         self.progress = progress                       # (text) -> None: shows the checks as they run
+        self.waiting = waiting                         # WaitingRoom: the AI works later, on several documents
         self.ai_results: list = []
         self.events: list[Event] = []                  # checks decided during this run
         self.state: dict[str, str] = {}
@@ -142,6 +148,9 @@ class Pipeline:
         result = self._read(pdf)
         if self.author is None:
             return result
+        if self.waiting is not None:
+            self._queue(Path(pdf), result)
+            return result
         results = self._ai(Path(pdf), result)
         if not results:
             return result
@@ -163,6 +172,53 @@ class Pipeline:
                 continue
             result.setdefault("notes", []).append(text)
         return result
+
+    def _queue(self, pdf: Path, result: dict) -> None:
+        """Put what needs the AI in the waiting room; the document is reported as read now."""
+        from .waiting import UNKNOWN, VARIANT
+        texts: list = []
+        for group in result.get("unrecognized_pages", []):
+            if any(word in str(group.get("reason", "")) for word in ("scanned", "garbled")):   # nothing to read
+                continue
+            if not texts:
+                texts = page_texts(pdf)
+            text = "\n".join(texts[p - 1] for p in group["pages"] if 0 < p <= len(texts))
+            try:
+                entry = self.waiting.add(pdf, group["pages"], UNKNOWN, text, status="unrecognized",
+                                         reason=str(group.get("reason") or "no template matches"))
+            except OSError as exc:
+                result.setdefault("notes", []).append(f"pages {group['pages']} could not be kept for the AI: {exc}")
+                continue
+            group["status"] = "PENDING"
+            group["waiting"] = self.waiting.status_line(entry)
+            result.setdefault("notes", []).append(f"pages {group['pages']}: PENDING, {group['waiting']}")
+        by_name = {t["template_name"]: t for t in self.full.templates}
+        for doc in result.get("documents", []):
+            # a template not checked yet (no sample) counts too: which file of a run comes first must
+            # not decide whether a variant reaches the AI; a held template is broken, not a family
+            if doc["status"] != "FAIL" or self.state.get(doc["template"]) == HELD or doc.get("copy_of") \
+                    or doc["template"] not in by_name:
+                continue
+            reasons = [i["message"] for i in doc.get("issues", []) if i["level"] == "ERROR"]
+            try:
+                entry = self.waiting.add(pdf, doc["pages"], VARIANT, family=family_of(by_name[doc["template"]]),
+                                         template=doc["template"], status="FAIL",
+                                         reason=reasons[0] if reasons else "", problems=reasons)
+            except (OSError, KeyError):
+                continue
+            doc.setdefault("issues", []).append({"level": "INFO", "message": self.waiting.status_line(entry)})
+
+    def _settled(self, pdf: Path, doc: dict) -> None:
+        """A document read without FAIL no longer waits for a template (a later run, a new template)."""
+        if self.waiting is None or doc["status"] == "FAIL":
+            return
+        from .waiting import OPINION
+        candidates = [e for e in self.waiting.documents if e["kind"] != OPINION and e["pages"] == list(doc["pages"])]
+        if candidates:
+            digest = file_hash(pdf)
+            for entry in candidates:
+                if entry["pdf"] == digest:
+                    self.waiting.remove(entry)
 
     def _ai(self, pdf: Path, result: dict) -> list:
         """Give unrecognized pages and FAIL documents of admitted templates to the AI author."""
@@ -208,6 +264,8 @@ class Pipeline:
             if self.state.get(name) == NEW and doc["status"] != "FAIL":
                 self._admit(template, [pdf])
             state = self.state.get(name)
+            if state == ADMITTED:
+                self._settled(pdf, doc)
             if state == HELD:
                 problems = self.store.template_state(name).get("problems", [])
                 self._downgrade(doc, f"template {name} failed its automatic check on this document: "
@@ -261,8 +319,21 @@ class Pipeline:
             opinion.apply_previous(doc, earlier)
             if not earlier.get("agreed"):
                 self._trust_hint(doc, name)
+                self.store.remove(key.split(":")[0], doc["pages"])   # stored before the answer came
             return
         if not opinion.wanted(self.store, name, digest, limit):
+            return
+        if self.waiting is not None:                    # asked later, together with the next documents
+            from .waiting import OPINION
+            needed = max(1, limit - opinion.agreed_count(self.store, name, digest))
+            try:
+                entry = self.waiting.add(pdf, doc["pages"], OPINION, template=name, template_hash=digest,
+                                         status="OK", needed=needed)
+            except OSError:
+                return
+            doc.setdefault("issues", []).append({"level": "INFO", "message":
+                "text values not yet confirmed by the AI's second opinion (stored as a sample until then); "
+                + self.waiting.status_line(entry)})
             return
         if not texts:
             try:

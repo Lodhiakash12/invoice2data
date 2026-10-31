@@ -1,0 +1,145 @@
+# IndiGo (InterGlobe Aviation) - GST tax invoice for a flight booking (per PNR).
+# The table cells are narrow: amounts of 10,000.00 and more are printed over two lines
+# ("13,055.0" with "0" below it, "14,088." with "00" below it). options.replace joins them
+# back before any field is read.
+issuer: IndiGo (InterGlobe Aviation)
+
+keywords:
+  - 'InterGlobe Aviation Limited'
+  - 'Tax Invoice'
+  - 'GSTIN of Customer'
+exclude_keywords:
+  - 'Credit Note'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: '(?m)^Number\s*:\s*(\S+)'
+  date: '(?m)^Date\s*:\s*(\d{2}-[A-Z][a-z]{2}-\d{4})'
+  booking_reference: 'PNR\s*:\s*(\S+)'
+  flight_number: 'Flight No\s*:\s*(\S+(?: - \S+)?)'
+  travel_from: 'From\s*:\s*(\S+)'
+  travel_to: '\bTo\s*:\s*(\S+)'
+  place_of_supply: 'Place of Supply\s*:\s*(\S[^\n]*?)\s*\n'
+
+  seller_name: 'Tax Invoice\s+(InterGlobe Aviation Limited)'
+  # Right column under the name, up to the GSTIN; the left column only holds the copy label
+  seller_address: {parser: regex, regex: '(?s)Tax Invoice\s+InterGlobe Aviation Limited[^\n]*\n(.*?)\n\s*GSTIN\s*:', replace: [['\((?:Original|Duplicate)[^)]*\)', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  seller_tax_id: '(?m)^\s+GSTIN\s*:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_pan: 'PAN no\.\s*([A-Z]{5}\d{4}[A-Z])'
+  seller_company_reg: 'CIN no\.\s*(\S+?),'
+
+  buyer_tax_id: 'GSTIN of Customer\s*:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  buyer_name: 'GSTIN Customer Name\s*:\s*(\S[^\n]*?)\s*\n'
+
+  # Grand Total row (after the split numbers are joined):
+  # taxable, non-taxable/exempt, total value, IGST, CGST, SGST/UGST, CESS, total incl. taxes
+  amount_untaxed: '(?m)^\s*Grand Total\s+([\d,]+(?:\.\d{1,2})?)(?:\s+[\d,]+(?:\.\d{1,2})?){7}\s*$'
+  amount_exempt: '(?m)^\s*Grand Total\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)(?:\s+[\d,]+(?:\.\d{1,2})?){6}\s*$'
+  amount_value_before_tax: '(?m)^\s*Grand Total(?:\s+[\d,]+(?:\.\d{1,2})?){2}\s+([\d,]+(?:\.\d{1,2})?)(?:\s+[\d,]+(?:\.\d{1,2})?){5}\s*$'
+  amount_igst: '(?m)^\s*Grand Total(?:\s+[\d,]+(?:\.\d{1,2})?){3}\s+([\d,]+(?:\.\d{1,2})?)(?:\s+[\d,]+(?:\.\d{1,2})?){4}\s*$'
+  amount_cgst: '(?m)^\s*Grand Total(?:\s+[\d,]+(?:\.\d{1,2})?){4}\s+([\d,]+(?:\.\d{1,2})?)(?:\s+[\d,]+(?:\.\d{1,2})?){3}\s*$'
+  amount_sgst: '(?m)^\s*Grand Total(?:\s+[\d,]+(?:\.\d{1,2})?){5}\s+([\d,]+(?:\.\d{1,2})?)(?:\s+[\d,]+(?:\.\d{1,2})?){2}\s*$'
+  amount_cess: '(?m)^\s*Grand Total(?:\s+[\d,]+(?:\.\d{1,2})?){6}\s+([\d,]+(?:\.\d{1,2})?)\s+[\d,]+(?:\.\d{1,2})?\s*$'
+  amount: '(?m)^\s*Grand Total(?:\s+[\d,]+(?:\.\d{1,2})?){7}\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+
+  lines:
+    parser: lines
+    start: 'Taxes\)\s*\n\s*ed Value'
+    end: '(?m)^\s*Grand Total'
+    # "Air Travel and  996425  13,055.00  0.00  13,055.00  0.00 0.00  2.50 326.00  2.50 326.00  0 0.00  13,707.00"
+    # The SAC code is empty on some rows (Airport Charges).
+    first_line: '^\s*(?P<name>\S.*?)\s{2,}(?:(?P<hsn_sac>\d{6})\s+)?(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s+(?P<exempt_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<value_before_tax>[\d,]+(?:\.\d{1,2})?)\s+(?P<igst_rate>[\d.]+)\s+(?P<igst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<cgst_rate>[\d.]+)\s+(?P<cgst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<sgst_rate>[\d.]+)\s+(?P<sgst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<cess_rate>[\d.]+)\s+(?P<cess_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_total>[\d,]+(?:\.\d{1,2})?)\s*$'
+    line: '^\s+(?P<name>[A-Za-z].*?)\s*$'
+    types:
+      price_subtotal: float
+      exempt_amount: float
+      value_before_tax: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      cess_rate: float
+      cess_amount: float
+      price_total: float
+
+checks:
+  # IndiGo rounds tax amounts ("Amounts have been rounded off"): on the samples the printed
+  # CGST/SGST is up to 0.53 below the rate times the value, so the rate checks allow 1.00.
+  # The document checks (value + tax = total) stay exact. IndiGo also adds the
+  # non-taxable value (airport charges) to the line and grand totals.
+  disable: [cgst rate, sgst rate, igst rate, cess rate, taxable value + tax, untaxed + tax + adjustments = total]
+  line:
+    - {name: cgst rate (rounded), rule: "round2(price_subtotal * cgst_rate / 100) == cgst_amount", tolerance: "1.0"}
+    - {name: sgst rate (rounded), rule: "round2(price_subtotal * sgst_rate / 100) == sgst_amount", tolerance: "1.0"}
+    - {name: igst rate (rounded), rule: "round2(price_subtotal * igst_rate / 100) == igst_amount", tolerance: "1.0"}
+    - {name: cess rate (rounded), rule: "round2(price_subtotal * cess_rate / 100) == cess_amount", tolerance: "1.0"}
+    - {name: taxable + exempt = value, rule: "price_subtotal + exempt_amount == value_before_tax"}
+    - {name: value + tax = total, rule: "value_before_tax + taxes() == price_total", tolerance: "0.01 * n_taxes"}
+  document:
+    - {name: taxable + exempt = value, rule: "amount_untaxed + amount_exempt == amount_value_before_tax"}
+    - {name: value + tax = total, rule: "amount_value_before_tax + tax_total() == amount"}
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%b-%Y']
+  replace:
+    - ['\r', '']
+    # Fares under 10,000: the row is printed over two lines, the 8 tax columns on the name line
+    # and SAC, the 3 values and the total on the line below. Put them back into one row in
+    # column order.
+    - ['(?m)^( +\S.*?\S) {2,}((?:[\d.,]+ +){7}[\d.,]+) *\n +(\d{6}) +([\d,]+(?:\.\d{1,2})?) +([\d,]+(?:\.\d{1,2})?) +([\d,]+(?:\.\d{1,2})?) +([\d,]+(?:\.\d{1,2})?) *$', '\1       \3 \4 \5 \6 \2 \7']
+    # Join amounts split over two lines (see the note at the top). Most specific first:
+    # 1. Grand Total: taxable value split above the row, total value split in the row
+    - ['(?m)^ *(\d[\d,]*\.\d?) *\n( *Grand Total +)(.*?\d,\d{3}\.\d?(?= ))(.*)\n *(\d{1,2}) +(\d{1,2}) *$', '\2\1\5 \3\6\4']
+    # 2. a row with two split amounts, endings on the next line
+    - ['(?m)^(.*?\d,\d{3}\.\d?(?= ))(.*?\d,\d{3}\.\d?(?= ))(.*)\n(.*?) (\d{1,2}) +(\d{1,2}) *$', '\1\5\2\6\3\n\4']
+    # 3. a row with one split amount
+    - ['(?m)^(.*?\d,\d{3}\.\d?(?= ))(.*)\n(.*?) (\d{1,2}) *$', '\1\4\2\n\3']
+
+layout:
+  columns: 12
+  sample_pages: 7
+  order:
+    - ['tax', 4]
+    - ['invoice', 4]
+    - ['interglobe', 8]
+    - ['aviation', 9]
+    - ['limited', 10]
+    - ['gstin', 8]
+    - ['number', 0]
+    - ['date', 0]
+    - ['name', 1]
+    - ['pnr', 0]
+    - ['flight', 2]
+    - ['from', 4]
+    - ['place', 7]
+    - ['supply', 7]
+    - ['gstin', 0]
+    - ['customer', 1]
+    - ['gstin', 0]
+    - ['customer', 1]
+    - ['name', 2]
+    - ['total', 4]
+    - ['value', 3]
+    - ['tax', 5]
+    - ['tax', 6]
+    - ['tax', 7]
+    - ['tax', 9]
+    - ['taxes', 10]
+    - ['value', 3]
+    - ['grand', 1]
+    - ['total', 2]
+    - ['pnr', 3]
+    - ['invoice', 5]
+    - ['from', 7]
+    - ['invoice', 6]
+    - ['interglobe', 0]
+    - ['aviation', 1]
+    - ['limited', 2]
+    - ['cin', 0]
+    - ['pan', 3]

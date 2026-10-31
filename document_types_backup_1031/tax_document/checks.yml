@@ -1,0 +1,4 @@
+# DEFAULT CHECKS for tax documents. Each template adds the reconciliation of its own form
+# (e.g. row 6 = row 4 + row 5 on an ITR acknowledgement); none apply to every tax document yet.
+line: []
+document: []

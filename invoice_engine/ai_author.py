@@ -24,6 +24,13 @@ the new version still reads every earlier document the same way.
 
 Each document is given to the AI once (by file content and pages): a document that could not be
 handled is not sent again on every run. --ai-retry sends it again.
+
+From several documents of one layout (the background jobs, jobs.py): new_template_from() writes
+one template for all of them, extend() changes an existing template so that it also reads
+documents it fails on (keeping its stored samples' values), version_from() writes a new version
+for several documents. Every keyword must then be printed on every document, each document must
+read OK, and a required field that some of the documents print and others do not is moved to
+optional_fields by the engine.
 """
 
 from __future__ import annotations
@@ -67,6 +74,32 @@ class AuthorResult:
     new_type: bool = False
     attempts: int = 0
     problems: list[str] = field(default_factory=list)
+    documents: list[str] = field(default_factory=list)   # every document the template was written for
+    optional: list[str] = field(default_factory=list)    # fields the documents showed to be optional
+
+
+@dataclass
+class Doc:
+    """One document given to the AI: its file, its pages and their text (with page marks); for a
+    template that is extended, how the current template reads it."""
+    pdf: Path
+    pages: list[int]
+    text: str
+    status: str = ""
+    problems: list[str] = field(default_factory=list)
+
+    @property
+    def name(self) -> str:
+        return f"{Path(self.pdf).name} p{','.join(map(str, self.pages))}"
+
+    @property
+    def key(self) -> tuple:
+        return (str(self.pdf), tuple(self.pages))
+
+
+def _result_for(docs: list[Doc], action: str) -> AuthorResult:
+    names = list(dict.fromkeys(Path(d.pdf).name for d in docs))
+    return AuthorResult(", ".join(names), list(docs[0].pages), action, "failed", documents=[d.name for d in docs])
 
 
 # --- the instructions given to the AI ------------------------------------------------------------
@@ -262,6 +295,46 @@ def _write_prompt(text: str, registry, example: str | None, decision: dict, base
               "Add new_fields / new_line_fields at the top level only when needed.", "",
               "DOCUMENT TEXT:", text]
     return "\n".join(parts)
+
+
+MAX_TEXT_SEVERAL = 40000   # characters of page text when a template is written from several documents
+
+
+def _doc_texts(docs: list) -> str:
+    """The text the AI is given: one document as it is; several each under its own heading,
+    shortened so that together they stay within MAX_TEXT_SEVERAL."""
+    if len(docs) == 1:
+        return docs[0].text
+    room = max(4000, MAX_TEXT_SEVERAL // len(docs))
+    parts = []
+    for number, item in enumerate(docs, start=1):
+        state = ""
+        if item.status:
+            state = f" (the current template reads it {item.status}" + (
+                ": " + "; ".join(item.problems[:3]) if item.problems and item.status != "OK" else "") + ")"
+        parts.append(f"##### DOCUMENT {number}: {item.name}{state} #####\n{item.text[:room]}")
+    return "\n\n".join(parts)
+
+
+def _extend_prompt(docs: list, read_ok: list, registry, decision: dict, base: str) -> str:
+    """Change a template so that it reads documents of its layout it fails on now, without
+    changing what it reads on the documents it reads correctly."""
+    shown = list(read_ok)[:2] + list(docs)
+    return "\n".join([
+        FORMAT_RULES, "", "FIELD LIST", _field_list(registry), "",
+        "CURRENT TEMPLATE OF THIS LAYOUT:", base, "",
+        f"Document type: {decision.get('document_type')}; issuer: {decision.get('issuer')}.",
+        "All the documents below are from this issuer and this layout family. The current template reads "
+        "the documents marked 'reads it OK' correctly and fails on the others (their problems are given). "
+        "Change the template so that it reads EVERY document below:",
+        "- keep every part that works and keep the values it reads on the documents it reads OK;",
+        "- where the documents print something differently (a currency sign, an extra column, other "
+        "labels, rows that some documents add), make the pattern accept each form: alternatives (a|b), "
+        "optional parts (?:...)?, a second item-row pattern, extra table columns;",
+        "- a field that some documents print and others do not goes in optional_fields;",
+        "- keywords must be printed on every one of the documents.",
+        "Answer with the complete changed template in one ```yaml block.", "",
+        "DOCUMENT TEXTS:", _doc_texts(shown)])
 
 
 def _fix_prompt(draft: str, problems: list[str], read: dict | None, corrections: list[str] = (),
@@ -510,28 +583,59 @@ def _stress_problems(notes: list[str]) -> list[str]:
     return problems
 
 
-def _empty_fields(data: dict, doc: dict) -> list[str]:
-    """A template is written from this one document, so each field it defines must find a value on
-    it: a field that finds nothing has a broken pattern (or reads something this document does
-    not print, which cannot be tested). Either way it would stay empty on every later document."""
+def _empty_fields(data: dict, docs) -> list[str]:
+    """A template is written from these documents, so each field it defines must find a value on
+    at least one of them: a field that finds nothing has a broken pattern (or reads something none
+    of them prints, which cannot be tested). Either way it would stay empty on every later document.
+    `docs`: what the draft read, one document (dict) or several (list)."""
+    reads = [docs] if isinstance(docs, dict) else list(docs)
     fields = data.get("fields") if isinstance(data.get("fields"), dict) else {}
-    found = doc.get("fields") or {}
     optional = set(data.get("optional_fields") or []) if isinstance(data.get("optional_fields"), list) else set()
     # the other GST kind (CGST + SGST on an IGST document) is expected to be empty on this document
     variant = optional & set(_GST_DOCUMENT + ("amount_utgst", "amount_cess"))
     empty = [name for name, spec in fields.items()
              if not (isinstance(spec, dict) and spec.get("parser") in ("static", "lines", "table"))
-             and name not in variant and found.get(name) in (None, "", [])]
+             and name not in variant
+             and all((doc.get("fields") or {}).get(name) in (None, "", []) for doc in reads)]
     if not empty:
         return []
-    return [f"these fields found nothing on this document: {', '.join(empty)}. Check each pattern against "
+    where = "this document" if len(reads) <= 1 else "any of the documents"
+    return [f"these fields found nothing on {where}: {', '.join(empty)}. Check each pattern against "
             "the DOCUMENT TEXT character by character (labels, dots, single vs. 2+ spaces) and fix it, "
-            "or remove the field if this document does not print it"]
+            "or remove the field if no document prints it"]
 
 
-def _needless_disables(template, doc: dict, catalog, type_dir: Path) -> list[str]:
-    """Default checks the draft disables that do not fail on this document: disabling them only
-    removes protection from later documents of the layout."""
+# never made optional by _settle_optional: a document without them is not read
+_CORE_FIELDS = {"issuer", "document_type", "invoice_number", "date", "amount"}
+
+
+def _settle_optional(data: dict, reads: list) -> list[str]:
+    """Required fields that some of the documents print and others do not are optional by the
+    evidence: they are moved to optional_fields (the identity fields and the total never are).
+    Returns the names moved."""
+    reads = [r for r in reads if r is not None]
+    if len(reads) < 2:
+        return []
+    required = data.get("required_fields") if isinstance(data.get("required_fields"), list) else []
+    fields = data.get("fields") if isinstance(data.get("fields"), dict) else {}
+    moved = []
+    for name in required:
+        if name in _CORE_FIELDS or name not in fields:
+            continue
+        found = sum((r.get("fields") or {}).get(name) not in (None, "", []) for r in reads)
+        if 0 < found < len(reads):
+            moved.append(name)
+    if moved:
+        data["required_fields"] = [n for n in required if n not in moved]
+        optional = data.get("optional_fields") if isinstance(data.get("optional_fields"), list) else []
+        data["optional_fields"] = optional + [n for n in moved if n not in optional]
+    return moved
+
+
+def _needless_disables(template, docs, catalog, type_dir: Path) -> list[str]:
+    """Default checks the draft disables that fail on none of the documents (one read or a list):
+    disabling them only removes protection from later documents of the layout."""
+    reads = [docs] if isinstance(docs, dict) else [d for d in docs if d is not None]
     from .validate import check_document
     checks = template.get("checks") or {}
     disabled = list(checks.get("disable") or [])
@@ -543,11 +647,14 @@ def _needless_disables(template, doc: dict, catalog, type_dir: Path) -> list[str
         trial = dict(template)
         trial["checks"] = dict(checks, disable=[n for n in disabled if n != name])
         try:
-            issues, _ = check_document(dict(doc.get("fields") or {}), list(doc.get("lines") or []),
-                                       list(doc.get("tax_lines") or []), trial, registry)
+            failing = False
+            for doc in reads:
+                issues, _ = check_document(dict(doc.get("fields") or {}), list(doc.get("lines") or []),
+                                           list(doc.get("tax_lines") or []), trial, registry)
+                failing = failing or any(level == "ERROR" for level, _ in issues)
         except Exception:
             continue
-        if not any(level == "ERROR" for level, _ in issues):
+        if not failing:
             needless.append(name)
     return needless
 
@@ -759,16 +866,23 @@ class TemplateAuthor:
         result = AuthorResult(Path(pdf).name, pages, "new template", "failed")
         if self._seen(pdf, pages, result):
             return result
-        text = self._joined(texts, pages)
-        decision = self._classify(text, catalog, pdf, result)
+        return self._new([Doc(Path(pdf), list(pages), self._joined(texts, pages))], catalog, result)
+
+    def new_template_from(self, docs: list["Doc"], catalog) -> AuthorResult:
+        """One template for several documents that no template reads and that look like one
+        layout (waiting.py groups them). Admitted only when it reads every one of them OK."""
+        self._start_clock()
+        return self._new(docs, catalog, _result_for(docs, "new template"))
+
+    def _new(self, docs: list["Doc"], catalog, result: AuthorResult) -> AuthorResult:
+        decision = self._classify(docs[0].text, catalog, docs[0].pdf, result)
         if decision is None:
-            return self._done(pdf, pages, result)
+            return self._done_all(docs, result)
         base_name = decision.get("variant_of")
         base = next((t for t in catalog.templates if t["template_name"] == base_name), None) if base_name else None
         if base is not None:
             result.action = "new version"
-            return self._write(pdf, pages, text, catalog, decision, result, base)
-        return self._write(pdf, pages, text, catalog, decision, result, None)
+        return self._write(docs, catalog, decision, result, base)
 
     def _classify(self, text: str, catalog, pdf, result) -> dict | None:
         """The AI's classification; asked again once when the answer cannot be read; without a
@@ -805,43 +919,74 @@ class TemplateAuthor:
         if base is None:
             result.outcome, result.problems = "skipped", ["template not found"]
             return result
-        decision = {"document_type": catalog.type_of(base).name, "issuer": base.get("issuer"),
-                    "template_name": family_of(base)}
-        return self._write(pdf, doc["pages"], self._joined(texts, doc["pages"]), catalog, decision, result, base,
-                           first_problems=[i["message"] for i in doc.get("issues", []) if i["level"] == "ERROR"])
+        item = Doc(Path(pdf), list(doc["pages"]), self._joined(texts, doc["pages"]), doc.get("status", "FAIL"),
+                   [i["message"] for i in doc.get("issues", []) if i["level"] == "ERROR"])
+        return self._write([item], catalog, self._decision(base, catalog), result, base)
+
+    def version_from(self, base, docs: list["Doc"], catalog) -> AuthorResult:
+        """A new version of `base` (same family, version + 1) for several documents it fails on."""
+        self._start_clock()
+        return self._write(docs, catalog, self._decision(base, catalog), _result_for(docs, "new version"), base)
+
+    def extend(self, base, docs: list["Doc"], read_ok: list["Doc"], catalog) -> AuthorResult:
+        """Change the template `base` itself so that it also reads `docs` (documents it fails on
+        now, of the same family), while it keeps reading `read_ok` (documents it reads correctly,
+        its stored samples) with the same values. Admitted only when every one of them reads OK
+        and the automatic checks pass (regression on every stored sample of the layout); else the
+        file is put back as it was. The previous file is kept in <sample store>/template_history/."""
+        self._start_clock()
+        return self._write(docs, catalog, self._decision(base, catalog), _result_for(docs, "extended"), base,
+                           extend=True, read_ok=read_ok)
+
+    @staticmethod
+    def _decision(base, catalog) -> dict:
+        return {"document_type": catalog.type_of(base).name, "issuer": base.get("issuer"),
+                "template_name": family_of(base)}
 
     # drafting and testing --------------------------------------------------------------------
-    def _write(self, pdf, pages, text, catalog, decision, result, base, first_problems=None) -> AuthorResult:
+    def _write(self, docs: list["Doc"], catalog, decision, result, base, extend: bool = False,
+               read_ok: list["Doc"] = ()) -> AuthorResult:
         type_name = slug(decision.get("document_type"), "invoice")
         new_type = catalog.type_named(type_name) is None
         result.doc_type, result.new_type = type_name, new_type
         if new_type and not decision.get("new_type"):
             result.problems.append(f"the AI named an unknown document type {type_name!r} without describing it")
-            return self._done(pdf, pages, result)
+            return self._done_all(docs, result)
+        tested = list(docs) + [d for d in read_ok if all(d.key != x.key for x in docs)]
         undo = _Undo()
         try:
             type_dir = self.types_dir / type_name
             if new_type:
                 self._create_type(type_dir, decision["new_type"], undo)
             registry = load_catalog(self.types_dir, self.config_dir).type_named(type_name).registry
+            original = None
             if base is not None:
                 base_path = catalog.type_of(base).folder / "templates" / base["template_name"]
-                name, prompt = self._version_name(catalog, base), _write_prompt(
-                    text, registry, None, decision, _template_text(base_path))
-                if first_problems:
-                    prompt += "\n\nTHE CURRENT TEMPLATE FAILS ON THIS DOCUMENT WITH:\n- " + "\n- ".join(first_problems[:8])
+                if extend:
+                    name = base["template_name"]
+                    original = base_path.read_text(encoding="utf-8")
+                    prompt = _extend_prompt(docs, read_ok, registry, decision, _template_text(base_path))
+                else:
+                    name = self._version_name(catalog, base)
+                    prompt = _write_prompt(_doc_texts(docs), registry, None, decision, _template_text(base_path))
+                    if len(docs) == 1 and docs[0].problems:
+                        prompt += "\n\nTHE CURRENT TEMPLATE FAILS ON THIS DOCUMENT WITH:\n- " + "\n- ".join(docs[0].problems[:8])
             else:
                 name = self._free_name(catalog, decision.get("template_name") or decision.get("issuer"))
-                prompt = _write_prompt(text, registry, _example_for(catalog, type_name, text), decision, None)
+                prompt = _write_prompt(_doc_texts(docs), registry, _example_for(catalog, type_name, docs[0].text),
+                                       decision, None)
             target = type_dir / "templates" / name
+            if extend:
+                undo.replaced(target)
             draft, read, data = "", None, None
             for attempt in range(1, max(1, self.settings.max_attempts) + 1):
                 result.attempts = attempt
-                answer = self._ask(prompt, f"write {name} (draft {attempt})", pdf)
+                answer = self._ask(prompt, f"{'extend' if extend else 'write'} {name} (draft {attempt})", docs[0].pdf)
                 try:
                     draft, data = _yaml(answer)
                     final = attempt >= max(1, self.settings.max_attempts)
-                    problems, read = self._test(draft, data, target, type_dir, base, pdf, pages, undo, text, final)
+                    problems, read = self._test(draft, data, target, type_dir, base, tested, undo, final,
+                                                extend=extend)
                 except (ValueError, yaml.YAMLError) as exc:
                     problems, read = [f"the answer is not a valid YAML template: {exc}"], None
                 except AIError:
@@ -851,28 +996,73 @@ class TemplateAuthor:
                                       "check that every section has the shape shown in the format"], None
                 if not problems:
                     result.outcome, result.template, result.problems = "admitted", name, []
+                    result.optional = list(getattr(self, "settled_optional", []))
+                    if original is not None:
+                        self._keep_history(name, original)
                     undo.commit()
-                    return self._done(pdf, pages, result)
+                    return self._done_all(docs, result)
                 result.problems = problems
                 corrections = getattr(self, "corrections", [])
                 shown = draft or answer
                 if corrections and isinstance(data, dict):     # the draft as the engine corrected it
                     shown = yaml.safe_dump(data, sort_keys=False, allow_unicode=False, width=200)
-                prompt = _fix_prompt(shown, problems, read, corrections, text)
-            self._keep_draft(name, draft, result.problems)
+                prompt = _fix_prompt(shown, problems, read, corrections, _doc_texts(tested))
+            self._keep_draft(name if not extend else f"{Path(name).stem}_extended.yml", draft, result.problems)
         except AIError as exc:
             result.problems.append(f"AI service: {exc}")
         except Exception as exc:  # never lose the run to the AI step
             result.problems.append(f"AI step stopped: {type(exc).__name__}: {exc}")
         undo.rollback()
-        return self._done(pdf, pages, result)
+        return self._done_all(docs, result)
 
-    def _test(self, draft: str, data: dict, target: Path, type_dir: Path, base, pdf, pages, undo,
-              text: str = "", final: bool = True) -> tuple[list[str], dict | None]:
-        """Write the draft, load it, read the document, run the automatic checks. The text fields
+    def _save(self, target: Path, header: str, data: dict, type_dir: Path, undo):
+        """Write the draft and load it: (catalog, template or None, load problems)."""
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(header + yaml.safe_dump(data, sort_keys=False, allow_unicode=False, width=200),
+                          encoding="utf-8")
+        undo.created(target)
+        catalog = load_catalog(self.types_dir, self.config_dir)
+        rejected = catalog.rejected.get(f"{type_dir.name}/{target.name}")
+        if rejected:
+            rejected, dropped = _drop_broken_optional(data, rejected)
+            if dropped and not rejected:
+                self.corrections += dropped
+                target.write_text(header + yaml.safe_dump(data, sort_keys=False, allow_unicode=False, width=200),
+                                  encoding="utf-8")
+                catalog = load_catalog(self.types_dir, self.config_dir)
+                rejected = catalog.rejected.get(f"{type_dir.name}/{target.name}")
+        if rejected:
+            return catalog, None, rejected
+        return catalog, next(t for t in catalog.templates if t["template_name"] == target.name), []
+
+    @staticmethod
+    def _read_all(catalog, target: Path, docs: list["Doc"]) -> list[tuple["Doc", dict | None, str]]:
+        """Each document read with every template: (document, what the draft read or None, why not)."""
+        reads = []
+        for item in docs:
+            result = process_pdf(Path(item.pdf), catalog)
+            doc = next((d for d in result["documents"] if d["template"] == target.name
+                        and set(d["pages"]) & set(item.pages)), None)
+            why = ""
+            if doc is None:
+                other = next((d for d in result["documents"] if set(d["pages"]) & set(item.pages)), None)
+                why = (f"another template, {other['template']}, reads this document better; make the keywords "
+                       "specific to this layout") if other else (
+                       "the keywords are printed on the page, but the template still does not match it: check "
+                       "exclude_keywords and options.replace (keywords are compared after replace)")
+            reads.append((item, doc, why))
+        return reads
+
+    def _test(self, draft: str, data: dict, target: Path, type_dir: Path, base, docs: list["Doc"], undo,
+              final: bool = True, extend: bool = False) -> tuple[list[str], dict | None]:
+        """Write the draft, load it, read every document, run the automatic checks. The text fields
         are compared with an independent reading of the page (second opinion): a difference goes
         back to the AI as a problem, except on the last draft, which may be admitted with the
-        difference shown on the document (CHECK) rather than lost."""
+        difference shown on the document (CHECK) rather than lost.
+
+        With several documents (one layout): every keyword must be printed on all of them, each
+        must read OK, and a required field printed on some of them only is moved to
+        optional_fields by the engine itself (the documents show it is optional)."""
         new_fields = data.pop("new_fields", None) or {}
         new_line_fields = data.pop("new_line_fields", None) or {}
         from .lint import _shape_errors
@@ -886,72 +1076,91 @@ class TemplateAuthor:
                          "to the total, a row is missing or misread; fix the line patterns instead")
         if shape:                                   # never write a file in the wrong shape
             return shape, None
-        self.corrections = _repair_mechanical(data)
-        page_text = re.sub(r"(?m)^=== page \d+ ===$", "", text)
+        self.corrections, self.settled_optional = _repair_mechanical(data), []
+        several = len(docs) > 1
+        page_text = re.sub(r"(?m)^=== page \d+ ===$", "", docs[0].text)
         missing, fitted = _fit_keywords(data, page_text) if page_text else ([], [])
         self.corrections += fitted
+        for item in docs[1:]:
+            other = re.sub(r"(?m)^=== page \d+ ===$", "", item.text)
+            missing += [f"keyword {k!r} is not printed on {item.name}: every keyword must be printed on every "
+                        "document of the layout (choose texts all the documents share)"
+                        for k in data.get("keywords") or [] if str(k) not in other]
+            dropped = [k for k in data.get("exclude_keywords") or [] if str(k) in other]
+            if dropped:
+                data["exclude_keywords"] = [k for k in data["exclude_keywords"] if k not in dropped]
+                self.corrections += [f"exclude_keywords: {k!r} dropped ({item.name} prints it)" for k in dropped]
         if missing:
             return missing, None
         undo.restore_fields(type_dir / "fields.yml")
         added = self._add_fields(type_dir / "fields.yml", new_fields, new_line_fields)
         if base is not None:
-            data["family"], data["version"] = family_of(base), version_of(base) + 1
+            if extend:                              # the same template, changed: same family and version
+                for key in ("family", "version"):
+                    if key in base:
+                        data[key] = base[key]
+                    else:
+                        data.pop(key, None)
+            else:
+                data["family"], data["version"] = family_of(base), version_of(base) + 1
         data.pop("layout", None)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        header = (f"# Written by the AI template author on {datetime.now():%Y-%m-%d} from {Path(pdf).name}"
-                  + (f"; new fields: {', '.join(added)}" if added else "") + "\n")
-        body = yaml.safe_dump(data, sort_keys=False, allow_unicode=False, width=200)
-        target.write_text(header + body, encoding="utf-8")
-        undo.created(target)
-
-        catalog = load_catalog(self.types_dir, self.config_dir)
-        rejected = catalog.rejected.get(f"{type_dir.name}/{target.name}")
-        if rejected:
-            rejected, dropped = _drop_broken_optional(data, rejected)
-            if dropped and not rejected:
-                self.corrections += dropped
-                target.write_text(header + yaml.safe_dump(data, sort_keys=False, allow_unicode=False, width=200),
-                                  encoding="utf-8")
-                catalog = load_catalog(self.types_dir, self.config_dir)
-                rejected = catalog.rejected.get(f"{type_dir.name}/{target.name}")
+        sources = ", ".join(Path(d.pdf).name for d in docs[:6]) + (" ..." if len(docs) > 6 else "")
+        header = (f"# {'Extended' if extend else 'Written'} by the AI template author on {datetime.now():%Y-%m-%d} "
+                  f"from {sources}" + (f"; new fields: {', '.join(added)}" if added else "") + "\n")
+        catalog, template, rejected = self._save(target, header, data, type_dir, undo)
         if rejected:
             return [f"the template does not load: {p}" for p in rejected], None
-        template = next(t for t in catalog.templates if t["template_name"] == target.name)
-        result = process_pdf(Path(pdf), catalog)
-        doc = next((d for d in result["documents"] if d["template"] == target.name
-                    and set(d["pages"]) & set(pages)), None)
-        if doc is None:
-            other = next((d for d in result["documents"] if set(d["pages"]) & set(pages)), None)
-            if other:
-                return [f"another template, {other['template']}, reads this document better; make the "
-                        "keywords specific to this layout"], None
-            return ["the keywords are printed on the page, but the template still does not match it: check "
-                    "exclude_keywords and options.replace (keywords are compared after replace)"], None
-        problems = [f"{i['level']}: {i['message']}" for i in doc.get("issues", []) if i["level"] in ("ERROR", "WARN")]
-        problems += _leftover_pages(text, pages, doc)
+        reads = self._read_all(catalog, target, docs)
+        if several:
+            moved = _settle_optional(data, [doc for _, doc, _ in reads])
+            if moved:
+                self.settled_optional = moved
+                self.corrections.append("moved to optional_fields, because some of the documents do not print "
+                                        f"them (the others do): {', '.join(moved)}")
+                catalog, template, rejected = self._save(target, header, data, type_dir, undo)
+                if rejected:
+                    return [f"the template does not load: {p}" for p in rejected], None
+                reads = self._read_all(catalog, target, docs)
+        problems: list[str] = []
+        shown = None
+        for item, doc, why in reads:
+            label = f"{item.name}: " if several else ""
+            if doc is None:
+                problems.append(label + why)
+                continue
+            found = [f"{i['level']}: {i['message']}" for i in doc.get("issues", []) if i["level"] in ("ERROR", "WARN")]
+            found += _leftover_pages(item.text, item.pages, doc)
+            if (any("untaxed + tax" in p for p in found) and not any("sum of line" in p for p in found)
+                    and doc.get("lines")):
+                found.append("the item rows add up to the total, but the taxable value and taxes do not: the "
+                             "document's tax block covers only part of the payment (fees or charges are added "
+                             "on top). Keep the item rows; do not read that partial taxable value as "
+                             "amount_untaxed (declare it in new_fields without a role, e.g. taxable_fare), and "
+                             "read the taxes only if they belong to the whole total")
+            if any("sum of line" in p for p in found):
+                found += _unread_rows(data, item.text)
+                found += _rounding_hint(doc)
+            if doc["status"] != "OK":
+                found.insert(0, f"the document is read with status {doc['status']}, it must be OK")
+            found += _keyword_problems(data, doc)
+            if found and shown is None:
+                shown = doc
+            problems += [label + p for p in found]
         problems += _duplicate_fields(data)
         problems += _gst_coverage(data)
-        problems += _empty_fields(data, doc)
-        if (any("untaxed + tax" in p for p in problems) and not any("sum of line" in p for p in problems)
-                and doc.get("lines")):
-            problems.append("the item rows add up to the total, but the taxable value and taxes do not: the "
-                            "document's tax block covers only part of the payment (fees or charges are added "
-                            "on top). Keep the item rows; do not read that partial taxable value as "
-                            "amount_untaxed (declare it in new_fields without a role, e.g. taxable_fare), and "
-                            "read the taxes only if they belong to the whole total")
-        if any("sum of line" in p for p in problems):
-            problems += _unread_rows(data, text)
-            problems += _rounding_hint(doc)
-        if doc["status"] != "OK":
-            problems.insert(0, f"the document is read with status {doc['status']}, it must be OK")
-        problems += _keyword_problems(data, doc)
+        problems += _empty_fields(data, [doc for _, doc, _ in reads if doc is not None])
+        problems = list(dict.fromkeys(problems))
+        first = next((doc for _, doc, _ in reads if doc is not None), None)
         if problems:
-            return problems, doc
-        reading = self._second_opinion(pdf, pages, doc, template, catalog, text)
-        differences = [f for f in reading.findings if f.level == "WARN"] if reading else []
+            return problems, shown or first
+        readings, differences = [], []
+        for item, doc, _ in reads:
+            reading = self._second_opinion(item.pdf, item.pages, doc, template, catalog, item.text)
+            readings.append(reading)
+            differences += [(item, f) for f in (reading.findings if reading else []) if f.level == "WARN"]
         if differences and not final:
-            return [_difference_problem(f) for f in differences], doc
-        trimmed = _needless_disables(template, doc, catalog, type_dir)
+            return [(f"{item.name}: " if several else "") + _difference_problem(f) for item, f in differences], first
+        trimmed = _needless_disables(template, [doc for _, doc, _ in reads], catalog, type_dir)
         if trimmed:
             data["checks"]["disable"] = [n for n in data["checks"]["disable"] if n not in trimmed]
             if not data["checks"]["disable"]:
@@ -964,24 +1173,25 @@ class TemplateAuthor:
                                     f"disabling them only weakens later documents): {', '.join(trimmed)}")
             catalog = load_catalog(self.types_dir, self.config_dir)
             template = next(t for t in catalog.templates if t["template_name"] == target.name)
-        verdict = check_template(catalog, template, self.store, [Path(pdf)])
+        verdict = check_template(catalog, template, self.store, list(dict.fromkeys(Path(d.pdf) for d in docs)))
         if not verdict.passed:
-            return [f"automatic check: {p}" for p in verdict.problems], doc
+            return [f"automatic check: {p}" for p in verdict.problems], first
         stressed = _stress_problems([n for n in verdict.notes if n.startswith("stress:")])
         if stressed:
-            return stressed, doc
+            return stressed, first
         record(self.store, catalog, template, verdict)
-        if reading is not None and not reading.error:
-            # the pipeline's second opinion on this document is this one: not asked again
-            from . import second_opinion as opinion
-            from .admission import template_hash
-            key = f"{file_hash(Path(pdf))}:{','.join(str(p) for p in doc['pages'])}"
-            registry = catalog.registry_for(template)
-            names = opinion.fields_to_check(template, registry)
-            opinion.record(self.store, template["template_name"], template_hash(catalog, template), key,
-                           reading, f"{Path(pdf).name} p{','.join(map(str, doc['pages']))} (while writing)",
-                           opinion.question_of(names, getattr(registry, "notes", {})))
-        return [], doc
+        from . import second_opinion as opinion
+        from .admission import template_hash
+        registry = catalog.registry_for(template)
+        names = opinion.fields_to_check(template, registry)
+        for (item, doc, _), reading in zip(reads, readings):
+            if reading is not None and not reading.error:
+                # the pipeline's second opinion on this document is this one: not asked again
+                key = f"{file_hash(Path(item.pdf))}:{','.join(str(p) for p in doc['pages'])}"
+                opinion.record(self.store, template["template_name"], template_hash(catalog, template), key,
+                               reading, f"{Path(item.pdf).name} p{','.join(map(str, doc['pages']))} (while writing)",
+                               opinion.question_of(names, getattr(registry, "notes", {})))
+        return [], first
 
     def _second_opinion(self, pdf, pages, doc: dict, template, catalog, text: str):
         """The AI's own reading of this document's text fields, asked once per document (a later
@@ -1086,6 +1296,12 @@ class TemplateAuthor:
             name = f"{family}_v{version}.yml"
         return name
 
+    def _keep_history(self, name: str, text: str) -> None:
+        """The file of a template before the AI extended it (for a person to compare or go back)."""
+        folder = self.store.folder / "template_history"
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / f"{Path(name).stem}.{datetime.now():%Y%m%d-%H%M%S}.yml").write_text(text, encoding="utf-8")
+
     def _keep_draft(self, name: str, draft: str, problems: list[str]) -> None:
         folder = self.store.folder / "ai_drafts"
         folder.mkdir(parents=True, exist_ok=True)
@@ -1149,6 +1365,11 @@ class TemplateAuthor:
                            f"'Send to the AI again', to try again)"]
         return True
 
+    def _done_all(self, docs: list[Doc], result) -> AuthorResult:
+        for item in docs:
+            self._done(item.pdf, item.pages, result)
+        return result
+
     def _done(self, pdf, pages, result) -> AuthorResult:
         service = any(str(p).startswith(("AI service:", "AI step stopped:")) and "ai.max_minutes" not in str(p)
                       for p in result.problems)
@@ -1170,10 +1391,16 @@ class _Undo:
     def __init__(self):
         self.paths: list[Path] = []
         self.fields: dict[Path, str | None] = {}
+        self.originals: dict[Path, str] = {}       # existing files that are changed (an extension)
 
     def created(self, path: Path) -> None:
-        if path not in self.paths:
+        if path not in self.paths and path not in self.originals:
             self.paths.append(path)
+
+    def replaced(self, path: Path) -> None:
+        """An existing file the attempt rewrites: put back as it was on rollback."""
+        if path not in self.originals and path.is_file():
+            self.originals[path] = path.read_text(encoding="utf-8")
 
     def restore_fields(self, path: Path) -> None:
         """Remember fields.yml before the first change; put it back before every new draft."""
@@ -1183,12 +1410,14 @@ class _Undo:
             path.write_text(self.fields[path], encoding="utf-8")
 
     def commit(self) -> None:
-        self.paths, self.fields = [], {}
+        self.paths, self.fields, self.originals = [], {}, {}
 
     def rollback(self) -> None:
         for path, text in self.fields.items():
             if text is not None and path.parent.exists():
                 path.write_text(text, encoding="utf-8")
+        for path, text in self.originals.items():
+            path.write_text(text, encoding="utf-8")
         for path in reversed(self.paths):
             if path.is_dir():
                 shutil.rmtree(path, ignore_errors=True)

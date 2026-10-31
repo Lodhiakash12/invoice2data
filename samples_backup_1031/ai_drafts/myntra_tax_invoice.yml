@@ -1,0 +1,93 @@
+# Last AI draft, not accepted:
+# - when the document is printed with short decimals, the template loses values (missing: line 1 igst_amount): amounts can be printed without decimals (202) or with one (212.1): use (\d[\d,]*(?:\.\d{1,3})?)
+
+issuer: Myntra Designs Private Limited
+keywords:
+- Tax Invoice
+- MYNTRA DESIGNS PVT LTD
+- myntra.com
+continuation_keywords:
+- MYNTRA DESIGNS PVT LTD
+required_fields:
+- issuer
+- document_type
+- invoice_number
+- date
+- amount
+- seller_name
+optional_fields:
+- order_number
+- date_order
+- place_of_supply
+- nature_of_transaction
+- nature_of_supply
+- seller_address
+- seller_tax_id
+- buyer_name
+- amount_gross
+- amount_discount
+- amount_untaxed
+- amount_igst
+- amount_cgst
+- amount_sgst
+fields:
+  document_type:
+    parser: static
+    value: tax_invoice
+  invoice_number: (?m)^\s*Invoice Number:\s*(\S+)
+  date: (?m)^\s*Invoice Number:\s*\S+\s{2,}Date:\s*(\d{1,2} [A-Z][a-z]{2} \d{4})
+  order_number: (?m)^\s*Order Number:\s*(\S+)
+  date_order: (?m)^\s*Order Number:\s*\S+\s{2,}Date:\s*(\d{1,2} [A-Z][a-z]{2} \d{4})
+  nature_of_transaction: (?m)^\s*Nature of Transaction:\s*(\S+)
+  nature_of_supply: (?m)Nature of Supply:\s*(\S+)
+  place_of_supply: (?m)^\s*Place of Supply:\s*([A-Za-z][A-Za-z ]*?)\s*$
+  seller_name: (?m)^\s{2,}(MYNTRA DESIGNS PVT LTD)\s*$
+  seller_address: (?m)^MYNTRA DESIGNS PVT LTD,\s*(SY no 8 to 14[\s\S]*?Karnataka-560103)
+  seller_tax_id: (?m)GSTIN Number:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})
+  buyer_name: '(?m)^([A-Z][A-Za-z]*(?: [A-Za-z]+)*)\s{2,}SY no 8 to 14'
+  amount_gross: (?m)^\s*TOTAL\s+Rs\s+([\d,.]+)
+  amount_discount: (?m)^\s*TOTAL\s+Rs\s+[\d,.]+\s{2,}Rs\s+([\d,.]+)
+  amount_untaxed: (?m)^\s*TOTAL(?:\s+Rs\s+[\d,.]+){3}\s+Rs\s+([\d,.]+)
+  amount_igst: (?m)^\s*TOTAL(?:\s+Rs\s+[\d,.]+){4}\s+Rs\s+([\d,.]+)\s+Rs\s+[\d,.]+\s*$
+  amount_cgst: (?m)^\s*TOTAL(?:\s+Rs\s+[\d,.]+){4}\s+Rs\s+([\d,.]+)\s+Rs\s+[\d,.]+\s+Rs\s+[\d,.]+\s*$
+  amount_sgst: (?m)^\s*TOTAL(?:\s+Rs\s+[\d,.]+){5}\s+Rs\s+([\d,.]+)\s+Rs\s+[\d,.]+\s*$
+  amount: (?m)^\s*TOTAL.*\sRs\s+([\d,.]+)\s*$
+  lines:
+    parser: table
+    start: (?m)^\s*Other\s{2,}Taxable\s{2,}SGST/
+    end: (?m)^\s*TOTAL
+    columns:
+      qty: Qty
+      gross_amount: Gross Amount
+      discount: Discount
+      amount_other_charges: (?<!\S)(?:Other|Charges)(?!\S)
+      price_subtotal: (?<!\S)(?:Taxable|Amount)(?!\S)
+      cgst_amount: CGST
+      sgst_amount: SGST|UTGST|UGST
+      igst_amount: IGST
+      cess_amount: Cess
+      price_total: Total Amount
+    row:
+    - price_total
+    extra:
+    - HSN:\s*(?P<hsn_sac>\d+),\s*(?P<line_tax_percent>[\d.]+)%\s+(?P<tax_type>[A-Z]+)
+    - ^\s*(?P<name>[A-Za-z][^\n]*?)\s*$
+    types:
+      qty: int
+      gross_amount: float
+      discount: float
+      amount_other_charges: float
+      price_subtotal: float
+      cgst_amount: float
+      sgst_amount: float
+      igst_amount: float
+      cess_amount: float
+      price_total: float
+options:
+  currency: INR
+  decimal_separator: .
+  date_formats:
+  - '%d %b %Y'
+  replace:
+  - - \r
+    - ''

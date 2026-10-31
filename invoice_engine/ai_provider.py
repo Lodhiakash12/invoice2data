@@ -43,6 +43,9 @@ class AISettings:
     extra_body: dict | None = None        # extra request fields the service supports, as is
     second_opinion: int = 3               # first documents of each template the AI reads again (0 = off)
     max_minutes: float = 10               # time for the AI step on one document (all its drafts)
+    batch_size: int = 3                   # documents of one layout collected before the AI works on them
+                                          # (0 = at once, while the document is read)
+    max_wait_days: float = 7              # a group with fewer documents goes to the AI after this long
 
     @classmethod
     def from_settings(cls, settings: dict) -> "AISettings":

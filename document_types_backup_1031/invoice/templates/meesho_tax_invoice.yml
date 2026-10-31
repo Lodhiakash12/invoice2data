@@ -1,0 +1,93 @@
+# Meesho - seller's tax invoice (goods sold through the Meesho marketplace).
+issuer: Meesho
+
+keywords:
+  - 'BILL TO:'
+  - 'SHIP TO:'
+  - 'Tax Invoice'
+  - 'Invoice Number'
+  - 'Sold by:'
+exclude_keywords:
+  - 'Credit Note'
+  - 'Bill of Supply'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  # Header values sit one line below their labels
+  order_number: 'Order Number\s+Invoice Number\s*\n\s*(\d+)\s+\S+'
+  invoice_number: 'Order Number\s+Invoice Number\s*\n\s*\d+\s+(\S+)'
+  date_order: 'Order Date\s+Invoice Date\s*\n[^\n]*?(\d{2}-\d{2}-\d{4})\s+\d{2}-\d{2}-\d{4}'
+  date: 'Order Date\s+Invoice Date\s*\n[^\n]*?\d{2}-\d{2}-\d{4}\s+(\d{2}-\d{2}-\d{4})'
+
+  # Buyer: the BILL TO block, read from the word positions (the right-hand titles are printed
+  # between its lines)
+  buyer_name: {parser: region, heading: '^BILL TO:', max_lines: 1}
+  buyer_address: {parser: region, heading: '^BILL TO:', skip: 1, stop: '^Place of Supply'}
+  place_of_supply: '(?m)^Place of Supply\s*:\s*(.+?)\s*$'
+
+  # Seller block at the bottom: name, then "address, GSTIN" on one line
+  seller_name: '(?m)^Sold by:\s*(.+?)\s*$'
+  seller_address: 'Sold by:[^\n]*\n([^\n]*?),\s*\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3}'
+  seller_tax_id: 'Sold by:[^\n]*\n[^\n]*?(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+
+  # Totals row: total tax, grand total
+  amount_tax: '(?m)^Total\s+Rs\.\s?([\d,]+\.\d{2})\s+Rs\.\s?[\d,]+\.\d{2}\s*$'
+  amount: '(?m)^Total\s+Rs\.\s?[\d,]+\.\d{2}\s+Rs\.\s?([\d,]+\.\d{2})\s*$'
+
+  lines:
+    parser: lines
+    start: 'SN\.\s+Description'
+    end: '(?m)^Total\s'
+    # "1  Apple iPhone 12 mini BACK  392690  1  Rs.87.03  Rs.30.00  Rs.48.33  IGST @18.0% :Rs.8.70  Rs.57.03"
+    # Gross amount includes tax; gross - discount = line total.
+    first_line: '^\s*(?P<pos>\d+)\s+(?P<name>\S.*?)\s+(?P<hsn_sac>\d{4,8})\s+(?P<qty>\d+|NA)\s+(?:Rs\.\s?)?(?P<gross_amount>\d[\d,]*(?:\.\d+)?)\s+(?:Rs\.\s?)?(?P<discount>\d[\d,]*(?:\.\d+)?)\s+(?:Rs\.\s?)?(?P<price_subtotal>\d[\d,]*(?:\.\d+)?)\s+(?P<tax_type>[A-Z]+)\s*@\s*(?P<line_tax_percent>\d+(?:\.\d+)?)%\s*:\s*Rs\.\s?(?P<line_tax_amount>\d[\d,]*(?:\.\d+)?)(?:\s+(?:SGST|UTGST)\s*@\s*(?P<sgst_rate>\d+(?:\.\d+)?)%\s*:\s*Rs\.\s?(?P<sgst_amount>\d[\d,]*(?:\.\d+)?))?\s+(?:Rs\.\s?)?(?P<price_total>\d[\d,]*(?:\.\d+)?)\s*$'
+    # Rest of a wrapped description ("COVER - Free Size"); a seller in the buyer's state prints
+    # CGST on the item's line and SGST/UTGST after it or on the next line, in the Taxes column
+    line: '^\s+(?=\S)(?P<name>(?!(?:SGST|UTGST)\s*@)\S.*?)?\s*(?:(?<!\S)(?:SGST|UTGST)\s*@\s*(?P<sgst_rate>\d+(?:\.\d+)?)%\s*:\s*Rs\.\s?(?P<sgst_amount>\d[\d,]*(?:\.\d+)?))?\s*$'
+    types:
+      pos: int
+      gross_amount: float
+      discount: float
+      price_subtotal: float
+      line_tax_percent: float
+      line_tax_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+    # A description printed ABOVE its number row (vertically centred cell) is moved onto that row
+    - ['(?m)^[ \t]+(\S[^\n]*?)[ \t]*\n(\d+)[ \t]+(\d{6,8}[ \t])', '\2    \1    \3']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['bill', 0]
+    - ['tax', 9]
+    - ['invoice', 10]
+    - ['place', 0]
+    - ['supply', 1]
+    - ['order', 5]
+    - ['number', 5]
+    - ['invoice', 10]
+    - ['number', 10]
+    - ['ship', 0]
+    - ['order', 5]
+    - ['date', 6]
+    - ['invoice', 10]
+    - ['date', 10]
+    - ['description', 1]
+    - ['total', 9]
+    - ['total', 0]
+    - ['sold', 0]
+    - ['tax', 0]
+    - ['invoice', 2]
+    - ['order', 4]

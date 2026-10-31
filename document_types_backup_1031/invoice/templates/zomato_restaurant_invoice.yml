@@ -1,0 +1,168 @@
+# Zomato / Eternal - restaurant tax invoice.
+# Issued by Eternal Limited on behalf of a restaurant (Section 9(5) CGST Act).
+# Generic for any restaurant using this layout: nothing restaurant-specific is hard-coded.
+issuer: Zomato (Eternal Limited)
+
+keywords:
+  - 'Tax Invoice on behalf of'
+  - 'Restaurant Name'
+  - 'Eternal GST'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+# The "Item(s) Total" row covers the food items only. When extra charges follow it (packaging),
+# its gross and discount are not the invoice's, so they are read only when no charge follows.
+optional_fields: [amount_gross, amount_discount, amount_cgst, amount_sgst, amount_igst]
+
+# Layout variants seen (all read by this template):
+#  - 2026: "Label: value", amounts with two decimals, one-line table header
+#  - 2025: "Label : value" (space before the colon), amounts as printed (212.1, 0.8, 32),
+#    table header over two lines, "State name & Place of Supply"
+#  - extra charge rows after "Item(s) Total" (e.g. "Restaurant Packaging Charge")
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice No\.\s*:\s*(\S+)'
+  date: 'Invoice Date\s*:\s*(\d{2}/\d{2}/\d{4})'
+  order_number: 'Order ID:?\s+\(?(\d+)'
+  date_order: 'Order ID:?\s+\(?\d+\)?\s+dated\s+\(?(\d{4}-\d{2}-\d{2})'
+
+  # Seller = the restaurant (legal entity + trade name)
+  seller_name: 'Legal Entity Name\s*:\s*(.+?)\s*\n'
+  seller_trade_name: 'Restaurant Name\s*:\s*(.+?)\s*\n'
+  seller_address: {parser: regex, regex: '(?s)Restaurant Address\s*:\s*(.*?)\n\s*Restaurant GSTIN', replace: ['\s+', ' ']}
+  seller_tax_id: 'Restaurant GSTIN\s*:\s*(\S+)'
+  seller_fssai: 'Restaurant FSSAI\s*:\s*(\d+)'
+
+  # Operator = the platform that issues the invoice for the restaurant and pays the GST
+  operator_name: 'For (ETERNAL LIMITED)'
+  operator_tax_id: 'Eternal GST\s*:\s*(\S+)'
+  operator_pan: 'Eternal PAN\s*:\s*(\S+)'
+  operator_company_reg: 'Eternal CIN\s*:\s*(\S+)'
+  operator_fssai: 'Eternal FSSAI\s*:\s*(\d+)'
+
+  # Buyer
+  buyer_name: 'Customer Name\s*:\s*(.+?)\s*\n'
+  buyer_address: {parser: regex, regex: '(?s)Delivery Address\s*:\s*(.*?)\n\s*State name (?:and|&) Place of Supply', replace: ['\s+', ' ']}
+  place_of_supply: 'State name (?:and|&) Place of Supply\s*:\s*(.+?)\s*\n'
+
+  hsn_sac: 'HSN Code\s*:\s*(\d+)'
+  supply_description: 'Service Description\s*:\s*(.+?)\s*\n'
+  reverse_charge: 'Supply attracts reverse charge\s*:\s*(\w+)'
+
+  # "Item(s) Total": gross, discount, net, CGST, SGST, total (only when "Total Value" follows)
+  amount_gross: '(?m)^\s*Item\(s\) Total\s+(\d[\d,]*(?:\.\d+)?)\s[^\n]*\n\s*Total Value'
+  amount_discount: '(?m)^\s*Item\(s\) Total\s+[\d,.]+\s+(\d[\d,]*(?:\.\d+)?)\s[^\n]*\n\s*Total Value'
+  # "Total Value": net, CGST, SGST, total; or net, IGST, total (delivery to another state)
+  amount_untaxed: '(?m)Total Value\s+(\d[\d,]*(?:\.\d+)?)\s+[\d,.]+\s+(?:[\d,.]+\s+)?[\d,.]+\s*$'
+  amount_cgst: '(?m)Total Value\s+[\d,.]+\s+(\d[\d,]*(?:\.\d+)?)\s+[\d,.]+\s+[\d,.]+\s*$'
+  amount_sgst: '(?m)Total Value\s+[\d,.]+\s+[\d,.]+\s+(\d[\d,]*(?:\.\d+)?)\s+[\d,.]+\s*$'
+  amount_igst: '(?m)Total Value\s+[\d,.]+\s+(\d[\d,]*(?:\.\d+)?)\s+[\d,.]+\s*$'
+  amount: '(?m)Total Value\s+[\d,.]+\s+[\d,.]+\s+(?:[\d,.]+\s+)?(\d[\d,]*(?:\.\d+)?)\s*$'
+  # Independent second total printed on the invoice (currency printed as INR or the rupee sign)
+  amount_paid: 'Amount of \D*?(\d[\d,]*(?:\.\d+)?) settled'
+  total_in_words: 'Amount \(in words\)\s*:\s*(.+?)\s*\n'
+
+  lines:
+    parser: lines
+    start: 'Particulars\s+Gross'
+    end: '(?m)^\s*Total Value'
+    # "2 x Roasted Papad   30   20.11   9.89   2.50%   0.25   2.50%   0.25   10.38"
+    # "Restaurant Packaging Charge   25.00   0.00   25.00   2.50%   0.62   2.50%   0.62   26.25"
+    first_line: '^\s*(?:(?P<qty>\d+)\s+x\s+)?(?P<name>\S.*?)\s+(?P<gross_amount>\d[\d,]*(?:\.\d+)?)\s+(?P<discount>\d[\d,]*(?:\.\d+)?)\s+(?P<price_subtotal>\d[\d,]*(?:\.\d+)?)\s+(?:(?P<igst_rate>\d+(?:\.\d+)?)%\s+(?P<igst_amount>\d[\d,]*(?:\.\d+)?)|(?P<cgst_rate>\d+(?:\.\d+)?)%\s+(?P<cgst_amount>\d[\d,]*(?:\.\d+)?)\s+(?P<sgst_rate>\d+(?:\.\d+)?)%\s+(?P<sgst_amount>\d[\d,]*(?:\.\d+)?))\s+(?P<price_total>\d[\d,]*(?:\.\d+)?)\s*$'
+    # Long item names wrap onto the next line
+    line: '^\s+(?P<name>\S.*?)\s*$'
+    # the items subtotal row, and the second header line of the 2025 layout
+    skip_line: '^\s*(?:Item\(s\) Total\s|value\s+value)'
+    types:
+      qty: int
+      gross_amount: float
+      discount: float
+      price_subtotal: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d/%m/%Y', '%Y-%m-%d']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 2
+  order:
+    - ['tax', 5]
+    - ['invoice', 5]
+    - ['for', 5]
+    - ['tax', 0]
+    - ['invoice', 1]
+    - ['behalf', 1]
+    - ['legal', 0]
+    - ['entity', 1]
+    - ['name', 1]
+    - ['limited', 3]
+    - ['restaurant', 0]
+    - ['name', 1]
+    - ['restaurant', 0]
+    - ['address', 1]
+    - ['restaurant', 0]
+    - ['gstin', 1]
+    - ['restaurant', 0]
+    - ['fssai', 1]
+    - ['invoice', 0]
+    - ['invoice', 0]
+    - ['date', 1]
+    - ['customer', 0]
+    - ['name', 1]
+    - ['delivery', 0]
+    - ['address', 1]
+    - ['state', 0]
+    - ['name', 1]
+    - ['and', 1]
+    - ['place', 1]
+    - ['supply', 2]
+    - ['hsn', 0]
+    - ['code', 1]
+    - ['service', 0]
+    - ['description', 1]
+    - ['restaurant', 2]
+    - ['service', 2]
+    - ['particulars', 1]
+    - ['gross', 3]
+    - ['value', 3]
+    - ['value', 5]
+    - ['total', 10]
+    - ['total', 1]
+    - ['restaurant', 0]
+    - ['charge', 2]
+    - ['total', 0]
+    - ['value', 1]
+    - ['amount', 0]
+    - ['words', 1]
+    - ['and', 2]
+    - ['amount', 0]
+    - ['settled', 1]
+    - ['order', 3]
+    - ['dated', 4]
+    - ['supply', 0]
+    - ['attracts', 1]
+    - ['reverse', 1]
+    - ['charge', 2]
+    - ['for', 0]
+    - ['eternal', 1]
+    - ['limited', 1]
+    - ['limited', 4]
+    - ['eternal', 0]
+    - ['pan', 1]
+    - ['eternal', 0]
+    - ['cin', 1]
+    - ['eternal', 0]
+    - ['gst', 1]
+    - ['eternal', 0]
+    - ['fssai', 1]

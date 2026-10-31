@@ -1,0 +1,331 @@
+# Vodafone Idea (Vi) - postpaid mobile bill. Page 1 is the invoice (charge summary, tax, total);
+# the following pages (usage details, itemised calls) have no invoice number and are attached
+# by continuation_keywords.
+# The invoice total is "Total charges for the Current Bill Period"; the "Total Payable Amount"
+# also carries the previous balance, payments and adjustments of the account.
+issuer: Vodafone Idea
+
+keywords:
+  - 'your Vi bill'
+  - 'Vodafone Idea GST No'
+  - 'Charge Summary'
+continuation_keywords:
+  - 'Bill Period'
+  - 'Pulse Rate'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+optional_fields: [amount_cgst, amount_sgst, amount_igst]
+
+fields:
+  document_type: {parser: static, value: telecom_bill}
+  invoice_number: 'Invoice No\s*:\s*(\S+)'
+  date: 'Invoice Date\s*:\s*(\d{2}\.\d{2}\.\d{2})'
+  date_due: 'Due Date\s+(\d{2} [A-Z][a-z]{2} \d{4})'
+  billing_period: 'Bill Period\s*:\s*(\d{2}\.\d{2}\.\d{2} to \d{2}\.\d{2}\.\d{2})'
+  service_number: 'Vi No\s*:\s*(\d+)'
+  customer_number: 'Account No\s*:\s*(\d+)'
+  service_plan: 'Your Plan\s*:\s*(\S[^\n]*?)(?:\s{2,}|\s*\n)'
+  supply_description: 'Description of Service\s*:\s*(\S[^\n]*?)\s*\n'
+  place_of_supply: 'Place of Supply\s*:\s*(\S[^\n]*?)\s*\n'
+  buyer_state_code: 'State Code\s*:\s*(\d{2})'
+  buyer_tax_id: 'Customer GST No\s*:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  hsn_sac: 'HSN Code\s*:\s*(\d+)'
+  # GST invoice reference (IRN) printed over two lines of the QR-code box; another row of the
+  # charge summary can sit between them
+  irn: {parser: regex, regex: '(?s)Invoice Ref No:\s*\n\s*([0-9a-f]{20,}\s*\n(?:[^\n]*\n)??\s*[0-9a-f]{20,})', replace: [['(?s)^([0-9a-f]+).*?([0-9a-f]{20,})$', '\1\2']]}
+
+  seller_name: '(?m)^\s*(Vodafone Idea Limited)\s+Building'
+  seller_address: '(?m)^\s*Vodafone Idea Limited\s+(\S[^\n]*?)\s*$'
+  seller_tax_id: 'Vodafone Idea GST No\s*:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_company_reg: 'CIN\s*:\s*(\S+)'
+
+  # Customer name and address: left column of page 1 (the right column is cut off)
+  buyer_name: '(?m)^(Co\. \S.*?)\s{2,}'
+  buyer_address: {parser: regex, regex: '(?s)\n(?:Co\. )?\S[^\n]*\n\s*Vi No[^\n]*\n(.*?)\n\s*\n', replace: [['(?m)[ \t]{2,}\S[^\n]*$', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+
+  # Account statement: previous balance - payments + adjustments + current charges = payable
+  amount_previous_balance: 'Previous Balance\s+\(Last[^\n]*\n[^\n]*\n\s*Rs ([\d,]+(?:\.\d{1,2})?)'
+  amount_payments_received: 'Previous Balance\s+\(Last[^\n]*\n[^\n]*\n\s*Rs [\d,]+(?:\.\d{1,2})?\s+Rs ([\d,]+(?:\.\d{1,2})?)'
+  amount_account_adjustments: 'Previous Balance\s+\(Last[^\n]*\n[^\n]*\n\s*Rs [\d,]+(?:\.\d{1,2})?\s+Rs [\d,]+(?:\.\d{1,2})?\s+Rs ([\d,]+(?:\.\d{1,2})?)'
+  amount_due: 'Total Payable Amount\s+Rs ([\d,]+(?:\.\d{1,2})?)'
+
+  # Charge summary
+  amount_discount: '(?m)^\s+Discounts\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_untaxed: '(?m)^\s+Taxable Value\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  amount_tax: '(?m)^\s+Tax\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  amount: '(?m)^\s+Total charges for the Current Bill Period\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  total_in_words: 'Total charges for the Current Bill Period[^\n]*\n\s*\n?\s*\((\S[^)]*)\)'
+  # Tax split (page 3)
+  amount_sgst: 'State GST @ [\d.]+%\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_cgst: 'Central GST @ [\d.]+%\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_igst: '(?:Integrated GST|IGST) @ [\d.]+%\s+([\d,]+(?:\.\d{1,2})?)'
+
+  lines:
+    parser: lines
+    start: 'Charge Summary\s+Amount \(Rs\.\)'
+    end: '(?m)^\s+Taxable Value\s'
+    # Main charge rows only ("    Monthly Charges     700.00"); the "- Call Charges" rows
+    # below Usage Charges are its breakdown. Discounts are read separately (amount_discount).
+    # Text after the amount belongs to the right-hand column.
+    first_line: '^\s{4}(?P<name>(?!Discounts\b)[A-Z][A-Za-z /]*?)\s{2,}(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)(?:\s.*)?$'
+    line: '^(?!)'
+    types:
+      price_subtotal: float
+
+checks:
+  # Discounts are a separate line of the summary: charges - discounts = taxable value
+  disable: [sum of line price_subtotal vs amount_untaxed, due = total]
+  document:
+    - name: charges - discounts = taxable value
+      rule: "lines('price_subtotal') - amount_discount == amount_untaxed"
+    - name: CGST + SGST = tax
+      rule: "amount_cgst + amount_sgst == amount_tax"
+    - name: IGST = tax
+      rule: "amount_igst == amount_tax"
+    - name: previous balance - payments + adjustments + current charges = payable
+      rule: "amount_previous_balance - amount_payments_received + amount_account_adjustments + amount == amount_due"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d.%m.%y', '%d %b %Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['for', 2]
+    - ['for', 4]
+    - ['your', 2]
+    - ['bill', 3]
+    - ['total', 8]
+    - ['payable', 8]
+    - ['amount', 9]
+    - ['your', 5]
+    - ['due', 8]
+    - ['date', 8]
+    - ['bill', 8]
+    - ['date', 8]
+    - ['account', 4]
+    - ['invoice', 8]
+    - ['date', 8]
+    - ['the', 1]
+    - ['bill', 8]
+    - ['period', 8]
+    - ['your', 4]
+    - ['plan', 5]
+    - ['invoice', 8]
+    - ['description', 8]
+    - ['service', 9]
+    - ['place', 8]
+    - ['supply', 8]
+    - ['state', 8]
+    - ['code', 8]
+    - ['customer', 8]
+    - ['gst', 8]
+    - ['total', 8]
+    - ['payable', 8]
+    - ['amount', 8]
+    - ['payable', 9]
+    - ['total', 5]
+    - ['charges', 6]
+    - ['for', 6]
+    - ['the', 6]
+    - ['payable', 8]
+    - ['previous', 1]
+    - ['balance', 1]
+    - ['last', 2]
+    - ['current', 5]
+    - ['bill', 6]
+    - ['period', 6]
+    - ['payable', 8]
+    - ['charges', 10]
+    - ['due', 2]
+    - ['date', 2]
+    - ['previous', 4]
+    - ['balance', 5]
+    - ['previous', 7]
+    - ['balance', 8]
+    - ['amount', 10]
+    - ['the', 10]
+    - ['last', 1]
+    - ['bill', 1]
+    - ['your', 3]
+    - ['account', 4]
+    - ['due', 4]
+    - ['charges', 6]
+    - ['charge', 1]
+    - ['summary', 1]
+    - ['amount', 4]
+    - ['your', 7]
+    - ['bill', 7]
+    - ['charges', 1]
+    - ['charges', 1]
+    - ['account', 10]
+    - ['charges', 1]
+    - ['charges', 1]
+    - ['payable', 7]
+    - ['vodafone', 6]
+    - ['idea', 6]
+    - ['gst', 8]
+    - ['code', 9]
+    - ['invoice', 8]
+    - ['ref', 9]
+    - ['value', 1]
+    - ['service', 2]
+    - ['charges', 2]
+    - ['discounts', 1]
+    - ['charges', 1]
+    - ['charges', 1]
+    - ['for', 1]
+    - ['charges', 1]
+    - ['the', 2]
+    - ['the', 3]
+    - ['bill', 3]
+    - ['charges', 1]
+    - ['taxable', 1]
+    - ['value', 1]
+    - ['tax', 1]
+    - ['total', 1]
+    - ['charges', 1]
+    - ['for', 1]
+    - ['the', 2]
+    - ['current', 2]
+    - ['bill', 2]
+    - ['period', 3]
+    - ['your', 1]
+    - ['the', 4]
+    - ['vodafone', 0]
+    - ['idea', 1]
+    - ['limited', 1]
+    - ['building', 2]
+    - ['vodafone', 3]
+    - ['hsn', 2]
+    - ['code', 3]
+    - ['vodafone', 4]
+    - ['idea', 5]
+    - ['gst', 5]
+    - ['cin', 8]
+    - ['idea', 4]
+    - ['limited', 5]
+    - ['vodafone', 7]
+    - ['your', 0]
+    - ['bill', 0]
+    - ['period', 0]
+    - ['pulse', 4]
+    - ['rate', 4]
+    - ['for', 9]
+    - ['your', 0]
+    - ['plan', 2]
+    - ['plan', 1]
+    - ['charges', 4]
+    - ['for', 10]
+    - ['last', 0]
+    - ['bill', 2]
+    - ['last', 7]
+    - ['last', 2]
+    - ['the', 7]
+    - ['your', 2]
+    - ['bill', 3]
+    - ['charges', 1]
+    - ['period', 4]
+    - ['charges', 7]
+    - ['discounts', 8]
+    - ['total', 0]
+    - ['charges', 1]
+    - ['charges', 10]
+    - ['total', 0]
+    - ['charges', 2]
+    - ['charges', 10]
+    - ['total', 0]
+    - ['your', 0]
+    - ['bill', 0]
+    - ['period', 0]
+    - ['pulse', 4]
+    - ['rate', 4]
+    - ['for', 9]
+    - ['charges', 1]
+    - ['charges', 10]
+    - ['total', 0]
+    - ['charges', 2]
+    - ['charges', 10]
+    - ['total', 0]
+    - ['charges', 2]
+    - ['charges', 10]
+    - ['total', 0]
+    - ['service', 2]
+    - ['charges', 2]
+    - ['charges', 1]
+    - ['date', 4]
+    - ['charges', 10]
+    - ['total', 0]
+    - ['for', 2]
+    - ['the', 7]
+    - ['for', 1]
+    - ['service', 4]
+    - ['the', 6]
+    - ['discounts', 0]
+    - ['charges', 2]
+    - ['charges', 10]
+    - ['service', 1]
+    - ['total', 0]
+    - ['charges', 10]
+    - ['taxable', 0]
+    - ['value', 1]
+    - ['total', 0]
+    - ['charges', 1]
+    - ['for', 1]
+    - ['current', 2]
+    - ['bill', 2]
+    - ['period', 2]
+    - ['tax', 3]
+    - ['total', 0]
+    - ['tax', 0]
+    - ['amount', 1]
+    - ['for', 1]
+    - ['the', 2]
+    - ['bill', 2]
+    - ['period', 2]
+    - ['charges', 10]
+    - ['state', 0]
+    - ['gst', 1]
+    - ['central', 0]
+    - ['gst', 1]
+    - ['total', 0]
+    - ['tax', 1]
+    - ['payable', 1]
+    - ['charge', 3]
+    - ['your', 0]
+    - ['bill', 0]
+    - ['period', 0]
+    - ['pulse', 4]
+    - ['rate', 4]
+    - ['for', 9]
+    - ['charges', 0]
+    - ['for', 1]
+    - ['bill', 2]
+    - ['period', 2]
+    - ['charges', 10]
+    - ['total', 0]
+    - ['charges', 1]
+    - ['for', 1]
+    - ['current', 2]
+    - ['bill', 2]
+    - ['period', 2]
+    - ['tax', 4]
+    - ['total', 0]
+    - ['your', 1]
+    - ['the', 7]
+    - ['account', 8]
+    - ['the', 6]
+    - ['bill', 0]
+    - ['period', 0]
+    - ['pulse', 4]
+    - ['rate', 4]
+    - ['charges', 1]
+    - ['date', 0]
+    - ['charges', 5]
+    - ['total', 0]
+    - ['rate', 6]

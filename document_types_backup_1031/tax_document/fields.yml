@@ -1,0 +1,26 @@
+# TAX DOCUMENT FIELDS (adds to config/fields.yml)
+# Income tax return acknowledgement (ITR); amount fields carry the row numbers of the form.
+
+document:
+  taxpayer_name:            {type: text, single: true}
+  taxpayer_pan:             {type: text, single: true}
+  taxpayer_address:         {type: text}
+  taxpayer_status:          {type: text}
+  assessment_year:          {type: text, single: true}
+  form_number:              {type: text}
+  filed_under:              {type: text}
+  amount_current_year_loss: {type: money, role: other}   # 1
+  amount_total_income:      {type: money, role: other}   # 1A
+  amount_book_profit_mat:   {type: money, role: other}   # 2
+  amount_adjusted_income_amt: {type: money, role: other} # 3
+  amount_net_tax_payable:   {type: money, role: other}   # 4
+  amount_interest_fee_payable: {type: money, role: other} # 5
+  amount_total_tax_payable: {type: money, role: other}   # 6
+  amount_taxes_paid:        {type: money, role: other}   # 7
+  amount_tax_payable_refundable: {type: money, role: other}  # 8 (negative = refund)
+  amount_accreted_income:   {type: money, role: other}   # 9
+  amount_additional_tax:    {type: money, role: other}   # 10
+  amount_interest_115te:    {type: money, role: other}   # 11
+  amount_additional_tax_interest: {type: money, role: other}  # 12
+  amount_tax_interest_paid: {type: money, role: other}   # 13
+  amount_additional_payable_refundable: {type: money, role: other}  # 14

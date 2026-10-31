@@ -1,0 +1,62 @@
+# Last AI draft, not accepted:
+# - the document is read with status FAIL, it must be OK
+# - ERROR: required field not found: invoice_number
+# - ERROR: required field not found: date
+# - ERROR: sum of line price_total vs amount: calculated 1378.60, printed 1379.00 (off by 0.40, allowed 0.05)
+# - every row between the table's start and end is read; check that end does not cut off the last rows and that amounts with commas (1,234.00) are matched
+
+   issuer: Indian Railways
+
+   keywords:
+     - 'Electronic Reservation Slip (ERS)'
+     - 'Payment Details:'
+     - 'Indian Railways GST Details:'
+
+   continuation_keywords:
+     - 'Supplier Information:'
+     - 'INSTRUCTIONS:'
+
+   required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+   optional_fields: [date_travel, booking_reference, train_number, travel_class, boarding_from, travel_to, passengers, place_of_supply, seller_address, amount_untaxed, amount_cgst, amount_sgst, amount_igst, amount_tax]
+
+   fields:
+     document_type: {parser: static, value: tax_invoice}
+     seller_name: {parser: static, value: Indian Railways}
+     invoice_number: 'Transaction ID:\s*(\d+)'
+     date: 'Ticket Printing Time:\s*(\d{2}-[A-Z][a-z]{2}-\d{4})'
+     date_travel: 'Departure\*\s*\d{2}:\d{2}\s+(\d{2}-[A-Z][a-z]{2}-\d{4})'
+     booking_reference: '(?m)^\s*PNR\b.*\n\s*(\d+)\b'
+     train_number: '(?m)^\s*PNR\b.*\n\s*\d+\s{2,}(\S.*?)\s{2,}'
+     travel_class: '(?m)^\s*PNR\b.*\n\s*\d+\s{2,}\S.*?\s{2,}(\S.*?)\s*$'
+     boarding_from: '(?m)^\s*Boarding From\s+To\s*\n\s*\n\s*(\S.*?\([A-Z]+\))\s{2,}'
+     travel_to: '(?m)^\s*Boarding From\s+To\s*\n\s*\n\s*\S.*?\([A-Z]+\)\s{2,}(\S.*?\([A-Z]+\))\s*$'
+     passengers: {parser: regex, regex: '(?m)^(\d+)\.[ \t]+\S[^\n]*?[ \t]{2,}\d{1,3}[ \t][MFT][ \t][^\n]*\n(?!\d+\.[ \t])', type: int}
+     place_of_supply: 'Place of Supply:\s*([A-Za-z]+)'
+     seller_address: {parser: regex, regex: 'Address:\s*(Indian Railways New Delhi)'}
+     amount: 'Total Fare:\s+Rs\.?\s*(\d[\d,]*(?:\.\d{1,3})?)'
+     amount_untaxed: 'Taxable Value:\s*(\d[\d,]*(?:\.\d{1,3})?)'
+     amount_cgst: 'CGST Rate:\s*[\d.]+%\s+CGST Amount:\s*(\d[\d,]*(?:\.\d{1,3})?)'
+     amount_sgst: 'SGST/UGST Rate:\s*[\d.]+%\s+SGST/UGST Amount:\s*(\d[\d,]*(?:\.\d{1,3})?)'
+     amount_igst: 'IGST Rate:\s*[\d.]+%\s+IGST Amount:\s*(\d[\d,]*(?:\.\d{1,3})?)'
+     amount_tax: 'Total Tax:\s*(\d[\d,]*(?:\.\d{1,3})?)'
+
+     lines:
+       parser: lines
+       start: 'Payment Details:'
+       end: 'Total Fare:'
+       line: '^(?P<name>.*?):\s+Rs\.?\s*(?P<price_total>\d[\d,]*(?:\.\d{1,3})?)\s*/?-\s*$'
+       types:
+         price_total: float
+
+   checks:
+     disable:
+       - 'untaxed + tax + adjustments = total'
+
+   options:
+     currency: INR
+     decimal_separator: '.'
+     date_formats: ['%d-%b-%Y']
+     replace:
+       - ['\r', '']
+   

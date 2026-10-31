@@ -1,0 +1,161 @@
+# Income Tax Department (India) - ITR acknowledgement (Indian Income Tax Return Acknowledgement
+# for ITR-1 to ITR-7). Not an invoice: the document number is the e-filing acknowledgement
+# number and the amounts are the rows of the return summary (1 to 14).
+# Holds personal data (PAN, name, address): keep the output local.
+issuer: Income Tax Department (India)
+
+keywords:
+  - 'INDIAN INCOME TAX RETURN ACKNOWLEDGEMENT'
+  - 'Acknowledgement Number:'
+
+required_fields: [issuer, document_type, invoice_number, date, taxpayer_pan, assessment_year, amount_total_income]
+
+fields:
+  document_type: {parser: static, value: itr_acknowledgement}
+  invoice_number: 'Acknowledgement Number:\s*(\d+)'
+  date: 'Date of filing\s*:\s*(\d{2}-[A-Z][a-z]{2}-\d{4})'
+  # "Assessment Year" heading at the right; the year is at the end of a later line
+  assessment_year: '(?s)Assessment\s.*?\s(\d{4}-\d{2})\s*\n'
+  form_number: 'Form Number\s+(ITR-\d+)'
+  filed_under: 'Filed u/s\s+(\S.*?)\s{2,}'
+  taxpayer_status: '(?m)^\s*Status\s+(\S.*?)\s{2,}'
+
+  taxpayer_pan: '(?m)^\s*PAN\s+([A-Z]{5}\d{4}[A-Z])\s*$'
+  taxpayer_name: '(?m)^\s*Name\s+(\S.*?)\s*$'
+  # The address label sits on the second line of the address
+  taxpayer_address: {parser: regex, regex: '(?s)\n\s*Name\s+[^\n]*\n\s*\n(.*?\n\s*Address\b.*?)\n\s*\n', replace: [['(?m)^\s*Address\s+', ''], ['-\s+(?=\S)', '-'], ['\s+', ' '], ['^\s|\s$', '']]}
+
+  # Return summary: "<label>   <row no.>   <amount>"; amounts are whole rupees
+  amount_current_year_loss: 'Current Year business loss, if any\s+1\s+(-?[\d,]+)'
+  amount_total_income: '(?m)Total Income\s+1A\s+(-?[\d,]+)\s*$'
+  amount_book_profit_mat: 'Book Profit under MAT, where applicable\s+2\s+(-?[\d,]+)'
+  amount_adjusted_income_amt: 'Adjusted Total Income under AMT, where applicable\s+3\s+(-?[\d,]+)'
+  amount_net_tax_payable: 'Net tax payable\s+4\s+(-?[\d,]+)'
+  amount_interest_fee_payable: 'Interest and Fee Payable\s+5\s+(-?[\d,]+)'
+  amount_total_tax_payable: 'Total tax, interest and Fee payable\s+6\s+(-?[\d,]+)'
+  amount_taxes_paid: 'Taxes Paid\s+7\s+(-?[\d,]+)'
+  # a refund is printed "(-) 33,570"
+  amount_tax_payable_refundable: {parser: regex, regex: '\(6-7\)\s+8\s+((?:\(-\)\s*|-)?[\d,]+)', replace: [['\(-\)\s*', '-']], type: float}
+  amount_accreted_income: 'Accreted Income as per section 115TD\s+9\s+(-?[\d,]+)'
+  amount_additional_tax: 'Additional Tax payable u/s 115TD\s+10\s+(-?[\d,]+)'
+  # Row number 11 is printed on the line above
+  amount_interest_115te: 'Interest payable u/s 115TE\s+(-?[\d,]+)\s*\n'
+  amount_additional_tax_interest: 'Additional Tax and interest payable\s+12\s+(-?[\d,]+)'
+  amount_tax_interest_paid: 'Tax and interest paid\s+13\s+(-?[\d,]+)'
+  amount_additional_payable_refundable: {parser: regex, regex: '\(12-13\)\s+14\s+((?:\(-\)\s*|-)?[\d,]+)', replace: [['\(-\)\s*', '-']], type: float}
+
+checks:
+  document:
+    - {name: "row 6 = 4 + 5", rule: "amount_net_tax_payable + amount_interest_fee_payable == amount_total_tax_payable"}
+    # rows 8 and 14 are rounded to the nearest ten rupees (Income-tax Act, section 288B)
+    - {name: "row 8 = 6 - 7", rule: "amount_total_tax_payable - amount_taxes_paid == amount_tax_payable_refundable", tolerance: "5"}
+    - {name: "row 12 = 10 + 11", rule: "amount_additional_tax + amount_interest_115te == amount_additional_tax_interest"}
+    - {name: "row 14 = 12 - 13", rule: "amount_additional_tax_interest - amount_tax_interest_paid == amount_additional_payable_refundable", tolerance: "5"}
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%b-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['acknowledgement', 0]
+    - ['date', 8]
+    - ['filing', 9]
+    - ['indian', 2]
+    - ['income', 2]
+    - ['tax', 4]
+    - ['return', 4]
+    - ['acknowledgement', 5]
+    - ['assessment', 9]
+    - ['return', 2]
+    - ['income', 3]
+    - ['form', 4]
+    - ['year', 10]
+    - ['filed', 4]
+    - ['and', 4]
+    - ['pan', 0]
+    - ['name', 0]
+    - ['address', 0]
+    - ['status', 0]
+    - ['form', 6]
+    - ['number', 6]
+    - ['filed', 0]
+    - ['date', 4]
+    - ['acknowledgement', 6]
+    - ['number', 8]
+    - ['current', 1]
+    - ['year', 2]
+    - ['business', 2]
+    - ['loss', 3]
+    - ['any', 3]
+    - ['total', 1]
+    - ['income', 1]
+    - ['book', 1]
+    - ['profit', 1]
+    - ['under', 2]
+    - ['mat', 2]
+    - ['where', 3]
+    - ['applicable', 3]
+    - ['tax', 0]
+    - ['adjusted', 1]
+    - ['total', 2]
+    - ['income', 2]
+    - ['under', 3]
+    - ['amt', 3]
+    - ['where', 4]
+    - ['applicable', 4]
+    - ['and', 0]
+    - ['net', 1]
+    - ['tax', 1]
+    - ['payable', 2]
+    - ['income', 0]
+    - ['interest', 1]
+    - ['and', 2]
+    - ['fee', 2]
+    - ['payable', 2]
+    - ['total', 1]
+    - ['tax', 1]
+    - ['interest', 2]
+    - ['and', 2]
+    - ['fee', 3]
+    - ['payable', 3]
+    - ['taxes', 1]
+    - ['paid', 1]
+    - ['tax', 1]
+    - ['payable', 2]
+    - ['accreted', 1]
+    - ['income', 2]
+    - ['per', 3]
+    - ['section', 3]
+    - ['additional', 1]
+    - ['tax', 2]
+    - ['payable', 2]
+    - ['tax', 0]
+    - ['interest', 1]
+    - ['payable', 2]
+    - ['income', 0]
+    - ['additional', 1]
+    - ['tax', 2]
+    - ['and', 2]
+    - ['interest', 2]
+    - ['payable', 3]
+    - ['accreted', 0]
+    - ['tax', 1]
+    - ['and', 1]
+    - ['interest', 2]
+    - ['paid', 2]
+    - ['tax', 1]
+    - ['payable', 2]
+    - ['income', 0]
+    - ['tax', 1]
+    - ['return', 1]
+    - ['address', 8]
+    - ['and', 0]
+    - ['pan', 8]
+    - ['form', 5]
+    - ['acknowledgement', 4]

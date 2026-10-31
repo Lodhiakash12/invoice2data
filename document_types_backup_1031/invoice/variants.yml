@@ -1,0 +1,15 @@
+# VARIANTS AN ISSUER NEVER PRINTS
+# The variant report (python process_invoice.py --variants) lists, for every layout, the kinds of
+# document it has not read yet. A kind this issuer never produces is listed here with the reason:
+# the report shows it as "not expected" instead of asking the testing team to find one.
+#
+# Format:   <template file name without .yml>:
+#             <variant>: <reason>
+# Variants: IGST, CGST+SGST, several items, several pages, discount, round-off, cess, charge row
+
+not_expected:
+  shopify_bill:
+    CGST+SGST: Shopify bills Indian merchants from Singapore (OIDAR registration 9921SGP29003OS0), always IGST
+  flipkart_bill_of_supply:
+    IGST: a bill of supply is issued for supplies without GST (exempt goods or a composition seller)
+    CGST+SGST: a bill of supply is issued for supplies without GST (exempt goods or a composition seller)

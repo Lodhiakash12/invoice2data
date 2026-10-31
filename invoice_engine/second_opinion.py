@@ -462,3 +462,103 @@ def check_samples(catalog, store, author, only: str | None = None, per_template:
                            "error": found.error, "agreed": found.agreed,
                            "findings": [f.message() for f in found.findings if f.outcome != "agree"]})
     return report
+
+
+# --- several documents in one question -----------------------------------------------------------
+# The first documents of a template are collected (waiting.py) and asked about together: one
+# request for up to ai.batch_size documents instead of one per document while they are read.
+
+MAX_TEXT_BATCH = 40000
+
+
+def prompt_many(page_texts_: list[str], names: list[str], notes: dict | None = None) -> str:
+    listing = "\n".join(f"- {name}: {describe(name, notes)}" for name in names)
+    room = max(4000, MAX_TEXT_BATCH // max(1, len(page_texts_)))
+    docs = "\n\n".join(f"##### DOCUMENT {n} #####\n{text[:room]}" for n, text in enumerate(page_texts_, start=1))
+    example = ", ".join(f'"{n}": {{"{names[0]}": "...", ...}}' for n in range(1, min(3, len(page_texts_)) + 1))
+    return (f"""Read each of the {len(page_texts_)} documents below on its own and copy the value of each
+field exactly as printed on that document (same spelling, same characters; dates as YYYY-MM-DD). A
+field that is not printed on a document is null for it. Do not take a value of one party for
+another (seller and buyer are different parties), nor a value of one document for another.
+
+FIELDS
+{listing}
+
+Answer with one JSON object with one key per document number, each holding every field above:
+```json
+{{{example}}}
+```
+
+{docs}""")
+
+
+def ask_many(provider, page_texts_: list[str], names: list[str], log=None,
+             notes: dict | None = None) -> tuple[list[dict | None], str]:
+    """The AI's own reading of several documents in one request: (values per document, error).
+    A document missing from the answer is None (asked again on its own by review_many)."""
+    from .ai_author import _json
+    from .ai_provider import AIError
+    question = prompt_many(page_texts_, names, notes)
+    problem = ""
+    for attempt in range(2):
+        try:
+            answer = provider.complete(SYSTEM, question)
+        except AIError as exc:
+            if log:
+                log("second_opinion (batch)", question, f"ERROR: {exc}")
+            return [None] * len(page_texts_), f"AI service: {exc}"
+        if log:
+            log("second_opinion (batch)", question, answer)
+        try:
+            data = _json(answer)
+            if isinstance(data, dict):
+                if isinstance(data.get("documents"), list):
+                    data = {str(n): v for n, v in enumerate(data["documents"], start=1)}
+                values = [data.get(str(n)) if isinstance(data.get(str(n)), dict) else None
+                          for n in range(1, len(page_texts_) + 1)]
+                if any(v is not None for v in values):
+                    return values, ""
+                problem = "no document number of the question is a key of the answer"
+            else:
+                problem = "the answer is not a JSON object"
+        except ValueError as exc:
+            problem = str(exc)
+        question = (prompt_many(page_texts_, names, notes) + f"\n\nYour previous answer could not be read "
+                    f"({problem}). Answer with the JSON object only.")
+    return [None] * len(page_texts_), f"the AI's answer could not be read twice ({problem})"
+
+
+def review_many(provider, documents: list[dict], page_texts_: list[str], names: list[str], log=None,
+                notes: dict | None = None) -> list[Opinion]:
+    """Ask about several documents of one template at once (in parts that fit MAX_TEXT_BATCH),
+    compare each reading with that document's fields. A document the batched answer leaves out is
+    asked about on its own."""
+    if not names:
+        return [Opinion() for _ in documents]
+    results: list[Opinion | None] = [None] * len(documents)
+    start = 0
+    while start < len(documents):
+        end, size = start, 0
+        while end < len(documents) and (end == start or size + len(page_texts_[end]) <= MAX_TEXT_BATCH):
+            size += len(page_texts_[end])
+            end += 1
+        part = list(range(start, end))
+        if len(part) == 1:
+            values, error = ask(provider, page_texts_[start], names, log, notes)
+            answers = [values]
+        else:
+            answers, error = ask_many(provider, [page_texts_[i] for i in part], names, log, notes)
+        for index, values in zip(part, answers):
+            if values is None and error.startswith("AI service"):
+                results[index] = Opinion(error=error)
+            elif values is None:
+                results[index] = review(provider, documents[index], page_texts_[index], names, log, notes)
+            else:
+                fields = documents[index].get("fields") or {}
+                findings = []
+                for name in names:
+                    others = [str(v) for k, v in fields.items() if k != name and isinstance(v, str) and v.strip()]
+                    findings.append(compare(name, fields.get(name), values.get(name), page_texts_[index], others))
+                results[index] = Opinion(findings=findings)
+        start = end
+    return [r or Opinion(error="not asked") for r in results]

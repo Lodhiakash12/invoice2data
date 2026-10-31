@@ -1,0 +1,137 @@
+# Ishwam Infrasystems - sales invoice printed from Tally (seller block top left, invoice details
+# in a grid on the right, consignee and buyer below the seller, IGST as a line under the items).
+issuer: Ishwam Infrasystems
+
+keywords:
+  - 'ISHWAM INFRASYSTEMS LIMITED'
+  - 'Amount Chargeable (in words)'
+  - 'Buyer (Bill to)'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name, buyer_name]
+# A one-item invoice prints no subtotal line above the tax; the sum of the lines is used instead
+# OUTPUT IGST when the buyer is in another state, OUTPUT CGST + OUTPUT SGST in Ishwam's state
+optional_fields: [amount_untaxed, tax_rate, amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  # Value row below "Invoice No.  Dated": "SALES/01/26-27   19-Aug-26"
+  invoice_number: 'Invoice No\.\s+Dated\s*\n[^\n]*?\s{2,}(\S+)\s+\d{1,2}-[A-Z][a-z]{2}-\d{2}\s*\n'
+  date: 'Invoice No\.\s+Dated\s*\n[^\n]*?\s{2,}\S+\s+(\d{1,2}-[A-Z][a-z]{2}-\d{2})\s*\n'
+  # Value row below "Buyer's Order No.  Dated"
+  order_number: 'Buyer''s Order No\.\s+Dated\s*\n(?:[^\n]*\n)*?[^\n]*?\s{2,}(\S+)\s+\d{1,2}-[A-Z][a-z]{2}-\d{2}\s*\n'
+  date_order: 'Buyer''s Order No\.\s+Dated\s*\n(?:[^\n]*\n)*?[^\n]*?\s{2,}\S+\s+(\d{1,2}-[A-Z][a-z]{2}-\d{2})\s*\n'
+
+  # Seller block (left column, top) up to its GSTIN, read from the word positions; the
+  # right-hand grid cannot run into it
+  seller_name: '\A\s*INVOICE\s*\n(ISHWAM INFRASYSTEMS LIMITED)'
+  seller_address: {parser: region, heading: '^ISHWAM INFRASYSTEMS LIMITED', stop: '^GSTIN/UIN'}
+  seller_tax_id: '(?m)^GSTIN/UIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_state: '(?m)^GSTIN/UIN:[^\n]*\nState Name\s*:\s*(\S[^,\n]*?)\s*,'
+
+  buyer_name: {parser: region, heading: '^Buyer \(Bill to\)', max_lines: 1}
+  buyer_address: {parser: region, heading: '^Buyer \(Bill to\)', skip: 1, stop: '^State Name'}
+  buyer_state: '(?s)Buyer \(Bill to\).*?State Name\s*:\s*(\S[^,\n]*?)\s*,'
+  buyer_state_code: '(?s)Buyer \(Bill to\).*?State Name\s*:[^\n]*Code\s*:\s*(\d{2})'
+
+  amount_untaxed: '(?m)^\s+([\d,]+(?:\.\d{1,2})?)\s*\n\s*OUTPUT [CI]GST'
+  # the rate of the tax printed: the IGST rate, or the CGST rate (the SGST rate is the same)
+  tax_rate: {parser: regex, regex: ['OUTPUT IGST\s+([\d.]+)%', 'OUTPUT CGST\s+([\d.]+)%'], type: float}
+  amount_igst: 'OUTPUT IGST\s+[\d.]+%\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_cgst: 'OUTPUT CGST\s+[\d.]+%\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_sgst: 'OUTPUT (?:SGST|UTGST)\s+[\d.]+%\s+([\d,]+(?:\.\d{1,2})?)'
+  amount: '(?m)^\s+Total\s+\d+\s+\S+\s+Rs\.\s*([\d,]+(?:\.\d{1,2})?)\s*$'
+  # the words can run over two lines ("... Thousand Nine" / "Hundred Ninety Nine Only"); the
+  # bank details column on the right is cut off each line
+  total_in_words: {parser: regex, regex: '(?s)Amount Chargeable \(in words\)[^\n]*\n(.*?\bOnly)\b',
+                   replace: [['[ \t]{3,}\S[^\n]*', ''], ['\s+', ' ']]}
+
+  bank_name: 'Bank Name\s*:\s*(\S[^(\n]*?)\s*[(\n]'
+  bank_account: 'A/c No\.\s*:\s*(\d+)'
+  bank_ifsc: 'IFS Code:\s*.*?&\s*([A-Z]{4}0[A-Z0-9]{6})'
+
+  lines:
+    parser: lines
+    start: '(?m)^Sl\s+Description of Goods'
+    # the subtotal line, or the first tax line when there is no subtotal (one-item invoices)
+    end: '(?m)^\s+(?:[\d,]+(?:\.\d{1,2})?\s*$|OUTPUT\s+(?:[CSI]GST|UTGST))'
+    # " 1 SECURE SOCKET LAYER      1 QTY 78,500.00 QTY      78,500.00"
+    first_line: '^\s*(?P<pos>\d+)\s+(?P<name>\S.*?)\s{2,}(?:(?P<hsn_sac>\d{4,8})\s+)?(?P<qty>\d+)\s+\S+\s+(?P<price_unit>[\d,]+(?:\.\d{1,2})?)\s+\S+\s+(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s*$'
+    line: '^\s{4,}(?P<line_note>\S.*?)\s*$'
+    skip_line: '^No\.\s*$'
+    types:
+      pos: int
+      qty: int
+      price_unit: float
+      price_subtotal: float
+
+checks:
+  document:
+    # the tax is printed rounded to whole rupees (836,440 x 18% = 150,559.20 printed 150,559.00)
+    - name: igst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_igst"
+      tolerance: "0.5"
+    - name: cgst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_cgst"
+      tolerance: "0.5"
+    - name: sgst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_sgst"
+      tolerance: "0.5"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%b-%y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['invoice', 4]
+    - ['invoice', 5]
+    - ['dated', 7]
+    - ['ishwam', 0]
+    - ['infrasystems', 1]
+    - ['limited', 3]
+    - ['state', 0]
+    - ['name', 1]
+    - ['code', 2]
+    - ['order', 6]
+    - ['dated', 7]
+    - ['state', 0]
+    - ['name', 1]
+    - ['code', 2]
+    - ['buyer', 0]
+    - ['bill', 1]
+    - ['state', 0]
+    - ['name', 1]
+    - ['code', 2]
+    - ['description', 2]
+    - ['goods', 3]
+    - ['amount', 8]
+    - ['order', 2]
+    - ['dated', 1]
+    - ['output', 3]
+    - ['igst', 4]
+    - ['total', 4]
+    - ['amount', 0]
+    - ['chargeable', 1]
+    - ['words', 2]
+    - ['bank', 6]
+    - ['only', 4]
+    - ['name', 6]
+    - ['ishwam', 7]
+    - ['infrasystems', 7]
+    - ['limited', 9]
+    - ['bank', 5]
+    - ['name', 5]
+    - ['bank', 7]
+    - ['ifs', 6]
+    - ['code', 6]
+    - ['ishwam', 7]
+    - ['infrasystems', 7]
+    - ['limited', 9]
+    - ['invoice', 2]
+    - ['goods', 0]
+    - ['invoice', 6]

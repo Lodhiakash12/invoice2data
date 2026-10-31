@@ -1,0 +1,165 @@
+# Flipkart - bill of supply for GT (goods transport) charges, with the GTA consignment details.
+# Two pages: the second page has no number or heading, so it is attached via continuation_keywords.
+issuer: Flipkart
+
+keywords:
+  - 'Bill of Supply Number'
+  - 'Billed From'
+  - 'Billed To'
+# Read by process_invoice.py: a page matching no template but containing all of these
+# is the continuation of the previous document of this template.
+continuation_keywords:
+  - 'Person Liable to pay tax'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+optional_fields: [goods_weight_grams, goods_weight_kg, amount_sgst, amount_cgst, amount_igst]
+
+fields:
+  document_type: {parser: static, value: bill_of_supply}
+  invoice_number: 'Bill of Supply Number\s*:\s*(\S+)'
+  date: 'Bill of Supply Date\s*:\s*(\d{2}-\d{2}-\d{4})'
+  order_number: 'Order Number\s*:\s*(\S+)'
+  nature_of_transaction: 'Nature of transaction\s*:\s*(\S+)'
+  nature_of_supply: 'Nature Of Supply\s*:\s*(\S+)'
+
+  # Two columns: Billed From (left) | Billed To (right), read from the word positions
+  seller_name: {parser: region, heading: 'Billed From', max_lines: 1}
+  seller_address: {parser: region, heading: 'Billed From', skip: 1, stop: '^GSTIN'}
+  seller_tax_id: '(?m)^GSTIN\s*:\s*(\S+)'
+  seller_pan: '(?m)^PAN\s*:\s*(\S+)'
+
+  buyer_name: {parser: region, heading: 'Billed To', max_lines: 1}
+  buyer_address: {parser: region, heading: 'Billed To', skip: 1, stop: 'State\s*:'}
+  buyer_state: '(?m)\sState\s*:\s*(\S.*?)\s*$'
+  place_of_supply: '(?m)Place of Supply\s*:\s*(\S.*?)\s*$'
+  ship_from_address: {parser: region, heading: 'Shipped From'}
+
+  # Totals row: qty, gross, taxable, SGST, CGST, total (rupee sign skipped with \D?)
+  # Totals row: qty, gross, taxable, SGST + CGST (or IGST), total
+  amount_gross: ['(?m)^\s+Total\s+[\d.]+\s+\D?([\d,]+(?:\.\d{1,2})?)\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s*$', '(?m)^\s+Total\s+[\d.]+\s+\D?([\d,]+(?:\.\d{1,2})?)\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s*$']
+  amount_untaxed: ['(?m)^\s+Total\s+[\d.]+\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?([\d,]+(?:\.\d{1,2})?)\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s*$', '(?m)^\s+Total\s+[\d.]+\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?([\d,]+(?:\.\d{1,2})?)\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s*$']
+  amount_sgst: '(?m)^\s+Total\s+[\d.]+\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?([\d,]+(?:\.\d{1,2})?)\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_cgst: '(?m)^\s+Total\s+[\d.]+\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?([\d,]+(?:\.\d{1,2})?)\s+\D?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_igst: '(?m)^\s+Total\s+[\d.]+\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?([\d,]+(?:\.\d{1,2})?)\s+\D?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount: ['(?m)^\s+Total\s+[\d.]+\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?([\d,]+(?:\.\d{1,2})?)\s*$', '(?m)^\s+Total\s+[\d.]+\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?[\d,]+(?:\.\d{1,2})?\s+\D?([\d,]+(?:\.\d{1,2})?)\s*$']
+
+  # Goods transported (GTA section)
+  goods_description: {parser: regex, regex: '(?s)Description of[^\n]*\n\s*Goods[^\n]*\n\s*\n(.*?)\n\s*\n', replace: [['[ \t]{2,}[^\n]*', ''], ['\s+', ' ']]}
+  # the weight is printed in grams or in kg ("492.0 grams", "7.7015996 kg")
+  goods_weight_grams: {parser: regex, regex: 'Description of[\s\S]*?([\d.]+) grams', type: float}
+  goods_weight_kg: {parser: regex, regex: 'Description of[\s\S]*?([\d.]+) kg\b', type: float}
+  goods_value: {parser: regex, regex: 'Description of[\s\S]*?\s(?:grams|kg)\s+([\d,.]+)', type: float}
+  transporter: 'Consignor details:\s*(.+?)\s*\(on behalf'
+  vehicle_number: 'Registration No\. of Goods Carriage:\s*(\S+)'
+  reverse_charge: 'reverse charge:\s*(\w+)'
+
+  lines:
+    parser: table
+    start: '(?m)^\s*Particulars\s+SAC\s+Qty'
+    end: '(?m)^\s+Total\s+[\d.]+\s'
+    columns:
+      name: 'Particulars'
+      hsn_sac: 'SAC'
+      qty: 'Qty'
+      gross_amount: 'Gross'
+      price_subtotal: 'Taxable'
+      sgst_amount: 'SGST|UTGST'
+      cgst_amount: 'CGST'
+      igst_amount: 'IGST'
+      price_total: 'Total'
+    row: [qty, price_total]
+    extra:
+      - '^\s+CGST\s+(?P<cgst_rate>[\d.]+)\s*%'
+      - '^\s+(?:SGST|UTGST)\s+(?P<sgst_rate>[\d.]+)\s*%'
+      - '^\s+IGST\s+(?P<igst_rate>[\d.]+)\s*%'
+    types:
+      qty: float
+      gross_amount: float
+      price_subtotal: float
+      sgst_amount: float
+      cgst_amount: float
+      igst_amount: float
+      cgst_rate: float
+      sgst_rate: float
+      igst_rate: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 6
+  order:
+    - ['bill', 5]
+    - ['supply', 6]
+    - ['bill', 1]
+    - ['supply', 1]
+    - ['details', 2]
+    - ['nature', 6]
+    - ['transaction', 7]
+    - ['bill', 1]
+    - ['supply', 1]
+    - ['number', 2]
+    - ['nature', 6]
+    - ['supply', 7]
+    - ['bill', 1]
+    - ['supply', 1]
+    - ['date', 2]
+    - ['order', 1]
+    - ['number', 1]
+    - ['billed', 1]
+    - ['from', 1]
+    - ['billed', 6]
+    - ['state', 6]
+    - ['state', 6]
+    - ['gstin', 1]
+    - ['place', 6]
+    - ['supply', 7]
+    - ['pan', 1]
+    - ['from', 1]
+    - ['particulars', 1]
+    - ['sac', 3]
+    - ['qty', 4]
+    - ['total', 10]
+    - ['total', 3]
+    - ['details', 3]
+    - ['goods', 5]
+    - ['description', 1]
+    - ['qty', 3]
+    - ['goods', 8]
+    - ['goods', 1]
+    - ['grams', 4]
+    - ['consignor', 1]
+    - ['details', 2]
+    - ['behalf', 5]
+    - ['place', 6]
+    - ['details', 2]
+    - ['registration', 6]
+    - ['goods', 8]
+    - ['carriage', 8]
+    - ['goods', 7]
+    - ['carriage', 8]
+    - ['goods', 7]
+    - ['registration', 6]
+    - ['number', 7]
+    - ['registration', 2]
+    - ['pay', 8]
+    - ['tax', 8]
+    - ['goods', 3]
+    - ['from', 4]
+    - ['charge', 8]
+    - ['reverse', 1]
+    - ['charge', 2]
+    - ['supply', 1]
+    - ['reverse', 3]
+    - ['charge', 3]
+    - ['person', 1]
+    - ['liable', 1]
+    - ['pay', 2]
+    - ['tax', 2]

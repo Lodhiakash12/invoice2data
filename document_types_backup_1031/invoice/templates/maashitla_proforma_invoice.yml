@@ -1,0 +1,177 @@
+# Maashitla Securities - proforma invoice (registrar / RTA annual charges).
+# Total Amount Payable = taxable value + GST; Total Amount to be Paid adds the earlier
+# outstanding and the tripartite agreement expenses (charged outside GST).
+issuer: Maashitla Securities
+
+keywords:
+  - 'MAASHITLA SECURITIES PRIVATE LIMITED'
+  - 'PROFORMA INVOICE'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: proforma_invoice}
+  # "2025-26 / RTA13294"
+  invoice_number: 'Invoice No:\s*(\d{4}-\d{2}\s*/\s*\S+)'
+  date: 'Invoice Date\s*:\s*(\d{1,2}-[A-Z][a-z]{2}-\d{2})'
+  billing_period: 'Billing Period:\s*(\S+)'
+  customer_number: 'Reference Code:\s*(\S+)'
+
+  seller_name: '\A\s*(MAASHITLA SECURITIES PRIVATE LIMITED)'
+  seller_address: {parser: regex, regex: '(?s)Regd\. Office:\s*(.*?)\n\s*Phone:', replace: [['\s+', ' ']]}
+  seller_email: 'Email ID:\s*(\S+@\S+)'
+  seller_tax_id: 'GSTIN / Unique Id:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_pan: 'PAN No\.:\s*([A-Z]{5}\d{4}[A-Z])'
+  seller_company_reg: 'CIN No:\s*(\S+)'
+
+  buyer_name: 'Bill To/ Place of Supply:\s*(\S[^\n]*?)\s*\n'
+  buyer_address: {parser: regex, regex: '(?s)Business Address:\s*(.*?)\n\s*\n', replace: [['\s+', ' ']]}
+  buyer_state: 'State\s*:\s*(\S[^\n]*?)\s{2,}State Code'
+  buyer_state_code: 'State Code:\s*(\d{2})'
+
+  supply_description: {parser: regex, regex: '(?s)Amount \(Rs\.\)\s*\n(.*?)\n\s*Taxable Value', replace: [['(?m)^\s*\d+\s+(?:-|\d+)\s+\d{6}\s+[\d,]+(?:\.\d+)?\s*$', ''], ['(\d)-\s+(\d)', '\1-\2'], ['\s+', ' '], ['^\s|\s$', '']]}
+  # GST rate: IGST (18%) or CGST + SGST (9% + 9%)
+  tax_rate: {parser: regex, regex: '(?m)^IGST \((\d+(?:\.\d+)?)%\)', type: float}
+
+  amount_untaxed: 'Taxable Value\s*:\s*([\d,]+(?:\.\d{1,2})?)'
+  amount_cgst: '(?m)^CGST \(\d+%\)\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_sgst: '(?m)^SGST \(\d+%\)\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_igst: '(?m)^IGST \(\d+%\)\s+([\d,]+(?:\.\d{1,2})?)'
+  # printed "UTSGT"
+  amount_utgst: '(?m)^UTS?GS?T \(\d+%\)\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_subtotal: 'Total Amount Payable\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_previous_balance: 'Earlier Outstanding\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_other_charges: 'Tripartite Agreement Expenses\s+([\d,]+(?:\.\d{1,2})?)'
+  amount: 'Total Amount to be Paid\s+([\d,]+(?:\.\d{1,2})?)'
+  total_in_words: 'Amount In words:\s*(\S[^\n]*?)\s*\n'
+
+  bank_name: 'Bank Name:\s*(\S[^\n]*?)\s*\n'
+  bank_account: 'Account No:\s*(\d+)'
+  bank_ifsc: 'IFSC Code:\s*(\S+)'
+
+  lines:
+    parser: lines
+    start: 'S\.No\.\s+Qty\s+Description of Services'
+    end: 'Taxable Value\s*:'
+    # "1    -    998399    7500.00". The description wraps above and below this row, so it
+    # is read as supply_description instead of a line column.
+    first_line: '^\s*(?P<pos>\d+)\s+(?:-|\d+)\s+(?P<hsn_sac>\d{6})\s+(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s*$'
+    line: '^(?!)'
+    types:
+      pos: int
+      price_subtotal: float
+
+checks:
+  # The grand total also contains amounts outside the GST invoice value
+  disable: [untaxed + tax + adjustments = total]
+  document:
+    - name: GST rate
+      rule: "round2(untaxed() * tax_rate / 100) == tax_total()"
+    - name: taxable value + GST = total amount payable
+      rule: "untaxed() + tax_total() == amount_subtotal"
+    - name: amount payable + outstanding + other charges = amount to be paid
+      rule: "amount_subtotal + amount_previous_balance + amount_other_charges == amount"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%b-%y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['maashitla', 3]
+    - ['securities', 4]
+    - ['private', 6]
+    - ['limited', 7]
+    - ['regd', 3]
+    - ['office', 4]
+    - ['business', 6]
+    - ['place', 8]
+    - ['phone', 3]
+    - ['email', 3]
+    - ['gstin', 3]
+    - ['unique', 4]
+    - ['pan', 7]
+    - ['cin', 3]
+    - ['proforma', 4]
+    - ['invoice', 6]
+    - ['invoice', 1]
+    - ['invoice', 7]
+    - ['date', 8]
+    - ['billing', 1]
+    - ['period', 1]
+    - ['reference', 1]
+    - ['code', 2]
+    - ['bill', 1]
+    - ['place', 1]
+    - ['supply', 2]
+    - ['private', 5]
+    - ['limited', 6]
+    - ['business', 1]
+    - ['address', 1]
+    - ['state', 1]
+    - ['state', 4]
+    - ['code', 5]
+    - ['gstin', 1]
+    - ['unique', 1]
+    - ['description', 4]
+    - ['services', 5]
+    - ['amount', 9]
+    - ['qty', 2]
+    - ['code', 8]
+    - ['taxable', 7]
+    - ['value', 8]
+    - ['cgst', 1]
+    - ['sgst', 1]
+    - ['igst', 1]
+    - ['total', 1]
+    - ['amount', 1]
+    - ['payable', 2]
+    - ['earlier', 1]
+    - ['outstanding', 1]
+    - ['tripartite', 1]
+    - ['agreement', 2]
+    - ['expenses', 3]
+    - ['total', 1]
+    - ['amount', 1]
+    - ['paid', 2]
+    - ['amount', 1]
+    - ['words', 2]
+    - ['invoice', 2]
+    - ['business', 4]
+    - ['maashitla', 6]
+    - ['securities', 6]
+    - ['private', 7]
+    - ['limited', 8]
+    - ['amount', 1]
+    - ['payable', 2]
+    - ['invoice', 3]
+    - ['paid', 4]
+    - ['account', 7]
+    - ['date', 2]
+    - ['invoice', 2]
+    - ['maashitla', 5]
+    - ['invoice', 7]
+    - ['date', 8]
+    - ['bank', 8]
+    - ['name', 4]
+    - ['maashitla', 6]
+    - ['securities', 7]
+    - ['private', 8]
+    - ['limited', 9]
+    - ['bank', 3]
+    - ['name', 3]
+    - ['bank', 8]
+    - ['limited', 8]
+    - ['address', 4]
+    - ['place', 7]
+    - ['account', 3]
+    - ['ifsc', 4]
+    - ['code', 5]
+    - ['code', 4]
+    - ['billing', 3]
+    - ['bill', 5]

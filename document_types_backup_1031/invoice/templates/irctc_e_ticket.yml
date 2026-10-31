@@ -1,0 +1,133 @@
+# IRCTC - Electronic Reservation Slip (ERS), the e-ticket for an Indian Railways train booking.
+# It is a booking confirmation with a payment breakdown, not a GST tax invoice: no GSTIN and no
+# tax amounts are printed. The payment breakdown is read as the lines; they add up to the
+# all-inclusive total. Passenger names are not read (only how many passengers there are).
+issuer: IRCTC (Indian Railways)
+
+keywords:
+  - 'Electronic Reservation Slip'
+  - 'Train No./Name'
+  - 'Total Fare (all inclusive)'
+# the instruction pages that follow carry no PNR or transaction number
+continuation_keywords:
+  - 'www.irctc.co.in'
+  - 'TDR'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, booking_reference]
+
+# Booked directly on irctc.co.in ("Normal User"): the payment rows are printed to the paisa and add up
+# to the total exactly (no rounding; agent-booked tickets are read by indian_railways_train_ticket.yml).
+# Checked on the 2023 and the 2026 print of this layout: "Booked from" / "Booked From", with or without
+# the Rs symbol, with or without a GST block (taxable value and tax of the railway fare only).
+optional_fields: [boarding_from, gst_invoice_number, gst_taxable_value, gst_tax_total]
+
+fields:
+  document_type: {parser: static, value: e_ticket}
+  seller_name: {parser: static, value: Indian Railway Catering and Tourism Corporation (IRCTC)}
+  invoice_number: 'Transaction ID:\s*(\d+)'
+  # booking date and time: "17-Aug-2026 11:04:44 HRS"
+  date: '(\d{2}-[A-Z][a-z]{2}-\d{4})\s+\d{2}:\d{2}:\d{2}\s+HRS'
+  date_travel: 'Start Date\*\s*(\d{2}-[A-Z][a-z]{2}-\d{4})'
+  booking_reference: '(?m)^\s+PNR\s+Train No\./Name[^\n]*\n\s*(\d{10})\b'
+  train_number: '(?m)^\s+PNR\s+Train No\./Name[^\n]*\n\s*\d{10}\s{2,}(\S.*?)\s{2,}'
+  travel_class: '(?m)^\s+PNR\s+Train No\./Name[^\n]*\n[^\n]*[ \t]{2,}(\S[^\n]*?)[ \t]*$'
+  # stations row: boarding station, from, to
+  boarding_from: '(?m)^\s+Booked [Ff]rom\s+To\s*\n\s*\n\s*(\S.*?\([A-Z]+\))\s{2,}'
+  travel_from: '(?m)^\s+Booked [Ff]rom\s+To\s*\n\s*\n\s*\S.*?\([A-Z]+\)\s{2,}(\S.*?\([A-Z]+\))\s{2,}'
+  travel_to: '(?m)^\s+Booked [Ff]rom\s+To\s*\n\s*\n[^\n]*\s{2,}(\S.*?\([A-Z]+\))\s*$'
+  # the number of the last passenger row (the next line is not a passenger row)
+  passengers: {parser: regex, regex: '(?m)^(\d+)\.[ \t]+\S[^\n]*?[ \t]{2,}\d{1,3}[ \t]+[MFT][ \t][^\n]*\n(?!\d+\.[ \t])', type: int}
+  # GST block (2023 print): it covers the railway fare only, so it is not the ticket's untaxed/tax total
+  gst_invoice_number: '(?m)^Invoice Number:\s+([A-Z0-9]*\d[A-Z0-9]*)\s'
+  gst_taxable_value: {parser: regex, regex: '(?m)^Taxable Value:\s+(\d[\d,]*(?:\.\d+)?)', type: float}
+  gst_tax_total: {parser: regex, regex: '(?m)^Total Tax:\s+(\d[\d,]*(?:\.\d+)?)', type: float}
+  place_of_supply: 'Place of Supply:\s*(\S[^\n]*?)\s+State Name/Code'
+
+  amount: 'Total Fare \(all inclusive\)\s+([\d,]+(?:\.\d{1,2})?)'
+
+  lines:
+    parser: lines
+    start: '(?m)^\s*Payment Details\s*$'
+    end: 'Total Fare \(all inclusive\)'
+    # "Catering Charges (Incl. of GST)          1,180.00"
+    line: '^\s*(?P<name>\S.*?)\s{2,}(?P<price_total>[\d,]+(?:\.\d{1,2})?)\s*$'
+    types:
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%b-%Y']
+  replace:
+    - ['\r', '']
+    - ['\u20b9 *', '']
+
+layout:
+  columns: 12
+  sample_pages: 2
+  order:
+    - ['electronic', 3]
+    - ['reservation', 4]
+    - ['slip', 6]
+    - ['booked', 1]
+    - ['start', 0]
+    - ['pnr', 1]
+    - ['train', 5]
+    - ['date', 10]
+    - ['hrs', 11]
+    - ['details', 1]
+    - ['name', 0]
+    - ['transaction', 0]
+    - ['payment', 0]
+    - ['details', 1]
+    - ['fare', 1]
+    - ['irctc', 0]
+    - ['total', 0]
+    - ['fare', 1]
+    - ['all', 1]
+    - ['inclusive', 1]
+    - ['irctc', 0]
+    - ['number', 5]
+    - ['booked', 1]
+    - ['details', 2]
+    - ['invoice', 0]
+    - ['number', 1]
+    - ['code', 0]
+    - ['name', 0]
+    - ['taxable', 0]
+    - ['value', 1]
+    - ['total', 0]
+    - ['tax', 1]
+    - ['place', 0]
+    - ['supply', 1]
+    - ['state', 2]
+    - ['state', 9]
+    - ['state', 2]
+    - ['number', 10]
+    - ['payment', 3]
+    - ['train', 10]
+    - ['train', 9]
+    - ['irctc', 5]
+    - ['state', 8]
+    - ['tdr', 1]
+    - ['reservation', 9]
+    - ['fare', 3]
+    - ['tdr', 2]
+    - ['all', 4]
+    - ['train', 9]
+    - ['train', 1]
+    - ['tdr', 7]
+    - ['train', 0]
+    - ['train', 1]
+    - ['train', 8]
+    - ['tdr', 7]
+    - ['train', 10]
+    - ['state', 7]
+    - ['state', 3]
+    - ['start', 4]
+    - ['train', 5]
+    - ['train', 6]
+    - ['hrs', 8]
+    - ['hrs', 8]
+    - ['number', 3]
+    - ['hrs', 5]

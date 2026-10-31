@@ -214,4 +214,7 @@ def print_summary(res: dict) -> None:
         for issue in doc["issues"]:
             print(f"           {issue['level']}: {issue['message']}")
     for unrec in res["unrecognized_pages"]:
-        print(f"  p{page_label(unrec['pages']):<6}NO TEMPLATE MATCHES: {' | '.join(unrec['preview'])}")
+        label = "PENDING (no template yet)" if unrec.get("status") == "PENDING" else "NO TEMPLATE MATCHES"
+        print(f"  p{page_label(unrec['pages']):<6}{label}: {' | '.join(unrec['preview'])}")
+        if unrec.get("waiting"):
+            print(f"           INFO: {unrec['waiting']}")

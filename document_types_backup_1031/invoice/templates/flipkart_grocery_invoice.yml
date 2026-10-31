@@ -1,0 +1,129 @@
+# Flipkart Grocery - "Tax Invoice/Bill of Supply" of the grocery seller (Shreyash Retail, TAMS
+# Overseas, ...): items with HSN, tax rate in brackets under it, MRP, savings and total; a
+# "Summary" row, food / non-food totals and a GST "Tax break-up" by rate (it can continue on the
+# next page). MRP is per unit, savings are for the whole row: qty x MRP - savings = row total.
+issuer: Flipkart
+
+keywords:
+  - 'Tax Invoice/Bill of Supply'
+  - 'Sold By:'
+  - 'Tax break-up'
+# the tax break-up and the footer can run onto a page with no invoice number
+continuation_keywords:
+  - 'Contact Flipkart'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+optional_fields: [amount_gross, amount_discount, seller_company_reg, amount_cgst, amount_sgst, amount_igst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice Number:\s*(\S+)'
+  date: 'Invoice Date:\s*(\d{2}-\d{2}-\d{4})'
+  order_number: 'Order:\s*(OD\d+)'
+  date_order: 'Order Date:\s*(\d{2}-\d{2}-\d{4})'
+
+  seller_name: 'Sold By:\s*(.+?)\s*,?[ \t]*\n'
+  seller_address: {parser: regex, regex: '(?s)Ship Address:\s*(.*?)\n\s*GSTIN -', replace: [['\s+', ' '], ['[\s,]+$', '']]}
+  seller_tax_id: 'GSTIN - (\S+)'
+  seller_pan: 'PAN - (\S+)'
+  seller_company_reg: 'CIN - (\S+)'
+  # Ship To | Bill To columns: the Bill To column, read from the word positions (name and
+  # address are printed together)
+  buyer_address: {parser: region, heading: 'Bill To', stop: '^Order'}
+
+  # Summary <qty> <MRP total> <savings> <total>
+  amount_gross: '(?m)^\s+Summary\s+\d+\s+([\d,]+(?:\.\d{1,2})?)\s+[\d,]+(?:\.\d{1,2})?\s+[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_discount: '(?m)^\s+Summary\s+\d+\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)\s+[\d,]+(?:\.\d{1,2})?\s*$'
+  # tax break-up totals: Grand Total <taxable> <SGST> <CGST>, or <taxable> <IGST> (another state)
+  amount_untaxed: '(?m)\bGrand Total\s+([\d,]+(?:\.\d{1,2})?)\s+(?:[\d,]+(?:\.\d{1,2})?\s+)?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_sgst: '(?m)\bGrand Total\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)\s+[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_cgst: '(?m)\bGrand Total\s+[\d,]+(?:\.\d{1,2})?\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  amount_igst: '(?m)\bGrand Total\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  # "GRAND TOTAL  976.00", or "GRAND  265.00" with "TOTAL" on the next line
+  amount: 'GRAND\s+(?:TOTAL\s+)?([\d,]+(?:\.\d{1,2})?)'
+
+  lines:
+    parser: lines
+    start: '(?m)^\s*S\.\s*(?:No)?\s+Item\s+HSN'
+    end: '(?m)^\s+Summary\s+\d'
+    # "1   Too Yumm! Sour Cream ... Palm Oil,   21069019ab   1   20.00   7.00   13.00"
+    first_line: '^\s*(?P<pos>\d{1,3})\s+(?P<name>\S.*?)\s{2,}(?P<hsn_sac>\d{4,8}[a-z]{0,2})\s+(?P<qty>\d+)\s+(?P<price_unit>[\d,]+(?:\.\d{1,2})?)\s+(?P<discount>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_total>[\d,]+(?:\.\d{1,2})?)\s*$'
+    line:
+      - '^\s+(?P<name>\S.*?)\s{2,}\((?P<line_tax_percent>[\d.]+)\)\s*$'
+      - '^\s+\((?P<line_tax_percent>[\d.]+)\)\s*$'
+      - '^\s+(?P<name>\S.*?)\s*$'
+    types:
+      pos: int
+      qty: int
+      price_unit: float
+      discount: float
+      line_tax_percent: float
+      price_total: float
+
+  # GST% <taxable> <SGST> <CGST>, or GST% <taxable> <IGST>
+  tax_lines:
+    parser: lines
+    start: 'GST%\s+Taxable'
+    end: '(?m)^\s+(?:Handling Fee\*|Grand Total)'
+    line: '^\s+(?P<line_tax_percent>\d+(?:\.\d{1,2})?)\s+(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s+(?:(?P<sgst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<cgst_amount>[\d,]+(?:\.\d{1,2})?)|(?P<igst_amount>[\d,]+(?:\.\d{1,2})?))\s*$'
+    types:
+      line_tax_percent: float
+      price_subtotal: float
+      sgst_amount: float
+      cgst_amount: float
+      igst_amount: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 2
+  order:
+    - ['tax', 3]
+    - ['supply', 6]
+    - ['sold', 0]
+    - ['ship', 0]
+    - ['address', 0]
+    - ['gstin', 0]
+    - ['pan', 0]
+    - ['cin', 8]
+    - ['ship', 0]
+    - ['bill', 6]
+    - ['order', 0]
+    - ['order', 6]
+    - ['date', 6]
+    - ['invoice', 0]
+    - ['number', 1]
+    - ['invoice', 6]
+    - ['date', 6]
+    - ['total', 0]
+    - ['item', 0]
+    - ['hsn', 6]
+    - ['total', 10]
+    - ['flipkart', 3]
+    - ['flipkart', 3]
+    - ['flipkart', 1]
+    - ['flipkart', 3]
+    - ['summary', 3]
+    - ['total', 8]
+    - ['order', 6]
+    - ['total', 8]
+    - ['handling', 8]
+    - ['fee', 9]
+    - ['grand', 8]
+    - ['total', 9]
+    - ['tax', 8]
+    - ['taxable', 8]
+    - ['handling', 6]
+    - ['fee', 7]
+    - ['grand', 6]
+    - ['total', 7]
+    - ['item', 1]
+    - ['sold', 1]
+    - ['contact', 0]
+    - ['flipkart', 0]

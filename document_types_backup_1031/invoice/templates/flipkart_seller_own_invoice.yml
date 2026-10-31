@@ -1,0 +1,105 @@
+# Flipkart - tax invoice in the seller's own format ("Ordered Through" Flipkart, "Seller Registered
+# Address", "TOTAL PRICE"). Each item block: product name lines, an HSN / tax-rate line, the
+# amounts line (qty, gross, discount, taxable, tax, cess, total), more name lines and the
+# "IMEI/SrNo:" line. The product name starts ABOVE the amounts line, so a row marker is put
+# before every block (after the header and after each IMEI/SrNo line) to start each row there.
+# Gross includes tax: gross - discount = total = taxable + tax.
+issuer: Flipkart
+
+keywords:
+  - 'Tax Invoice'
+  - 'Ordered Through'
+  - 'Seller Registered Address:'
+  - 'TOTAL PRICE:'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice No:\s*(\S+)'
+  date: 'Invoice Date:\s*(\d{2}-\d{2}-\d{4})'
+  order_number: 'Order Id:\s*(OD\d+)'
+  date_order: 'Order Date:\s*(\d{2}-\d{2}-\d{4})'
+  seller_tax_id: 'GSTIN:\s*([0-9]{2}[A-Z0-9]{13})\b'
+  seller_pan: '\bPAN:\s*([A-Z0-9]{10})\b'
+  # Sold By | Billing Address | Shipping ADDRESS columns
+  seller_name: {parser: region, heading: '^Sold By', max_lines: 1, replace: [['[\s,]+$', '']]}
+  buyer_name: {parser: region, heading: 'Billing Address', max_lines: 1, replace: [['[\s,]+$', '']]}
+  buyer_address: {parser: region, heading: 'Billing Address', skip: 1, stop: '^(?:GST|Phone)', replace: [['\s+,', ','], ['[\s,]+$', '']]}
+  seller_address: {parser: regex, regex: '(?s)Seller Registered Address:\s*(.*?)\n\s*Declaration', replace: [['\s+', ' '], ['[\s,.]+$', '']]}
+  amount: 'TOTAL PRICE:\s*([\d,]+(?:\.\d{1,2})?)'
+
+  lines:
+    parser: lines
+    start: '(?m)^\s+Product\s+Description\s+Qty'
+    end: '(?m)^\s+TOTAL PRICE:'
+    first_line: '^@@ROW$'
+    line:
+      - '^\s+(?P<qty>\d+)\s+(?P<gross_amount>-?[\d,]+(?:\.\d+)?)\s+(?P<discount>-?[\d,]+(?:\.\d+)?)\s+(?P<price_subtotal>-?[\d,]+(?:\.\d+)?)\s+(?P<igst_amount>-?[\d,]+(?:\.\d+)?)\s+(?P<cess_amount>-?[\d,]+(?:\.\d+)?)\s+(?P<price_total>-?[\d,]+(?:\.\d+)?)\s*$'
+      # CGST + SGST (seller in the buyer's state)
+      - '^\s+(?P<qty>\d+)\s+(?P<gross_amount>-?[\d,]+(?:\.\d+)?)\s+(?P<discount>-?[\d,]+(?:\.\d+)?)\s+(?P<price_subtotal>-?[\d,]+(?:\.\d+)?)\s+(?P<cgst_amount>-?[\d,]+(?:\.\d+)?)\s+(?P<sgst_amount>-?[\d,]+(?:\.\d+)?)\s+(?P<cess_amount>-?[\d,]+(?:\.\d+)?)\s+(?P<price_total>-?[\d,]+(?:\.\d+)?)\s*$'
+      - '^(?P<name>\S.*?)?\s*HSN:\s*(?P<hsn_sac>\d+)\s*\|\s*CGST:\s*(?P<cgst_rate>[\d.]+)\s*%\s*\|\s*(?:SGST|UTGST):\s*(?P<sgst_rate>[\d.]+)\s*%\s*$'
+      - '^(?P<name>\S.*?)?\s*HSN:\s*(?P<hsn_sac>\d+)\s*\|\s*IGST:\s*(?P<igst_rate>[\d.]+)\s*%\s*$'
+      - '^(?P<name>\S.*?)?\s*\|\s*CESS:\s*(?P<cess_rate>[\d.]+)\s*%\s*$'
+      - '^IMEI/SrNo:\s*\[\[(?P<serial_no>[^\]]*)\]\]'
+      - '^\s*(?P<name>\S.*?)\s*$'
+    types:
+      qty: int
+      gross_amount: float
+      discount: float
+      price_subtotal: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      cess_rate: float
+      cess_amount: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+    # row markers: after the table header and after each item's IMEI/SrNo line
+    - ['(?m)^(\s+Amount\s+Value[ \t]*\n)', '\1@@ROW\n']
+    - ['(?m)^(IMEI/SrNo:[^\n]*\n)', '\1@@ROW\n']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['tax', 0]
+    - ['invoice', 1]
+    - ['order', 2]
+    - ['invoice', 4]
+    - ['gstin', 7]
+    - ['order', 2]
+    - ['date', 2]
+    - ['invoice', 4]
+    - ['date', 5]
+    - ['pan', 7]
+    - ['address', 4]
+    - ['address', 7]
+    - ['product', 1]
+    - ['description', 4]
+    - ['qty', 5]
+    - ['igst', 8]
+    - ['cess', 9]
+    - ['total', 10]
+    - ['hsn', 3]
+    - ['igst', 4]
+    - ['cess', 3]
+    - ['total', 9]
+    - ['price', 10]
+    - ['total', 0]
+    - ['qty', 1]
+    - ['seller', 0]
+    - ['registered', 1]
+    - ['address', 1]
+    - ['declaration', 0]
+    - ['ordered', 5]
+    - ['through', 5]

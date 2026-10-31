@@ -1,0 +1,129 @@
+# Flipkart - seller's tax invoice for goods (product with FSN, Bill To / Ship To columns).
+# Variants covered: IGST (seller in another state: one tax column) and CGST + SGST/UTGST (seller in
+# the buyer's state: two tax columns); "Ship-from" or "Bill-from Address"; a "Ship From" address
+# column; shipping and handling charge rows; with or without CIN (2023 and 2026 prints).
+issuer: Flipkart
+
+keywords:
+  - 'Tax Invoice'
+  - 'Sold By:'
+  - 'Invoice Number #'
+  - 'Ship To'
+  - 'FSN:'
+exclude_keywords:
+  - 'Billing Address'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+optional_fields: [ship_from_address, seller_company_reg, buyer_name, buyer_address, amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice Number #\s*(\S+)'
+  order_number: 'Order ID:[\s\S]*?(OD\d+)'
+  date_order: 'Order Date:\s*(\d{2}-\d{2}-\d{4})'
+  date: 'Invoice Date:\s*(\d{2}-\d{2}-\d{4})'
+
+  # the invoice number may follow on the same line, after a wide gap
+  seller_name: 'Sold By:\s*(.+?)\s*,?(?:\s{2,}|[ \t]*\n)'
+  ship_from_address: {parser: regex, regex: '(?s)(?:Ship|Bill)-from Address:\s*(.*?)\n\s*GSTIN -', replace: [['\s+', ' '], ['[\s,]+$', '']]}
+  seller_tax_id: 'GSTIN - (\S+)'
+  seller_pan: 'PAN:\s*(\S+)'
+  seller_company_reg: 'CIN:\s*(\S+)'
+
+  # Columns: Order ID | Bill To | (Ship From) | Ship To. The Bill To column, read from the word positions: the Order ID column on its left and the
+  # Ship From / Ship To columns on its right cannot run into it
+  buyer_name: {parser: region, heading: 'Bill To', max_lines: 1}
+  buyer_address: {parser: region, heading: 'Bill To', skip: 1, stop: '^Phone'}
+
+  # Totals row: qty, gross, discount (printed negative), taxable, IGST or CGST + SGST, total
+  amount_gross: '(?m)^\s+Total\s+\d+\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?(?:\s+-?[\d,]+(?:\.\d{1,2})?)?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_discount: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?(?:\s+-?[\d,]+(?:\.\d{1,2})?)?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_untaxed: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?(?:\s+-?[\d,]+(?:\.\d{1,2})?)?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_igst: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_cgst: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_sgst: '(?m)^\s+Total\s+\d+\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+-?[\d,]+(?:\.\d{1,2})?\s+(-?[\d,]+(?:\.\d{1,2})?)\s+-?[\d,]+(?:\.\d{1,2})?\s*$'
+  amount: 'Grand Total\s+\D*?([\d,]+(?:\.\d{1,2})?)'
+
+  # the item table is read by its column headings: one tax column (IGST) or two (CGST, SGST),
+  # a CESS column and charge rows need no pattern of their own
+  lines:
+    parser: table
+    start: '(?m)^Product\s+Title\s+Qty'
+    end: '(?m)^\s+Total\s+\d'
+    columns:
+      category: '^Product'
+      name: 'Title'
+      qty: 'Qty'
+      gross_amount: 'Gross'
+      discount: 'Discount'
+      price_subtotal: 'Taxable'
+      igst_amount: 'IGST'
+      cgst_amount: 'CGST'
+      sgst_amount: 'SGST|UTGST'
+      cess_amount: 'CESS'
+      price_total: 'Total'
+    row: [qty, price_total]
+    extra:
+      - '^\s+IGST:\s*(?P<igst_rate>[\d.]+)\s*%'
+      - '^\s+CGST:\s*(?P<cgst_rate>[\d.]+)\s*%'
+      - '^\s+SGST(?:/UTGST)?:\s*(?P<sgst_rate>[\d.]+)\s*%'
+      - '^\s+CESS:\s*(?P<cess_rate>[\d.]+)\s*%'
+      - '^\s+\d+\.\s*\[IMEI/Serial No:\s*(?P<serial_no>[^\]]*?)\s*\]'
+      - '^FSN:\s+(?P<code>[A-Z0-9]{10,})\s{2,}(?P<name>\S.*?)\s*$'
+      - '^FSN:\s{2,}(?P<name>\S.*?)\s*$'
+      - '^HSN/SAC:\s*(?P<hsn_sac>\d+)\s{2,}(?P<name>\S.*?)\s*$'
+      - '^HSN/SAC:\s*(?P<hsn_sac>\d+)\s*$'
+      - '^(?P<code>[A-Z0-9]{12,20})\s{2,}(?P<name>\S.*?)\s*$'
+    types:
+      qty: int
+      gross_amount: float
+      discount: float
+      price_subtotal: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      cess_rate: float
+      cess_amount: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d-%m-%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 6
+  order:
+    - ['tax', 5]
+    - ['invoice', 5]
+    - ['sold', 0]
+    - ['address', 0]
+    - ['gstin', 0]
+    - ['invoice', 8]
+    - ['number', 9]
+    - ['order', 0]
+    - ['bill', 2]
+    - ['ship', 5]
+    - ['order', 0]
+    - ['date', 0]
+    - ['invoice', 9]
+    - ['invoice', 0]
+    - ['date', 0]
+    - ['pan', 0]
+    - ['cin', 0]
+    - ['total', 0]
+    - ['product', 0]
+    - ['title', 2]
+    - ['qty', 5]
+    - ['total', 10]
+    - ['fsn', 0]
+    - ['total', 3]
+    - ['grand', 8]
+    - ['total', 9]
+    - ['invoice', 2]

@@ -1,0 +1,11 @@
+# DOCUMENT TYPE: tax_document
+# Income tax filings: ITR acknowledgements now; computations and schedules later.
+name: tax_document
+description: Income tax return acknowledgements and other tax filings
+
+signals: [income tax return, assessment year, acknowledgement number, form number, total income]
+min_signals: 2
+
+summary_columns: [issuer, document_type, invoice_number, date, assessment_year, form_number,
+                  taxpayer_name, taxpayer_pan, amount_total_income, amount_total_tax_payable,
+                  amount_taxes_paid, amount_tax_payable_refundable]

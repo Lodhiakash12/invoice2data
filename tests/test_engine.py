@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import sys
@@ -28,6 +29,26 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+
+# where the real sample PDFs are looked for: the project folder, its Docs folder, and the folders
+# in the environment variable INVOICE_SAMPLES (separated by ; on Windows, : elsewhere)
+SAMPLE_DIRS = [ROOT, ROOT / "Docs"] + [Path(p) for p in os.environ.get("INVOICE_SAMPLES", "").split(os.pathsep) if p]
+
+
+def sample_pdf(name: str) -> Path:
+    """The sample PDF of that name from the first sample folder that has it (else the project
+    folder's path, which does not exist: the test skips)."""
+    return next((folder / name for folder in SAMPLE_DIRS if (folder / name).is_file()), ROOT / name)
+
+
+def all_sample_pdfs() -> list[Path]:
+    """Every sample PDF of the sample folders, each file name once."""
+    found: dict[str, Path] = {}
+    for folder in SAMPLE_DIRS:
+        if folder.is_dir():
+            for pdf in sorted(folder.glob("*.pdf")):
+                found.setdefault(pdf.name, pdf)
+    return [found[name] for name in sorted(found)]
 
 from invoice_engine import Registry, layout, load_catalog, load_templates, poppler, process_pdf  # noqa: E402
 from invoice_engine.document import process_group  # noqa: E402
@@ -48,7 +69,7 @@ def run_text(text: str, templates: list, pdf: Path | None = None) -> dict:
     candidates = matching_templates(text, templates)
     assert candidates, "no template matched"
     group = {"candidates": candidates, "texts": [text], "pages": [1]}
-    return process_group(group, pdf or ROOT / "test.pdf", REGISTRY)
+    return process_group(group, pdf or sample_pdf("test.pdf"), REGISTRY)
 
 
 def write_template(folder: Path, name: str, body: str) -> None:
@@ -65,9 +86,7 @@ def test_all_templates_load_without_errors():
 @pytest.mark.parametrize("expected_file", EXPECTED, ids=[p.stem for p in EXPECTED])
 def test_sample_pdfs_match_expected_output(expected_file: Path):
     expected = json.loads(expected_file.read_text(encoding="utf-8"))
-    pdf = ROOT / expected["source_file"]
-    if not pdf.exists():
-        pytest.skip(f"{pdf.name} not in the project folder")
+    pdf = need(expected["source_file"])
     result = json.loads(json.dumps(process_pdf(pdf, CATALOG), default=str))
     assert len(result["documents"]) == len(expected["documents"])
     for got, want in zip(result["documents"], expected["documents"]):
@@ -182,7 +201,7 @@ def test_newer_version_is_tried_first_and_older_is_the_fallback(tmp_path: Path):
     write_template(tmp_path, "anthropic_invoice_v2.yml", new)
     templates = load_templates(tmp_path, REGISTRY)
     assert templates.rejected == {}
-    pdf = ROOT / "Invoice-EXQCNVGN-0004.pdf"
+    pdf = sample_pdf("Invoice-EXQCNVGN-0004.pdf")
     if not pdf.exists():
         pytest.skip("Anthropic sample PDF not in the project folder")
     old_layout = page_texts(pdf)[0]
@@ -230,9 +249,9 @@ def pool_with(folder: Path, *extra: str) -> list:
 
 
 def need(pdf_name: str) -> Path:
-    pdf = ROOT / pdf_name
+    pdf = sample_pdf(pdf_name)
     if not pdf.exists():
-        pytest.skip(f"{pdf_name} not in the project folder")
+        pytest.skip(f"{pdf_name} not in the project folder, Docs\\ or INVOICE_SAMPLES")
     return pdf
 
 
@@ -440,9 +459,7 @@ DAMAGE = [
 
 @pytest.mark.parametrize("pdf_name,page,old,new", DAMAGE)
 def test_damaged_values_are_caught(pdf_name, page, old, new):
-    pdf = ROOT / pdf_name
-    if not pdf.exists():
-        pytest.skip(f"{pdf_name} not in the project folder")
+    pdf = need(pdf_name)
     text = page_texts(pdf)[page]
     assert old in text
     doc = run_text(text.replace(old, new, 1), TEMPLATES.templates)
@@ -693,7 +710,7 @@ def _types_with_bank(tmp_path: Path) -> Path:
 def _run_catalog(text: str, catalog) -> dict:
     groups, _ = split_into_documents([text], catalog)
     assert groups and groups[0]["family"], "no template matched"
-    return _process_group(groups[0], ROOT / "test.pdf", catalog)
+    return _process_group(groups[0], sample_pdf("test.pdf"), catalog)
 
 
 def test_a_new_document_type_is_only_a_folder(tmp_path: Path):
@@ -720,7 +737,7 @@ def test_routing_keeps_document_types_apart(tmp_path: Path):
 
 
 def test_keyword_index_finds_the_same_templates_as_a_full_scan():
-    for pdf in sorted(ROOT.glob("*.pdf")):
+    for pdf in all_sample_pdfs():
         for text in page_texts(pdf):
             allowed = {dt.name for dt in CATALOG.route(text)}
             full = [t for t in matching_templates(text, CATALOG.templates) if CATALOG.type_of(t).name in allowed]
@@ -774,14 +791,14 @@ def test_overlap_gate_finds_clash_overlap_and_missing_sample(tmp_path: Path):
 
 
 def test_overlap_gate_is_clean_on_the_real_templates():
-    samples = sorted(ROOT.glob("*.pdf"))
+    samples = all_sample_pdfs()
     if not samples:
         pytest.skip("no sample PDFs in the project folder")
     report = overlap.check_samples(samples, CATALOG)
     assert [f for f in report.findings] == [], [(f.level, f.where, f.message) for f in report.findings]
     # every template whose sample PDF is in the folder must read it (PDFs not copied here are skipped)
     expected = [json.loads(f.read_text(encoding="utf-8")) for f in EXPECTED]
-    covered = {d["template"] for e in expected if (ROOT / e["source_file"]).exists() for d in e["documents"]}
+    covered = {d["template"] for e in expected if sample_pdf(e["source_file"]).exists() for d in e["documents"]}
     assert all(report.read_by.get(t, 0) > 0 for t in covered), [t for t in covered if not report.read_by.get(t)]
 
 
@@ -818,7 +835,7 @@ def test_optional_fields_lint():
 
 def test_build_layouts_learns_only_from_documents_the_template_won():
     from invoice_engine.fingerprints import build_layouts
-    pdf = ROOT / "Invoice_8626225731.pdf"
+    pdf = sample_pdf("Invoice_8626225731.pdf")
     if not pdf.exists():
         pytest.skip("sample PDF not present")
     results = {r.template: r for r in build_layouts(CATALOG, [pdf], write=False)}
@@ -874,7 +891,7 @@ def test_templates_survive_print_variations_on_their_samples():
     """No rewrite may change a value silently (WRONG); the zomato templates must read every
     rewrite exactly as the original."""
     from invoice_engine.stress import stress
-    pdf = ROOT / "Invoice_8626225731.pdf"
+    pdf = sample_pdf("Invoice_8626225731.pdf")
     if not pdf.exists():
         pytest.skip("sample PDF not present")
     reports = stress(CATALOG, [pdf])
@@ -893,7 +910,7 @@ def _pipeline(tmp_path, catalog=None):
 
 
 def test_pipeline_admits_on_first_document_and_stores_it(tmp_path: Path):
-    pdf = ROOT / "Invoice_8626225731.pdf"
+    pdf = sample_pdf("Invoice_8626225731.pdf")
     if not pdf.exists():
         pytest.skip("sample PDF not present")
     pipe = _pipeline(tmp_path)
@@ -910,7 +927,7 @@ def test_pipeline_admits_on_first_document_and_stores_it(tmp_path: Path):
 def test_changed_template_with_different_values_is_held(tmp_path: Path):
     """A template edit that keeps the sums right but reads another value is not trusted."""
     import shutil
-    pdf = ROOT / "Invoice_8626225731.pdf"
+    pdf = sample_pdf("Invoice_8626225731.pdf")
     if not pdf.exists():
         pytest.skip("sample PDF not present")
     _pipeline(tmp_path).process(pdf)                        # stores the verified values
@@ -931,7 +948,7 @@ def test_changed_template_with_different_values_is_held(tmp_path: Path):
 
 def test_new_template_that_reads_another_layout_is_held_before_use(tmp_path: Path):
     import shutil
-    pdf = ROOT / "Invoice_8626225731.pdf"
+    pdf = sample_pdf("Invoice_8626225731.pdf")
     if not pdf.exists():
         pytest.skip("sample PDF not present")
     _pipeline(tmp_path).process(pdf)
@@ -1943,7 +1960,7 @@ def test_store_notes_problems_and_forgets_them_when_read_ok(tmp_path: Path):
 
 
 def test_pipeline_notes_the_first_document_of_a_new_variant(tmp_path: Path):
-    pdf = ROOT / "Invoice_8626225731.pdf"
+    pdf = sample_pdf("Invoice_8626225731.pdf")
     if not pdf.exists():
         pytest.skip("sample PDF not present")
     first = _pipeline(tmp_path)
@@ -2046,7 +2063,7 @@ def _opinion_pipeline(tmp_path: Path, ai, limit: int = 3):
 
 
 def _zomato_truth() -> tuple[Path, dict]:
-    pdf = ROOT / "Invoice_8626225731.pdf"
+    pdf = sample_pdf("Invoice_8626225731.pdf")
     if not pdf.exists():
         pytest.skip("sample PDF not present")
     docs = process_pdf(pdf, CATALOG)["documents"]
@@ -2218,11 +2235,7 @@ class ReadingAI(FakeAI):
 
 
 def _mmt_pdf() -> Path:
-    for folder in (ROOT, ROOT / "Docs"):
-        pdf = folder / "pdf-makemytrip-tax-invoice-details_compress.pdf"
-        if pdf.exists():
-            return pdf
-    pytest.skip("pdf-makemytrip-tax-invoice-details_compress.pdf not in the project folder or Docs")
+    return need("pdf-makemytrip-tax-invoice-details_compress.pdf")
 
 
 def test_ai_draft_with_text_misreads_is_sent_back_before_it_is_admitted(tmp_path: Path):
@@ -2359,8 +2372,8 @@ def test_second_opinion_describes_fields_with_their_fields_yml_note(tmp_path: Pa
 def test_ishwam_reads_the_amount_in_words_over_two_lines():
     for name, words_ in (("SALES_1_ISHWAM.pdf", "Indian Rupees Five Lakh Thirty One Thousand Only"),
                          ("SALES 2 ISHWAM.pdf", "Indian Rupees Nine Lakh Eighty Six Thousand Nine Hundred Ninety Nine Only")):
-        pdf = next((p for p in (ROOT / name, ROOT / "Docs" / name) if p.exists()), None)
-        if pdf is None:
+        pdf = sample_pdf(name)
+        if not pdf.exists():
             continue
         doc = process_pdf(pdf, CATALOG)["documents"][0]
         assert doc["fields"]["total_in_words"] == words_
@@ -2481,10 +2494,10 @@ def test_a_garbled_text_layer_is_reported_and_not_given_to_the_ai(tmp_path: Path
                "Aowmt, Bmrymjm, @J ^MJ Jk6 MMDGU48?4B IWT Xoi`strmt`kj Jk6 Wb`pp`ji Mddross 6 ") * 2
     assert [n for n, _ in garbled_pages([garbled])] == [1]
     # real pages are not garbled: English, German, Dutch, file listings with underscores, e-mails
-    for pdf in sorted(ROOT.glob("*.pdf")):
+    for pdf in all_sample_pdfs():
         if "laptop-bill_compress" not in pdf.name:                # the garbled one
             assert garbled_pages(page_texts(pdf)) == [], pdf.name
-    pdf = next((p for p in (ROOT / "pdf-laptop-bill_compress.pdf", ROOT / "Docs" / "pdf-laptop-bill_compress.pdf")
+    pdf = next((p for p in (sample_pdf("pdf-laptop-bill_compress.pdf"),)
                 if p.exists()), None)
     if pdf is None:
         return
@@ -2494,3 +2507,227 @@ def test_a_garbled_text_layer_is_reported_and_not_given_to_the_ai(tmp_path: Path
     assert result["unrecognized_pages"][0]["reason"] == "garbled text layer: use the original PDF"
     assert any("text layer is garbled" in n for n in result["notes"])
     assert fake.prompts == [] and not result.get("ai")
+
+
+# --- template management: the waiting room and the background AI jobs ---------------------------
+
+def _room_pipeline(tmp_path: Path, types: Path, config: Path, fake, batch: int = 1, attempts: int = 3,
+                   second_opinion: int = 0):
+    from invoice_engine.ai_author import TemplateAuthor
+    from invoice_engine.ai_provider import AISettings
+    from invoice_engine.pipeline import Pipeline
+    from invoice_engine.samples import SampleStore
+    from invoice_engine.waiting import WaitingRoom
+    store = SampleStore(tmp_path / "samples")
+    author = TemplateAuthor(fake, AISettings(enabled=True, model="fake", max_attempts=attempts, batch_size=batch,
+                                             second_opinion=second_opinion), types, config, store)
+    room = WaitingRoom(store, batch, 7)
+    pipe = Pipeline(load_catalog(types, config), store, write_layouts=False, author=author,
+                    reload=lambda: load_catalog(types, config), waiting=room)
+    return pipe, room, author
+
+
+def _broken_zomato_fee(types: Path) -> tuple[Path, str, str]:
+    path = types / "invoice" / "templates" / "zomato_platform_fee_invoice.yml"
+    current = _body("zomato_platform_fee_invoice.yml")
+    broken = current.replace("(?:\\.\\d{1,3})?", "\\.\\d{2}")                 # cannot read 17.582
+    assert broken != current
+    path.write_text(broken, encoding="utf-8")
+    return path, current, broken
+
+
+def test_ai_waiting_variant_is_read_now_and_its_template_extended_later(tmp_path: Path):
+    from invoice_engine import jobs
+    first, variant = need("Invoice_8626225731.pdf"), need("Invoice_8261790801.pdf")
+    types, config = _project(tmp_path)
+    path, current, broken = _broken_zomato_fee(types)
+    fake = FakeAI(None, [current])
+    pipe, room, author = _room_pipeline(tmp_path, types, config, fake)
+    assert [d["status"] for d in pipe.process(first)["documents"]] == ["OK", "OK"]
+    result = pipe.process(variant)
+    assert fake.prompts == []                                     # reading never waits for the AI
+    failing = [d for d in result["documents"] if d["status"] == "FAIL"]
+    assert failing and any("waiting for the template of zomato_platform_fee_invoice" in i["message"]
+                           for i in failing[0]["issues"])
+    assert room.due(setup=author._setup()) == ["family:zomato_platform_fee_invoice"]
+    report = jobs.run_due(pipe.store, room, author, types, config, write_layouts=False)[0]
+    assert (report["outcome"], report["action"], report["template"]) == ("admitted", "extended",
+                                                                         "zomato_platform_fee_invoice.yml")
+    assert "reads it OK" in fake.prompts[0] and "CURRENT TEMPLATE OF THIS LAYOUT" in fake.prompts[0]
+    assert not list(types.glob("*/templates/zomato_platform_fee_invoice_v2.yml"))   # one template, not two
+    assert path.read_text(encoding="utf-8") != broken and "Extended by the AI" in path.read_text(encoding="utf-8")
+    assert list((tmp_path / "samples" / "template_history").glob("zomato_platform_fee_invoice.*.yml"))
+    assert report["reread"] and all(r["resolved"] for r in report["reread"]) and not room.documents
+    assert not (tmp_path / "samples" / "staging").exists()
+    again = _room_pipeline(tmp_path, types, config, FakeAI(None, []))[0].process(variant)
+    assert [d["status"] for d in again["documents"]] == ["OK", "OK"]
+
+
+def test_ai_waiting_variant_gets_a_new_version_when_the_template_cannot_be_extended(tmp_path: Path):
+    from invoice_engine import jobs
+    first, variant = need("Invoice_8626225731.pdf"), need("Invoice_8261790801.pdf")
+    types, config = _project(tmp_path)
+    path, current, broken = _broken_zomato_fee(types)
+    fake = FakeAI(None, ["not: [valid", "not: [valid", current])
+    pipe, room, author = _room_pipeline(tmp_path, types, config, fake, attempts=2)
+    pipe.process(first)
+    pipe.process(variant)
+    report = jobs.run_due(pipe.store, room, author, types, config, write_layouts=False)[0]
+    assert [a["action"] for a in report["attempts"]] == ["extended", "new version"]
+    assert (report["outcome"], report["template"]) == ("admitted", "zomato_platform_fee_invoice_v2.yml")
+    assert path.read_text(encoding="utf-8") == broken           # the old version is left as it was
+    assert all(r["resolved"] for r in report["reread"])
+
+
+def test_ai_waiting_unknown_documents_of_one_layout_get_one_template(tmp_path: Path):
+    from invoice_engine import jobs
+    first, second = need("Invoice_8626225731.pdf"), need("Invoice_8261790801.pdf")
+    types, config = _project(tmp_path, drop=["zomato_platform_fee_invoice.yml"])
+    fake = FakeAI({"document_type": "invoice", "is_new_type": False, "issuer": "Zomato", "variant_of": None,
+                   "template_name": "zomato_fee"}, [_body("zomato_platform_fee_invoice.yml")])
+    pipe, room, author = _room_pipeline(tmp_path, types, config, fake, batch=2)
+    result = pipe.process(first)
+    pending = [u for u in result["unrecognized_pages"] if u.get("status") == "PENDING"]
+    assert pending and "1 of 2 document(s) collected" in pending[0]["waiting"]
+    assert room.due(setup=author._setup()) == []                  # one of two: waits
+    pipe.process(second)
+    due = room.due(setup=author._setup())
+    assert len(due) == 1 and len(room.members(due[0])) == 2       # grouped by look
+    report = jobs.run_due(pipe.store, room, author, types, config, write_layouts=False)[0]
+    assert (report["outcome"], report["template"]) == ("admitted", "zomato_fee.yml")
+    assert len(report["documents_written_for"]) == 2
+    assert "DOCUMENT 2" in fake.prompts[-1]                       # both documents in one prompt
+    assert all(r["resolved"] for r in report["reread"]) and not room.documents
+
+
+def test_ai_waiting_job_failure_leaves_the_templates_as_they_were(tmp_path: Path):
+    from invoice_engine import jobs
+    first = need("Invoice_8626225731.pdf")
+    types, config = _project(tmp_path, drop=["zomato_platform_fee_invoice.yml"])
+    before = {str(p.relative_to(types)): p.read_bytes() for p in types.rglob("*") if p.is_file()}
+    fake = FakeAI({"document_type": "invoice", "issuer": "Zomato", "template_name": "zomato_fee"},
+                  ["issuer: x\nkeywords: ['NOT ON THE PAGE']\nfields: {}"] * 3)
+    pipe, room, author = _room_pipeline(tmp_path, types, config, fake)
+    pipe.process(first)
+    report = jobs.run_due(pipe.store, room, author, types, config, write_layouts=False)[0]
+    assert report["outcome"] == "failed" and report["problems"]
+    assert {str(p.relative_to(types)): p.read_bytes() for p in types.rglob("*") if p.is_file()} == before
+    assert room.documents and room.due(setup=author._setup()) == []   # not tried again with the same settings
+    assert room.due(setup="other model")                              # other AI settings: tried again
+
+
+def test_ai_waiting_second_opinion_is_collected_and_asked_later(tmp_path: Path):
+    from invoice_engine import jobs
+    pdf, truth = _zomato_truth()
+    ai = OpinionAI(truth, {1: {"seller_name": truth[1]["buyer_name"]}})
+    pipe, room, author = _room_pipeline(tmp_path, ROOT / "document_types", ROOT / "config", ai, batch=3,
+                                        second_opinion=3)
+    result = pipe.process(pdf)
+    assert ai.calls == 0 and [d["status"] for d in result["documents"]] == ["OK", "OK"]
+    assert any("not yet confirmed" in i["message"] for i in result["documents"][0]["issues"])
+    assert len(pipe.store.data["samples"]) == 2 and len(room.documents) == 2
+    assert room.due(setup=author._setup()) == []                  # 1 of 3 per template
+    reports = jobs.run_due(pipe.store, room, author, ROOT / "document_types", ROOT / "config", force=True)
+    assert ai.calls == 2 and not room.documents
+    doubted = [r for r in reports if r["doubted"]]
+    assert len(doubted) == 1 and doubted[0]["template"] == "zomato_restaurant_invoice.yml"
+    assert {s["family"] for s in pipe.store.data["samples"]} == {"zomato_platform_fee_invoice"}
+    again = _room_pipeline(tmp_path, ROOT / "document_types", ROOT / "config", ai, second_opinion=3)[0].process(pdf)
+    assert [d["status"] for d in again["documents"]] == ["CHECK", "OK"] and ai.calls == 2
+
+
+def test_second_opinion_asks_about_several_documents_in_one_request():
+    from invoice_engine import second_opinion as opinion
+
+    class Batch:
+        calls: list = []
+
+        def complete(self, system, prompt):
+            self.calls.append(prompt)
+            if "##### DOCUMENT 2" in prompt:                     # the batch: document 2 left out
+                return '```json\n{"1": {"buyer_name": "Asha Rao"}}\n```'
+            return '```json\n{"buyer_name": "Ravi Kumar"}\n```'
+
+    docs = [{"fields": {"buyer_name": "Asha Rao"}}, {"fields": {"buyer_name": "Ravi Kumar"}}]
+    texts = ["=== page 1 ===\nBill To: Asha Rao", "=== page 1 ===\nBill To: Ravi Kumar"]
+    found = opinion.review_many(Batch(), docs, texts, ["buyer_name"])
+    assert [o.agreed for o in found] == [True, True]
+    assert len(Batch.calls) == 2                                   # one batch, one question for the missing one
+
+
+def test_settle_optional_fields_from_several_documents():
+    from invoice_engine.ai_author import _settle_optional
+    data = {"fields": {"buyer_tax_id": "x", "amount": "y", "order_number": "z"},
+            "required_fields": ["amount", "buyer_tax_id", "order_number"], "optional_fields": []}
+    reads = [{"fields": {"amount": 1, "buyer_tax_id": "29AAA", "order_number": "A1"}},
+             {"fields": {"amount": 2, "order_number": "A2"}}]
+    assert _settle_optional(data, reads) == ["buyer_tax_id"]
+    assert data["required_fields"] == ["amount", "order_number"] and data["optional_fields"] == ["buyer_tax_id"]
+    assert _settle_optional({"fields": {"amount": 1}, "required_fields": ["amount"]}, reads[1:] * 2) == []
+    assert _settle_optional(data, reads[:1]) == []                # one document proves nothing
+
+
+def test_waiting_groups_are_due_by_size_age_and_settings(tmp_path: Path):
+    from datetime import datetime, timedelta
+    from invoice_engine.samples import SampleStore
+    from invoice_engine.waiting import VARIANT, WaitingRoom
+    pdfs = [need("Invoice_8626225731.pdf"), need("Invoice_8261790801.pdf"), need("TI26-2701230.pdf")]
+    store = SampleStore(tmp_path / "samples")
+    room = WaitingRoom(store, 3, 7)
+    room.add(pdfs[0], [2], VARIANT, family="f", template="f.yml", status="FAIL")
+    assert room.due(setup="s") == [] and room.due(force=True) == ["family:f"]
+    room.documents[0]["added"] = (datetime.now() - timedelta(days=8)).isoformat(timespec="seconds")
+    assert room.due(setup="s") == ["family:f"]                    # waited long enough
+    room.tried("family:f", "failed", ["x"], "s", service_error=False)
+    assert room.due(setup="s") == []                               # same settings, nothing new
+    room.add(pdfs[1], [2], VARIANT, family="f", template="f.yml", status="FAIL")
+    room.add(pdfs[2], [1], VARIANT, family="f", template="f.yml", status="FAIL")
+    assert room.due(setup="s") == []                               # 2 new of 3
+    room.tried("family:f", "failed", ["AI service: down"], "s", service_error=True)
+    assert room.due(setup="s") == []                               # a service error: not at once again
+    room.data["groups"]["family:f"]["tried"]["when"] = (datetime.now() - timedelta(hours=1)).isoformat()
+    assert room.due(setup="s") == ["family:f"]
+    room.add(pdfs[0], [2], VARIANT, family="f", template="f.yml", status="FAIL")   # the same document again
+    assert len(room.documents) == 3 and (tmp_path / "samples" / "waiting").is_dir()
+    for entry in list(room.documents):
+        room.remove(entry)
+    assert not list((tmp_path / "samples" / "waiting").glob("*.pdf"))
+
+
+def test_signature_groups_by_labels_and_issuer_numbers():
+    from invoice_engine import signature as sig
+    a = sig.signature("Tax Invoice\nGSTIN: 07AAACM1234F1Z5\nInvoice Number:  X1\nPlace of Supply:  Delhi\nTotal  100")
+    b = sig.signature("Tax Invoice\nGSTIN: 29AAACM1234F1Z9\nInvoice Number:  Y2\nPlace of Supply:  Goa\nGrand Total  250")
+    c = sig.signature("Statement of Account\nOpening Balance  10\nClosing Balance  20")
+    assert a["ids"] == ["PAN:AAACM1234F"] and b["ids"] == ["PAN:AAACM1234F"]   # one company, two states
+    assert sig.related(a, b) and not sig.related(a, c)
+    assert sig.common_ids({"x": [a], "y": [b], "z": [a]}) == {"PAN:AAACM1234F"}   # on everyone's documents
+    assert not sig.shared_ids(a, b, {"PAN:AAACM1234F"})
+
+
+def test_staging_sync_does_not_overwrite_a_file_a_person_changed(tmp_path: Path):
+    from invoice_engine.jobs import _snapshot, _sync
+    live, staging = tmp_path / "live", tmp_path / "staging"
+    for folder in (live, staging):
+        (folder / "invoice" / "templates").mkdir(parents=True)
+        (folder / "invoice" / "templates" / "a.yml").write_text("a1", encoding="utf-8")
+        (folder / "invoice" / "templates" / "b.yml").write_text("b1", encoding="utf-8")
+    before = _snapshot(staging)
+    (staging / "invoice" / "templates" / "a.yml").write_text("a2 by the AI", encoding="utf-8")
+    (staging / "invoice" / "templates" / "b.yml").write_text("b2 by the AI", encoding="utf-8")
+    (staging / "invoice" / "templates" / "c.yml").write_text("c new", encoding="utf-8")
+    (live / "invoice" / "templates" / "b.yml").write_text("b edited by a person", encoding="utf-8")
+    copied, conflicts = _sync(staging, live, before, tmp_path / "kept")
+    assert sorted(Path(c).name for c in copied) == ["a.yml", "c.yml"] and [Path(c).name for c in conflicts] == ["b.yml"]
+    assert (live / "invoice" / "templates" / "b.yml").read_text(encoding="utf-8") == "b edited by a person"
+    assert list((tmp_path / "kept").iterdir())
+
+
+def test_a_job_that_runs_out_of_time_is_not_retried_as_a_service_error():
+    from invoice_engine.ai_author import AuthorResult
+    from invoice_engine.jobs import _service_problem
+    timed = AuthorResult("a.pdf", [1], "extended", "failed", problems=[
+        "AI service: the AI step stopped after 10 minutes on this document (ai.max_minutes in config/settings.yml) "
+        "before write x (draft 3)"])
+    down = AuthorResult("a.pdf", [1], "extended", "failed", problems=["AI service: HTTP 503"])
+    assert not _service_problem(timed) and _service_problem(down)

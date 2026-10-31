@@ -1,0 +1,108 @@
+# INVOICE FIELDS (adds to config/fields.yml)
+# Taxes, supply details, travel and stays, statements of account on bills, and the line items.
+# Same format as config/fields.yml. Adding a field: one line here.
+
+document:
+  irn:                      {type: text, single: true}   # e-invoice reference number (GST)
+  billing_period:           {type: text}
+  service_number:           {type: text}               # phone / connection number billed
+  service_plan:             {type: text}
+  date_order:               {type: date}
+  date_shipped:             {type: date}
+  date_original_document:   {type: date}
+  date_check_in:            {type: date}
+  date_check_out:           {type: date}
+  ship_from_address:        {type: text}
+  place_of_supply:          {type: text}
+  place_of_origin:          {type: text}
+  hsn_sac:                  {type: text}
+  supply_description:       {type: text}
+  nature_of_transaction:    {type: text}
+  nature_of_supply:         {type: text}
+  reverse_charge:           {type: text}
+  tax_label:                {type: text}
+  tax_rate:                 {type: rate}
+  tax_note:                 {type: text}
+  tax_payer:                {type: text}
+  hotel_name:               {type: text}
+  hotel_address:            {type: text}
+  rooms:                    {type: count}
+  on_behalf_of:             {type: text}
+  transporter:              {type: text}
+  vehicle_number:           {type: text}
+  transport_legs:           {type: list}
+  booking_reference:        {type: text}               # PNR
+  flight_number:            {type: text}
+  travel_from:              {type: text}
+  travel_to:                {type: text}
+  boarding_from:            {type: text}               # boarding station, when not the start
+  train_number:             {type: text}               # number / name of the train
+  travel_class:             {type: text}
+  date_travel:              {type: date}               # start date of the journey
+  passengers:               {type: count}
+  gst_invoice_number:       {type: text, single: true}   # GST invoice number printed inside a ticket
+  gst_taxable_value:        {type: money}              # taxable value of a GST block that covers part of the total
+  gst_tax_total:            {type: money}              # tax of that block
+  goods_weight_kg:          {type: number}               # when the document prints the weight in kg
+  goods_description:        {type: text}
+  goods_weight_grams:       {type: number}
+  goods_weight_kilograms:    {type: number}
+  goods_value:              {type: money, role: other}
+  other_charges:             {type: money}  
+  amount_untaxed:           {type: money, role: untaxed}
+  amount_tax:               {type: money, role: tax_total}
+  amount_cgst:              {type: money, role: tax}
+  amount_sgst:              {type: money, role: tax}
+  amount_igst:              {type: money, role: tax}
+  amount_utgst:             {type: money, role: tax}
+  amount_cess:              {type: money, role: tax}
+  amount_round_off:         {type: money, role: adjustment}
+  amount_gross:             {type: money, role: gross}
+  amount_discount:          {type: money, role: discount}
+  amount_subtotal:          {type: money, role: subtotal}
+  amount_exempt:            {type: money, role: other}
+  amount_value_before_tax:  {type: money, role: other}   # taxable + exempt value
+  amount_previous_balance:  {type: money, role: other}
+  amount_payments_received: {type: money, role: other}
+  amount_account_adjustments: {type: money, role: other}
+  amount_other_charges:     {type: money, role: other}   # charges outside the GST invoice value
+
+line:
+  # order here = column order in the Excel "Line Items" sheet
+  pos:              {type: count}
+  code:             {type: text}
+  category:         {type: text}
+  name:             {type: text}
+  hsn_sac:          {type: text}
+  service:          {type: text}
+  serial_no:        {type: text}
+  qty:              {type: count}
+  rooms:            {type: count}
+  price_unit:       {type: money}
+  gross_amount:     {type: money, sums_to: amount_gross}
+  discount:         {type: money, sums_to: amount_discount}
+  discount_unit:    {type: money}                         # discount per unit (price_unit - discount_unit = price paid)
+  price_subtotal:   {type: money, sums_to: amount_untaxed}
+  tax_type:         {type: text}
+  line_tax_percent: {type: rate}
+  line_tax_amount:  {type: money, role: tax}
+  cgst_rate:        {type: rate}
+  cgst_amount:      {type: money, role: tax, sums_to: amount_cgst}
+  sgst_rate:        {type: rate}
+  sgst_amount:      {type: money, role: tax, sums_to: amount_sgst}
+  igst_rate:        {type: rate}
+  igst_amount:      {type: money, role: tax, sums_to: amount_igst}
+  cess_rate:        {type: rate}
+  cess_amount:      {type: money, role: tax, sums_to: amount_cess}
+  additional_cess:  {type: money, role: tax}              # cess charged as a fixed value, not a rate
+  exempt_amount:    {type: money, sums_to: amount_exempt}
+  value_before_tax: {type: money, sums_to: amount_value_before_tax}
+  price_total:      {type: money, sums_to: amount}
+  weight_grams:     {type: number}
+  goods_value:      {type: money}
+  date_start:       {type: date}
+  date_end:         {type: date}
+  line_note:        {type: text}
+  gst_invoice_number:       {type: text, single: true}
+  gst_taxable_value:        {type: money}
+  gst_tax_total:            {type: money}

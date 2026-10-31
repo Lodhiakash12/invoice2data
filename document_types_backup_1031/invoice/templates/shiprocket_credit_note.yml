@@ -1,0 +1,110 @@
+# Shiprocket - credit note (refund of weight / freight charges against an earlier invoice).
+# Two columns: customer on the left, Shiprocket on the right. Depending on how long the lines
+# are, a left-column and a right-column line are printed on one text line or on separate lines.
+# Lost/damage refunds name no original invoice and print no IRN; some notes print no e-mail.
+issuer: Shiprocket
+
+keywords:
+  - 'Shiprocket Limited'
+  - 'Credit Note No.:'
+  - 'Total Credit Note Value'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+# IGST when the customer is in another state, CGST + SGST (UTGST) in Shiprocket's state
+optional_fields: [original_document_number, irn, seller_email, tax_rate, amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: credit_note}
+  invoice_number: 'Credit Note No\.:\s*(\S+)'
+  date: 'Credit Note Date:\s*(\d{4}-\d{2}-\d{2})'
+  original_document_number: 'Credit Issued Against Invoice:\s*(\S+)'
+  irn: 'IRN:\s*([0-9a-f]{64})'
+
+  # Seller = Shiprocket (right column)
+  seller_name: '(Shiprocket Limited)'
+  # Right-column lines between the former-name note and the GSTIN; left-column lines start at
+  # the margin and are dropped
+  # the left-column part of shared lines and left-only lines are dropped
+  seller_address: {parser: regex, regex: '(?s)Private Limited\)\s*\n(.*?)\n[^\n]*?[ \t]GSTIN:', replace: [['(?m)^\S.*?[ \t]{3,}(?=\S)', ' '], ['(?m)^\S[^\n]*$', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  seller_tax_id: '(?m)(?:^[ \t]{20,}|\S[ \t]{3,})GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_email: 'Email:\s*(\S+@\S+)'
+  seller_company_reg: 'CIN number:\s*(\S+)'
+
+  # Buyer (left column, below "To"), read from the word positions: the seller block on the
+  # right is printed between its lines
+  buyer_name: {parser: region, heading: '^To\b', max_lines: 1}
+  buyer_address: {parser: region, heading: '^To\b', skip: 1, stop: '^State Code:'}
+  buyer_tax_id: '(?m)^GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  buyer_state_code: '(?m)^State Code:\s*(\d{2})'
+
+  supply_description: {parser: regex, regex: '(?s)Description\s+Total\s*\n(.*?)\n\s*Total Taxable Value', replace: [['Rs\.\s*[\d,]+(?:\.\d+)?', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+
+  amount_untaxed: 'Total Taxable Value\s+Rs\.\s*([\d,]+(?:\.\d{1,2})?)'
+  # Lost/damage refunds print "18% IGST Rs. 0.00": no tax was charged, so the rate is not
+  # read and the rate check is skipped (untaxed + tax = total is still checked)
+  # the rate of the tax printed: the IGST rate, or the CGST rate (the SGST rate is the same)
+  tax_rate: {parser: regex, regex: ['([\d.]+)%\s+IGST\s+Rs\.(?!\s*0(?:\.0+)?\b)', '([\d.]+)%\s+CGST\s+Rs\.(?!\s*0(?:\.0+)?\b)'], type: float}
+  amount_igst: '[\d.]+%\s+IGST\s+Rs\.\s*([\d,]+(?:\.\d{1,2})?)'
+  amount_cgst: '[\d.]+%\s+CGST\s+Rs\.\s*([\d,]+(?:\.\d{1,2})?)'
+  amount_sgst: '[\d.]+%\s+(?:SGST|UTGST)\s+Rs\.\s*([\d,]+(?:\.\d{1,2})?)'
+  amount: 'Total Credit Note Value including GST\s+Rs\.\s*([\d,]+(?:\.\d{1,2})?)'
+
+checks:
+  document:
+    - name: igst rate
+      rule: "round2(amount_untaxed * tax_rate / 100) == amount_igst"
+    - name: cgst rate
+      rule: "round2(amount_untaxed * tax_rate / 100) == amount_cgst"
+    - name: sgst rate
+      rule: "round2(amount_untaxed * tax_rate / 100) == amount_sgst"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%Y-%m-%d']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 4
+  order:
+    - ['credit', 0]
+    - ['note', 1]
+    - ['shiprocket', 9]
+    - ['limited', 10]
+    - ['credit', 0]
+    - ['note', 1]
+    - ['shiprocket', 10]
+    - ['private', 8]
+    - ['limited', 8]
+    - ['private', 9]
+    - ['limited', 10]
+    - ['private', 3]
+    - ['limited', 4]
+    - ['state', 0]
+    - ['code', 1]
+    - ['gstin', 8]
+    - ['gstin', 0]
+    - ['email', 8]
+    - ['description', 4]
+    - ['total', 9]
+    - ['credit', 0]
+    - ['note', 1]
+    - ['issued', 2]
+    - ['against', 2]
+    - ['against', 5]
+    - ['total', 6]
+    - ['taxable', 7]
+    - ['value', 7]
+    - ['igst', 7]
+    - ['total', 4]
+    - ['credit', 5]
+    - ['note', 5]
+    - ['value', 6]
+    - ['including', 7]
+    - ['gst', 8]
+    - ['cin', 0]
+    - ['number', 1]
+    - ['credit', 5]
+    - ['note', 5]

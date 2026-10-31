@@ -1,0 +1,6 @@
+# Last AI draft, not accepted:
+# - the template has no keywords: it needs a top-level list `keywords:` with 2 to 4 texts from the document (top-level keys found: to)
+# - the template has no top-level `fields:` mapping (name: pattern)
+# - the template has no top-level `issuer:`
+
+to:

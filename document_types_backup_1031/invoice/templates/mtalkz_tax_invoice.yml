@@ -1,0 +1,188 @@
+# Mtalkz Mobility Services - GST tax invoice for messaging services (Zoho Books layout).
+# Page 1 is the invoice; the following pages are terms of service, which carry no invoice
+# number and are attached to the invoice through continuation_keywords (the registered-office
+# footer printed on every page).
+issuer: Mtalkz Mobility Services
+
+keywords:
+  - 'Mtalkz Mobility Services Private Limited'
+  - 'TAX INVOICE'
+  - 'Item & Description'
+continuation_keywords:
+  - 'Mohan Cooperative Industrial Estate'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name, buyer_name]
+# Zoho Books prints IGST (customer in another state) or CGST + SGST columns and totals
+optional_fields: [irn, tax_rate, amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice No\.\s*:\s*(\S+)'
+  date: 'Invoice Date\s*:\s*(\d{2}/\d{2}/\d{2})'
+  date_due: 'Due Date\s*:\s*(\d{2}/\d{2}/\d{2})'
+  payment_terms: '(?m)^Terms\s*:\s*(\S.*?)\s*$'
+  place_of_supply: 'Place Of Supply\s*:\s*(\S.*?)\s*\n'
+  irn: 'IRN\s*:\s*([0-9a-f]{64})'
+
+  seller_name: '(Mtalkz Mobility Services Private Limited)\s+TAX INVOICE'
+  # The address lines under the name, up to the phone/e-mail line; the right column (TDS
+  # note) is dropped
+  seller_address: {parser: regex, regex: '(?s)Private Limited\s+TAX INVOICE-?\s*\n(.*?)\n[^\n]*?\d{10}:', replace: [['[ \t]{3,}Applicable TDS[^\n]*', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  seller_email: '\d{10}:\s*(\S+@\S+)'
+  seller_tax_id: '(?m)^\s{20,}GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3}),\s*TAN'
+  seller_pan: '(?m)^\s{20,}PAN:\s*([A-Z]{5}\d{4}[A-Z])'
+
+  # Bill To on the left, Ship To on the right; the Bill To column is read from the word positions
+  buyer_name: {parser: region, heading: '^Bill To', max_lines: 1}
+  buyer_address: {parser: region, heading: '^Bill To', skip: 1, stop: '^GSTIN:'}
+  buyer_tax_id: '(?m)^GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+
+  # the right-hand tax lines (one IGST line, or CGST and SGST lines) can sit between label and words
+  total_in_words: '(?s)Total In Words\s*\n(?:[^\n]*\n){0,3}?\s*(Rupees\s[^\n]*?Only)'
+  bank_name: '(?m)^(\S[^:\n]*Bank Limited):'
+  bank_account: 'C/A\s*\n\s*(\d{9,18}),'
+  bank_ifsc: 'IFSC\s+([A-Z]{4}0[A-Z0-9]{6})'
+
+  amount_untaxed: 'Sub Total\s+([\d,]+(?:\.\d{1,2})?)'
+  # the rate of the tax printed: the IGST rate, or the CGST rate (the SGST rate is the same)
+  tax_rate: {parser: regex, regex: ['IGST\d*\s*\(([\d.]+)%\)', 'CGST\d*\s*\(([\d.]+)%\)'], type: float}
+  amount_igst: 'IGST\d*\s*\([\d.]+%\)\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_cgst: 'CGST\d*\s*\([\d.]+%\)\s+([\d,]+(?:\.\d{1,2})?)'
+  amount_sgst: '(?:SGST|UTGST)\d*\s*\([\d.]+%\)\s+([\d,]+(?:\.\d{1,2})?)'
+  amount: '(?m)^\s+Total\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  amount_due: 'Balance Due\s+([\d,]+(?:\.\d{1,2})?)'
+
+  lines:
+    parser: lines
+    start: '#\s+Item & Description'
+    end: 'Sub Total'
+    # " 1    OTP Sms        50,000        0.10        18%        900.00    5,000.00"
+    # columns: qty, rate, IGST %, IGST amount, amount (taxable value)
+    first_line:
+      - '^\s*(?P<pos>\d+)\s+(?P<name>\S.*?)\s{2,}(?P<qty>[\d,]+)\s+(?P<price_unit>[\d,]*\.\d+)\s+(?P<igst_rate>[\d.]+)%\s+(?P<igst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s*$'
+      # CGST % Amt, SGST % Amt
+      - '^\s*(?P<pos>\d+)\s+(?P<name>\S.*?)\s{2,}(?P<qty>[\d,]+)\s+(?P<price_unit>[\d,]*\.\d+)\s+(?P<cgst_rate>[\d.]+)%\s+(?P<cgst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<sgst_rate>[\d.]+)%\s+(?P<sgst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s*$'
+    line: '^\s+SAC:\s*(?P<hsn_sac>\d{4,8})\s*$'
+    skip_line: '^\s+[A-Za-z]{1,8}\s*$'
+    types:
+      pos: int
+      qty: float
+      price_unit: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      price_subtotal: float
+
+checks:
+  document:
+    - name: igst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_igst"
+    - name: cgst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_cgst"
+    - name: sgst rate
+      rule: "round2(untaxed() * tax_rate / 100) == amount_sgst"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d/%m/%y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['tax', 9]
+    - ['mtalkz', 3]
+    - ['mobility', 4]
+    - ['services', 5]
+    - ['private', 5]
+    - ['limited', 6]
+    - ['gstin', 3]
+    - ['tan', 5]
+    - ['pan', 3]
+    - ['invoice', 0]
+    - ['place', 6]
+    - ['supply', 6]
+    - ['invoice', 0]
+    - ['date', 1]
+    - ['terms', 0]
+    - ['due', 3]
+    - ['due', 0]
+    - ['date', 1]
+    - ['private', 3]
+    - ['limited', 4]
+    - ['gstin', 0]
+    - ['gstin', 6]
+    - ['igst', 8]
+    - ['item', 1]
+    - ['description', 1]
+    - ['sac', 1]
+    - ['sac', 1]
+    - ['sub', 8]
+    - ['total', 9]
+    - ['total', 0]
+    - ['words', 1]
+    - ['rupees', 0]
+    - ['only', 5]
+    - ['total', 9]
+    - ['balance', 8]
+    - ['due', 9]
+    - ['bank', 1]
+    - ['limited', 1]
+    - ['mtalkz', 2]
+    - ['mobility', 2]
+    - ['services', 3]
+    - ['limited', 4]
+    - ['ifsc', 2]
+    - ['irn', 3]
+    - ['date', 3]
+    - ['mohan', 4]
+    - ['cooperative', 5]
+    - ['industrial', 6]
+    - ['estate', 6]
+    - ['mohan', 4]
+    - ['cooperative', 5]
+    - ['industrial', 6]
+    - ['estate', 6]
+    - ['terms', 0]
+    - ['mtalkz', 3]
+    - ['mobility', 4]
+    - ['services', 5]
+    - ['private', 6]
+    - ['limited', 7]
+    - ['mtalkz', 3]
+    - ['services', 3]
+    - ['services', 10]
+    - ['terms', 2]
+    - ['services', 5]
+    - ['terms', 5]
+    - ['invoice', 1]
+    - ['invoice', 9]
+    - ['services', 6]
+    - ['services', 7]
+    - ['services', 8]
+    - ['services', 3]
+    - ['services', 6]
+    - ['services', 9]
+    - ['services', 3]
+    - ['services', 3]
+    - ['services', 3]
+    - ['limited', 7]
+    - ['invoice', 6]
+    - ['mohan', 4]
+    - ['cooperative', 5]
+    - ['industrial', 6]
+    - ['estate', 6]
+    - ['terms', 1]
+    - ['terms', 3]
+    - ['terms', 1]
+    - ['terms', 6]
+    - ['mohan', 4]
+    - ['cooperative', 5]
+    - ['industrial', 6]
+    - ['estate', 6]

@@ -1,0 +1,110 @@
+# Myntra Designs Private Limited - GST tax invoice (product / platform-fee invoice).
+# Written by the AI template author on 2026-10-30 from pdf-myntra-tax-invoice-details_compress.pdf;
+# completed by hand: the buyer block (Bill to / Ship to, left column; the Service Provider column
+# on the right) is read from the word positions (the draft's pattern read the table heading "Qty"
+# as the name and only the first address line).
+# The item table prints the item name and its "HSN: ..., 18.0% IGST" line ABOVE the amounts row
+# (text: before); the column headings are wrapped over three lines (start matches the first).
+# One tax column (IGST, another state) or two (CGST + SGST/UGST, the seller's state).
+issuer: Myntra Designs Private Limited
+
+keywords:
+  - 'Tax Invoice'
+  - 'MYNTRA DESIGNS PVT LTD'
+  - 'Bill to / Ship to:'
+  - 'Customer Type:'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+optional_fields: [order_number, place_of_supply, nature_of_transaction, nature_of_supply,
+                  seller_address, seller_tax_id, buyer_name, buyer_address,
+                  amount_untaxed, amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+
+  invoice_number: 'Invoice Number:\s*(\S+)'
+  order_number: 'Order Number:\s*(\S+)'
+  date: 'Date:\s*(\d{1,2} [A-Z][a-z]{2} \d{4})'
+  # a value may have several words (MADHYA PRADESH): read to the end of the line or the next column
+  place_of_supply: '(?m)Place of Supply:\s*(\S.*?)(?:\s{2,}|\s*$)'
+  nature_of_transaction: '(?m)Nature of Transaction:\s*(\S.*?)(?:\s{2,}|\s*$)'
+  nature_of_supply: '(?m)Nature of Supply:\s*(\S.*?)(?:\s{2,}|\s*$)'
+
+  seller_name: '(?m)^\s*(MYNTRA DESIGNS PVT LTD)\s*$'
+  seller_tax_id: 'GSTIN Number:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  seller_address: {parser: region, heading: 'Service Provider', skip: 1, stop: 'GSTIN'}
+
+  buyer_name: {parser: region, heading: '^Bill to / Ship to:', max_lines: 1}
+  buyer_address: {parser: region, heading: '^Bill to / Ship to:', skip: 1, stop: '^Customer Type', join: ', ',
+                  replace: [[',\s*,', ',']]}
+
+  amount_untaxed: '(?m)^TOTAL\s+(?:Rs\s+-?\d[\d,]*(?:\.\d{1,3})?\s+){3}Rs\s+(-?\d[\d,]*(?:\.\d{1,3})?)'
+  amount_igst: '(?m)^TOTAL(?:\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?){4}\s+Rs\s+(-?\d[\d,]*(?:\.\d{1,3})?)\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?\s*$'
+  amount_cgst: '(?m)^TOTAL(?:\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?){4}\s+Rs\s+(-?\d[\d,]*(?:\.\d{1,3})?)\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?\s*$'
+  amount_sgst: '(?m)^TOTAL(?:\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?){5}\s+Rs\s+(-?\d[\d,]*(?:\.\d{1,3})?)\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?\s*$'
+  amount: '(?m)^TOTAL(?:\s+Rs\s+-?\d[\d,]*(?:\.\d{1,3})?)+\s+Rs\s+(-?\d[\d,]*(?:\.\d{1,3})?)\s*$'
+
+  lines:
+    parser: table
+    start: '(?m)^\s*Other\s+Taxable\s+SGST/'
+    end: '(?m)^TOTAL\b'
+    columns: {qty: 'Qty', gross_amount: 'Gross Amount', discount: 'Discount', other_charges: 'Other',
+              price_subtotal: 'Taxable', cgst_amount: 'CGST', sgst_amount: 'SGST|UTGST|UGST',
+              igst_amount: 'IGST', cess_amount: 'Cess', price_total: 'Total Amount'}
+    row: [price_total]
+    text: before
+    extra:
+      - '^\s*HSN:\s*(?P<hsn_sac>\d+)(?:,\s*(?P<igst_rate>[\d.]+)%\s*IGST)?(?:,\s*(?P<cgst_rate>[\d.]+)%\s*CGST)?(?:,\s*(?P<sgst_rate>[\d.]+)%\s*(?:SGST|UTGST|UGST))?'
+      # the item's name: a line of its own above the HSN line (no amounts on it)
+      - '^\s*(?P<name>[^\d\s][^\n]*?)\s*$'
+    types: {qty: int, gross_amount: float, discount: float, other_charges: float,
+            price_subtotal: float, cgst_amount: float, sgst_amount: float, igst_amount: float,
+            cess_amount: float, price_total: float,
+            igst_rate: float, cgst_rate: float, sgst_rate: float}
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d %b %Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 4
+  order:
+    - ['tax', 0]
+    - ['invoice', 1]
+    - ['invoice', 1]
+    - ['number', 1]
+    - ['date', 6]
+    - ['order', 1]
+    - ['number', 1]
+    - ['date', 6]
+    - ['nature', 1]
+    - ['transaction', 1]
+    - ['nature', 6]
+    - ['supply', 7]
+    - ['place', 1]
+    - ['supply', 1]
+    - ['bill', 0]
+    - ['ship', 1]
+    - ['myntra', 6]
+    - ['designs', 6]
+    - ['pvt', 7]
+    - ['ltd', 8]
+    - ['customer', 0]
+    - ['type', 1]
+    - ['gstin', 6]
+    - ['number', 6]
+    - ['other', 4]
+    - ['taxable', 5]
+    - ['total', 10]
+    - ['total', 0]
+    - ['myntra', 0]
+    - ['designs', 1]
+    - ['myntra', 0]
+    - ['designs', 1]
+    - ['pvt', 2]
+    - ['customer', 3]

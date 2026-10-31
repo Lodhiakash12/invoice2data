@@ -1,0 +1,130 @@
+# QualityHosting AG (Germany) - monthly hosting invoice in German. Two pages, one invoice:
+# the item table continues on page 2 and the total is only on the last page.
+issuer: QualityHosting AG
+
+keywords:
+  - 'QualityHosting AG'
+  - 'Rechnungsnr.'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+
+fields:
+  document_type: {parser: static, value: invoice}
+  invoice_number: 'Rechnungsnr\.\s*(\d+)'
+  date: 'Rechnungsdatum\s+(\d{1,2}\.\s+\w+\s+\d{4})'
+  date_due: 'Zahlungsziel\s+(\d{2}\.\d{2}\.\d{2})'
+  customer_number: 'Kundennr\.\s+(\d+)'
+  contract_number: 'Contract No\.\s*(\S+)'
+  payment_method: '(?m)Zahlungsform\s+(.+?)\s*$'
+  payment_terms: '(?m)Zahlungsbedingungen\s+(.+?)\s*$'
+
+  # Seller: sender line "QualityHosting AG - street - city" and the footer
+  seller_name: '(?m)^\s*(QualityHosting AG) - '
+  seller_address: {parser: regex, regex: '(?m)^\s*QualityHosting AG - (.+?)\s*$', replace: [' - ', ', ']}
+  seller_tax_id: {parser: regex, regex: 'UStId\s+(DE[\d ]*\d)', replace: [' ', '']}
+  seller_tax_number: 'Steuer-Nr\.\s+(\d[\d ]*\d)'
+  seller_company_reg: 'Registergericht \w+ \| (HRB \d+)'
+  iban: 'IBAN (\S+)'
+  bic: 'SWIFT (\S+)'
+
+  # Buyer: address block below the sender line
+  buyer_name: 'Gelnhausen[ \t]*\n(?:[ \t]*\n)+[ \t]*(\S[^\n]*?)[ \t]*\n'
+  buyer_address: {parser: regex, regex: '(?s)Gelnhausen[ \t]*\n(?:[ \t]*\n)+[ \t]*\S[^\n]*\n(.*?)\n[ \t]*\n', replace: [['\s*\n\s*', ', '], ['^\s+', '']]}
+
+  # Prices are "Ohne MwSt." (without VAT) and no VAT is added, so the total is also the untaxed amount
+  amount: 'Total EUR\s+([\d.]+,\d{2})'
+  amount_untaxed: 'Total EUR\s+([\d.]+,\d{2})'
+
+  lines:
+    parser: lines
+    start: 'Pos\.\s+Menge\s+Beschreibung'
+    end: 'Total EUR'
+    # "1   1   Small Business StandardExchange 2010   3,89   3,89"
+    first_line: '^\s*(?P<pos>\d+)\s+(?P<qty>\d+)\s+(?P<name>\S.*?)\s+(?P<price_unit>\d[\d.]*,\d{2})\s+(?P<price_subtotal>\d[\d.]*,\d{2})\s*$'
+    line:
+      - '^\s+(?P<line_note>Grundgeb\u00fchr pro Einheit)\s*$'
+      - '^\s+Dienst:\s+(?P<service>\S+)\s*$'
+    # Billing period closes each item: "01.05.14-31.05.14"
+    last_line: '^\s+(?P<date_start>\d{2}\.\d{2}\.\d{2})-(?P<date_end>\d{2}\.\d{2}\.\d{2})\s*$'
+    types:
+      pos: int
+      qty: int
+      price_unit: float
+      price_subtotal: float
+      date_start: date
+      date_end: date
+
+options:
+  currency: EUR
+  decimal_separator: ','
+  languages: [de]
+  date_formats: ['%d.%m.%y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['qualityhosting', 1]
+    - ['gelnhausen', 4]
+    - ['rechnungsnr', 1]
+    - ['kundennr', 7]
+    - ['rechnungsdatum', 1]
+    - ['pos', 1]
+    - ['menge', 2]
+    - ['beschreibung', 3]
+    - ['contract', 3]
+    - ['pro', 4]
+    - ['einheit', 4]
+    - ['dienst', 3]
+    - ['pro', 4]
+    - ['einheit', 4]
+    - ['dienst', 3]
+    - ['pro', 4]
+    - ['einheit', 4]
+    - ['dienst', 3]
+    - ['pro', 4]
+    - ['einheit', 4]
+    - ['dienst', 3]
+    - ['pro', 4]
+    - ['einheit', 4]
+    - ['dienst', 3]
+    - ['pro', 4]
+    - ['einheit', 4]
+    - ['dienst', 3]
+    - ['qualityhosting', 1]
+    - ['gelnhausen', 9]
+    - ['gelnhausen', 1]
+    - ['registergericht', 4]
+    - ['hrb', 6]
+    - ['iban', 8]
+    - ['ustid', 4]
+    - ['swift', 8]
+    - ['qualityhosting', 1]
+    - ['gelnhausen', 4]
+    - ['rechnungsnr', 1]
+    - ['kundennr', 7]
+    - ['rechnungsdatum', 1]
+    - ['pos', 1]
+    - ['menge', 2]
+    - ['beschreibung', 3]
+    - ['pro', 4]
+    - ['einheit', 4]
+    - ['dienst', 3]
+    - ['total', 8]
+    - ['eur', 8]
+    - ['zahlungsform', 1]
+    - ['zahlungsbedingungen', 1]
+    - ['zahlungsziel', 1]
+    - ['rechnungsdatum', 8]
+    - ['qualityhosting', 2]
+    - ['eur', 8]
+    - ['qualityhosting', 1]
+    - ['gelnhausen', 9]
+    - ['gelnhausen', 1]
+    - ['registergericht', 4]
+    - ['hrb', 6]
+    - ['iban', 8]
+    - ['ustid', 4]
+    - ['swift', 8]

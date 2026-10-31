@@ -1,0 +1,139 @@
+# Shiprocket - tax invoice for platform services (item table with Qty, HSN/SAC, initial rate,
+# discount, final rate, taxable value and IGST; ends with "Total Invoice Amount").
+# The shipping-charges invoice ("Grand Total Value") is shiprocket_charges_invoice.yml.
+issuer: Shiprocket
+
+keywords:
+  - 'Shiprocket Limited'
+  - 'TAX INVOICE'
+  - 'Total Invoice Amount:'
+exclude_keywords:
+  - 'Grand Total Value'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name]
+optional_fields: [amount_igst, amount_cgst, amount_sgst]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice No\.\s*:\s*(\S+)'
+  date: 'Invoice Date\s*:\s*(\d{2}/\d{2}/\d{4})'
+  date_due: 'Due Date\s*:\s*(\d{2}/\d{2}/\d{4})'
+  # The IRN is printed at the end of the line below its label
+  irn: '(?s)IRN:.*?\b([0-9a-f]{64})\b'
+
+  seller_name: '(Shiprocket Limited)'
+  seller_address: '(?s)Retail Solutions Private Limited\)\s*\n\s*(\S[^\n]*?)\s*\n'
+  seller_pan: 'PAN Number:\s*([A-Z]{5}\d{4}[A-Z])'
+  seller_tax_id: '\|\s*GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+
+  # Buyer: left column below "Invoice To:", read from the word positions; the right column
+  # (invoice no., dates, place of supply, IRN) cannot run into it
+  buyer_name: {parser: region, heading: '^Invoice To:', max_lines: 1}
+  buyer_address: {parser: region, heading: '^Invoice To:', skip: 1, stop: '^GSTIN:'}
+  buyer_tax_id: '(?m)^GSTIN:\s*(\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3})'
+  place_of_supply: 'Place of Supply:\s*(\S[^\n]*?)\s*\n'
+  reverse_charge: 'Reverse Charge:\s*(\S+)'
+
+  # Totals row: total of final rate, taxable value, IGST (or CGST, SGST)
+  amount_untaxed: '(?m)^\s+Total\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)(?:\s+[\d,]+(?:\.\d{1,2})?){1,2}\s*$'
+  amount_igst: '(?m)^\s+Total\s+[\d,]+(?:\.\d{1,2})?\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  amount_cgst: '(?m)^\s+Total\s+[\d,]+(?:\.\d{1,2})?\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)\s+[\d,]+(?:\.\d{1,2})?\s*$'
+  amount_sgst: '(?m)^\s+Total\s+[\d,]+(?:\.\d{1,2})?\s+[\d,]+(?:\.\d{1,2})?\s+[\d,]+(?:\.\d{1,2})?\s+([\d,]+(?:\.\d{1,2})?)\s*$'
+  amount: 'Total Invoice Amount:\s*INR\s*([\d,]+(?:\.\d{1,2})?)'
+  total_in_words: '\(In words\)\s*(\S[^\n]*?)\s*\n'
+  amount_due: 'Amount Due:\s*INR\s*([\d,]+(?:\.\d{1,2})?)'
+
+  bank_account: 'Account number:\s*(\S+)'
+  bank_ifsc: 'IFSC Code:\s*(\S+)'
+
+  lines:
+    parser: lines
+    start: '#\s+Description\s+Qty\s+HSN/SAC'
+    end: '(?m)^\s+Total\s+[\d,]+(?:\.\d{1,2})?'
+    # "1  Fastrr/Checkout Services  30  998313  452.06  0.00  452.06  383.10  18%  68.96"
+    # Initial rate and final rate are line amounts (they include tax), not prices per unit.
+    first_line:
+      - '^\s*(?P<pos>\d+)\s+(?P<name>\S.*?)\s{2,}(?P<qty>\d+)\s+(?P<hsn_sac>\d{6,8})\s+(?P<gross_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<discount>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_total>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s+(?P<igst_rate>[\d.]+)%\s+(?P<igst_amount>[\d,]+(?:\.\d{1,2})?)\s*$'
+      # CGST rate + amount, SGST rate + amount (customer in Shiprocket's state)
+      - '^\s*(?P<pos>\d+)\s+(?P<name>\S.*?)\s{2,}(?P<qty>\d+)\s+(?P<hsn_sac>\d{6,8})\s+(?P<gross_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<discount>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_total>[\d,]+(?:\.\d{1,2})?)\s+(?P<price_subtotal>[\d,]+(?:\.\d{1,2})?)\s+(?P<cgst_rate>[\d.]+)%\s+(?P<cgst_amount>[\d,]+(?:\.\d{1,2})?)\s+(?P<sgst_rate>[\d.]+)%\s+(?P<sgst_amount>[\d,]+(?:\.\d{1,2})?)\s*$'
+    line: '^\s{4,}(?P<name>[A-Za-z].*?)\s*$'
+    types:
+      pos: int
+      qty: int
+      gross_amount: float
+      discount: float
+      price_total: float
+      price_subtotal: float
+      igst_rate: float
+      igst_amount: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+
+checks:
+  # The invoice is printed after payment: "Amount Due: INR 0.00" while the total is 452.06
+  disable: [due = total]
+  document:
+    - name: amount due is not more than the total
+      rule: "amount_due + abs(amount - amount_due) == amount"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d/%m/%Y']
+  replace:
+    - ['\r', '']
+
+layout:
+  columns: 12
+  sample_pages: 3
+  order:
+    - ['tax', 6]
+    - ['invoice', 6]
+    - ['shiprocket', 5]
+    - ['limited', 6]
+    - ['shiprocket', 5]
+    - ['private', 6]
+    - ['limited', 6]
+    - ['retail', 5]
+    - ['solutions', 6]
+    - ['private', 6]
+    - ['limited', 7]
+    - ['pan', 4]
+    - ['number', 4]
+    - ['number', 6]
+    - ['gstin', 7]
+    - ['invoice', 0]
+    - ['invoice', 4]
+    - ['invoice', 4]
+    - ['date', 5]
+    - ['due', 4]
+    - ['date', 5]
+    - ['place', 4]
+    - ['supply', 5]
+    - ['reverse', 4]
+    - ['charge', 5]
+    - ['irn', 4]
+    - ['gstin', 0]
+    - ['description', 0]
+    - ['qty', 3]
+    - ['inr', 6]
+    - ['inr', 7]
+    - ['value', 8]
+    - ['amount', 10]
+    - ['total', 6]
+    - ['total', 0]
+    - ['invoice', 0]
+    - ['amount', 1]
+    - ['inr', 2]
+    - ['words', 0]
+    - ['amount', 0]
+    - ['due', 1]
+    - ['inr', 1]
+    - ['shiprocket', 1]
+    - ['account', 0]
+    - ['number', 1]
+    - ['shiprocket', 2]
+    - ['code', 2]
+    - ['account', 0]

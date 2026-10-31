@@ -1,0 +1,5862 @@
+{
+ "samples": [
+  {
+   "pdf": "60a0e7c9b12fefb1b23e",
+   "name": "ForwardInvoice_ORD03239241938.pdf",
+   "pages": [
+    1
+   ],
+   "template": "blinkit_goods_invoice.yml",
+   "family": "blinkit_goods_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "C373522T25091535",
+    "date": "2025-12-02",
+    "order_number": "1529527558",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "Zomato Hyperpure Private Limited",
+    "seller_trade_name": "ZHPL - SS Ahmedabad Bapunagar ES42",
+    "seller_address": "White House, Opp. Swami Narayan Mandir, Nr. Shyam Shikhar Tower, Old Toll Naka Cross Road Bapunagar, Ahmedabad, 380024.,,Ahmedabad,380024",
+    "seller_tax_id": "24AAACZ8867B1Z6",
+    "seller_fssai": "10020064002537",
+    "seller_company_reg": "U74900DL2015PTC286208",
+    "seller_pan": "AAACZ8867B",
+    "operator_name": "Blink Commerce Private Limited",
+    "operator_tax_id": "24AAFCG9846E1ZH",
+    "operator_fssai": "10018064001545",
+    "operator_company_reg": "U74140HR2015FTC055568",
+    "operator_pan": "AAFCG9846E",
+    "buyer_name": "akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_cgst": 1.07,
+    "amount_sgst": 1.07,
+    "amount": 45.01,
+    "total_in_words": "Forty-Five Rupees And One Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "McCain Chilli Garlic Potato Bites Nuggets (Frozen) (Pack) (HSN- 20049000)",
+     "price_unit": 1.0,
+     "discount_unit": 0.99,
+     "qty": 1,
+     "price_subtotal": 0.01,
+     "cgst_rate": 6.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 6.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 0.01
+    },
+    {
+     "pos": 2,
+     "name": "Amul Sugar Free Shahi Anjir Ice Cream Cup(Cup) (HSN-21050000)",
+     "price_unit": 45.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 42.86,
+     "cgst_rate": 2.5,
+     "cgst_amount": 1.07,
+     "sgst_rate": 2.5,
+     "sgst_amount": 1.07,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 45.0
+    }
+   ],
+   "added": "2026-10-26T16:09:01"
+  },
+  {
+   "pdf": "60a0e7c9b12fefb1b23e",
+   "name": "ForwardInvoice_ORD03239241938.pdf",
+   "pages": [
+    2
+   ],
+   "template": "blinkit_goods_invoice.yml",
+   "family": "blinkit_goods_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "C29143T250169563",
+    "date": "2025-12-02",
+    "order_number": "1529527558",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "BLINK COMMERCE PRIVATE LIMITED",
+    "seller_trade_name": "BCPL - Ahmedabad Bapunagar ES42",
+    "seller_address": "White House, Opp. Swami Narayan Mandir, Nr. Shyam Shikhar Tower, Old Toll Naka Cross Road Bapunagar, Ahmedabad, 380024. Ahmedabad 380024",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "operator_name": "Blink Commerce Private Limited",
+    "operator_tax_id": "24AAFCG9846E1ZH",
+    "operator_fssai": "10018064001545",
+    "operator_company_reg": "U74140HR2015FTC055568",
+    "operator_pan": "AAFCG9846E",
+    "buyer_name": "akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_cgst": 21.91,
+    "amount_sgst": 21.91,
+    "amount": 170.0,
+    "total_in_words": "One Hundred And Seventy Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Coca-Cola Zero Sugar Soft Drink(PET Bottle) (HSN-22029990)",
+     "price_unit": 40.0,
+     "discount_unit": 2.5,
+     "qty": 4,
+     "price_subtotal": 107.14,
+     "cgst_rate": 20.0,
+     "cgst_amount": 21.43,
+     "sgst_rate": 20.0,
+     "sgst_amount": 21.43,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 150.0
+    },
+    {
+     "pos": 2,
+     "name": "Kurkure Solid Masti Masala Twisteez Crisps(Pack) (HSN- 21069099)",
+     "price_unit": 20.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 19.05,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.48,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.48,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 20.0
+    }
+   ],
+   "added": "2026-10-26T16:09:01"
+  },
+  {
+   "pdf": "60a0e7c9b12fefb1b23e",
+   "name": "ForwardInvoice_ORD03239241938.pdf",
+   "pages": [
+    3
+   ],
+   "template": "blinkit_fee_invoice.yml",
+   "family": "blinkit_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJFI260027202929",
+    "date": "2025-12-02",
+    "order_number": "ORD03239241938",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "Blink Commerce Private Limited",
+    "seller_address": "Ashwika 4, Survey No 95, Behind Bharat Benz, Off Changodar Bavla Highway, NH8A, Village Vasna Chacharvadi, Sanand, District Ahmedabad, Gujarat, Changodar Bavla Highway, NH8A, Changodar, Ahmedabad, Gujarat, 382213",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "buyer_name": "Akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha, Ahmedabad, Ahmedabad, Gujarat, 382345",
+    "amount_untaxed": 8.48,
+    "amount_cgst": 0.76,
+    "amount_sgst": 0.76,
+    "amount": 10.0,
+    "total_in_words": "Ten Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "hsn_sac": "996819",
+     "name": "Late night convenience charge",
+     "price_unit": 5.0,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 4.24,
+     "cgst_rate": 9.0,
+     "cgst_amount": 0.38,
+     "sgst_rate": 9.0,
+     "sgst_amount": 0.38,
+     "price_total": 5.0
+    },
+    {
+     "pos": 2,
+     "hsn_sac": "998549",
+     "name": "Handling charge",
+     "price_unit": 5.0,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 4.24,
+     "cgst_rate": 9.0,
+     "cgst_amount": 0.38,
+     "sgst_rate": 9.0,
+     "sgst_amount": 0.38,
+     "price_total": 5.0
+    }
+   ],
+   "added": "2026-10-26T16:09:02"
+  },
+  {
+   "pdf": "2414ea22959f73f5e89f",
+   "name": "ForwardInvoice_ORD85101206944.pdf",
+   "pages": [
+    1
+   ],
+   "template": "blinkit_goods_invoice.yml",
+   "family": "blinkit_goods_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "C29143T250075649",
+    "date": "2025-09-13",
+    "order_number": "1304647711",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "BLINK COMMERCE PRIVATE LIMITED",
+    "seller_trade_name": "BCPL - Ahmedabad Bapunagar ES42",
+    "seller_address": "White House, Opp. Swami Narayan Mandir, Nr. Shyam Shikhar Tower, Old Toll Naka Cross Road Bapunagar, Ahmedabad, 380024. Ahmedabad 380024",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "operator_name": "Blink Commerce Private Limited",
+    "operator_tax_id": "24AAFCG9846E1ZH",
+    "operator_fssai": "10018064001545",
+    "operator_company_reg": "U74140HR2015FTC055568",
+    "operator_pan": "AAFCG9846E",
+    "buyer_name": "akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_cgst": 16.44,
+    "amount_sgst": 16.44,
+    "amount": 209.0,
+    "total_in_words": "Two Hundred And Nine Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Coca-Cola Zero Sugar Soft Drink Can(Can) (HSN- 22021010)",
+     "price_unit": 40.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 28.57,
+     "cgst_rate": 14.0,
+     "cgst_amount": 4.0,
+     "sgst_rate": 14.0,
+     "sgst_amount": 4.0,
+     "cess_rate": 12.0,
+     "additional_cess": 0.0,
+     "price_total": 40.0
+    },
+    {
+     "pos": 2,
+     "name": "Estuary Tequila Sparkling Blending Elixir(Can) (HSN- 22019090)",
+     "price_unit": 150.0,
+     "discount_unit": 61.0,
+     "qty": 1,
+     "price_subtotal": 75.42,
+     "cgst_rate": 9.0,
+     "cgst_amount": 6.79,
+     "sgst_rate": 9.0,
+     "sgst_amount": 6.79,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 89.0
+    },
+    {
+     "pos": 3,
+     "name": "Uncle Chipps Spicy Treat Flavour Potato Chips(Pack) (HSN- 20051000)",
+     "price_unit": 20.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 17.86,
+     "cgst_rate": 6.0,
+     "cgst_amount": 1.07,
+     "sgst_rate": 6.0,
+     "sgst_amount": 1.07,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 20.0
+    },
+    {
+     "pos": 4,
+     "name": "Ballantines Non- Alcoholic Carbonated Soda Water(Can) (HSN- 22011020)",
+     "price_unit": 60.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 50.85,
+     "cgst_rate": 9.0,
+     "cgst_amount": 4.58,
+     "sgst_rate": 9.0,
+     "sgst_amount": 4.58,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 60.0
+    }
+   ],
+   "added": "2026-10-26T16:10:24"
+  },
+  {
+   "pdf": "2414ea22959f73f5e89f",
+   "name": "ForwardInvoice_ORD85101206944.pdf",
+   "pages": [
+    2
+   ],
+   "template": "blinkit_fee_invoice.yml",
+   "family": "blinkit_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJFI260016658744",
+    "date": "2025-09-13",
+    "order_number": "ORD85101206944",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "Blink Commerce Private Limited",
+    "seller_address": "Ashwika 4, Survey No 95, Behind Bharat Benz, Off Changodar Bavla Highway, NH8A, Village Vasna Chacharvadi, Sanand, District Ahmedabad, Gujarat, Changodar Bavla Highway, NH8A, Changodar, Ahmedabad, Gujarat, 382213",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "buyer_name": "Akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha, Ahmedabad, Ahmedabad, Gujarat, 382345",
+    "amount_untaxed": 9.32,
+    "amount_cgst": 0.84,
+    "amount_sgst": 0.84,
+    "amount": 11.0,
+    "total_in_words": "Eleven Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "hsn_sac": "998549",
+     "name": "Handling charge",
+     "price_unit": 11.0,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 9.32,
+     "cgst_rate": 9.0,
+     "cgst_amount": 0.84,
+     "sgst_rate": 9.0,
+     "sgst_amount": 0.84,
+     "price_total": 11.0
+    }
+   ],
+   "added": "2026-10-26T16:10:24"
+  },
+  {
+   "pdf": "63e5e111b621763a753b",
+   "name": "ForwardInvoice_ORD00909758158.pdf",
+   "pages": [
+    1
+   ],
+   "template": "blinkit_goods_invoice.yml",
+   "family": "blinkit_goods_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "C491567T26046403",
+    "date": "2026-05-24",
+    "order_number": "2122936234",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "Zomato Hyperpure Private Limited",
+    "seller_trade_name": "ZHPL - SS Ahmedabad Nava Naroda 3 ES82",
+    "seller_address": "Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf Shop No - 24 To 33 ,B/H S R P Camp, Nr Mahipat Bunglows, Naroda Ahmedabad , 382345 Ahmedabad 382330",
+    "seller_tax_id": "24AAACZ8867B1Z6",
+    "seller_fssai": "10020064002537",
+    "seller_company_reg": "U74900DL2015PTC286208",
+    "seller_pan": "AAACZ8867B",
+    "operator_name": "Blink Commerce Private Limited",
+    "operator_tax_id": "24AAFCG9846E1ZH",
+    "operator_fssai": "10018064001545",
+    "operator_company_reg": "U74140HR2015FTC055568",
+    "operator_pan": "AAFCG9846E",
+    "buyer_name": "akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_cgst": 5.0,
+    "amount_sgst": 5.0,
+    "amount": 210.0,
+    "total_in_words": "Two Hundred And Ten Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Amul Gold Coffee Tricone Ice Cream Cone(Pack) (HSN- 21050000)",
+     "price_unit": 40.0,
+     "discount_unit": 0.0,
+     "qty": 4,
+     "price_subtotal": 152.38,
+     "cgst_rate": 2.5,
+     "cgst_amount": 3.81,
+     "sgst_rate": 2.5,
+     "sgst_amount": 3.81,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 160.0
+    },
+    {
+     "pos": 2,
+     "name": "Amul Sugar Free Shahi Anjir Ice Cream Cup(Cup) (HSN-21050000)",
+     "price_unit": 50.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 47.62,
+     "cgst_rate": 2.5,
+     "cgst_amount": 1.19,
+     "sgst_rate": 2.5,
+     "sgst_amount": 1.19,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 50.0
+    }
+   ],
+   "added": "2026-10-26T16:12:38"
+  },
+  {
+   "pdf": "63e5e111b621763a753b",
+   "name": "ForwardInvoice_ORD00909758158.pdf",
+   "pages": [
+    2
+   ],
+   "template": "blinkit_fee_invoice.yml",
+   "family": "blinkit_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJFI270006355226",
+    "date": "2026-05-24",
+    "order_number": "ORD00909758158",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "Blink Commerce Private Limited",
+    "seller_address": "Ashwika 4, Survey No 95, Behind Bharat Benz, Off Changodar Bavla Highway, NH8A, Village Vasna Chacharvadi, Sanand, District Ahmedabad, Gujarat, Changodar Bavla Highway, NH8A, Changodar, Ahmedabad, Gujarat, 382213",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "buyer_name": "Akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha, Ahmedabad, Ahmedabad, Gujarat, 382345",
+    "amount_untaxed": 4.24,
+    "amount_cgst": 0.38,
+    "amount_sgst": 0.38,
+    "amount": 5.0,
+    "total_in_words": "Five Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "hsn_sac": "998549",
+     "name": "Handling charge",
+     "price_unit": 5.0,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 4.24,
+     "cgst_rate": 9.0,
+     "cgst_amount": 0.38,
+     "sgst_rate": 9.0,
+     "sgst_amount": 0.38,
+     "price_total": 5.0
+    }
+   ],
+   "added": "2026-10-26T16:12:38"
+  },
+  {
+   "pdf": "273d8030565bb759489e",
+   "name": "ForwardInvoice_ORD07524055172.pdf",
+   "pages": [
+    1
+   ],
+   "template": "blinkit_goods_invoice.yml",
+   "family": "blinkit_goods_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "C491567T26011628",
+    "date": "2026-04-15",
+    "order_number": "1972518046",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "Zomato Hyperpure Private Limited",
+    "seller_trade_name": "ZHPL - SS Ahmedabad Nava Naroda 3 ES82",
+    "seller_address": "Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf Shop No - 24 To 33 ,B/H S R P Camp, Nr Mahipat Bunglows, Naroda Ahmedabad , 382345 Ahmedabad 382330",
+    "seller_tax_id": "24AAACZ8867B1Z6",
+    "seller_fssai": "10020064002537",
+    "seller_company_reg": "U74900DL2015PTC286208",
+    "seller_pan": "AAACZ8867B",
+    "operator_name": "Blink Commerce Private Limited",
+    "operator_tax_id": "24AAFCG9846E1ZH",
+    "operator_fssai": "10018064001545",
+    "operator_company_reg": "U74140HR2015FTC055568",
+    "operator_pan": "AAFCG9846E",
+    "buyer_name": "akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_cgst": 1.19,
+    "amount_sgst": 1.19,
+    "amount": 50.0,
+    "total_in_words": "Fifty Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Amul Kesar Badam Ice Cream Cup (Sugar Free) (Tub) (HSN- 21050000)",
+     "price_unit": 50.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 47.62,
+     "cgst_rate": 2.5,
+     "cgst_amount": 1.19,
+     "sgst_rate": 2.5,
+     "sgst_amount": 1.19,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 50.0
+    }
+   ],
+   "added": "2026-10-26T16:14:33"
+  },
+  {
+   "pdf": "273d8030565bb759489e",
+   "name": "ForwardInvoice_ORD07524055172.pdf",
+   "pages": [
+    4
+   ],
+   "template": "blinkit_fee_invoice.yml",
+   "family": "blinkit_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJFI270001693459",
+    "date": "2026-04-15",
+    "order_number": "ORD07524055172",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "Blink Commerce Private Limited",
+    "seller_address": "Ashwika 4, Survey No 95, Behind Bharat Benz, Off Changodar Bavla Highway, NH8A, Village Vasna Chacharvadi, Sanand, District Ahmedabad, Gujarat, Changodar Bavla Highway, NH8A, Changodar, Ahmedabad, Gujarat, 382213",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "buyer_name": "Akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha, Ahmedabad, Ahmedabad, Gujarat, 382345",
+    "amount_untaxed": 1.29,
+    "amount_cgst": 0.12,
+    "amount_sgst": 0.12,
+    "amount": 1.52,
+    "total_in_words": "One Rupees And Fifty-Two Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "hsn_sac": "998549",
+     "name": "Handling charge",
+     "price_unit": 1.52,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 1.29,
+     "cgst_rate": 9.0,
+     "cgst_amount": 0.12,
+     "sgst_rate": 9.0,
+     "sgst_amount": 0.12,
+     "price_total": 1.52
+    }
+   ],
+   "added": "2026-10-26T16:14:34"
+  },
+  {
+   "pdf": "39bd5f14079d1e836e53",
+   "name": "ForwardInvoice_ORD97311390276.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "blinkit_goods_invoice.yml",
+   "family": "blinkit_goods_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "C491568T25072253",
+    "date": "2026-03-26",
+    "order_number": "1896105218",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "BLINK COMMERCE PRIVATE LIMITED",
+    "seller_trade_name": "BLINK COMMERCE PRIVATE LIMITED - SS Ahmedabad Nava Naroda 3 ES82",
+    "seller_address": "Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf Shop No - 24 To 33 ,B/H S R P Camp, Nr Mahipat Bunglows, Naroda Ahmedabad , 382345 Ahmedabad 382330",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "operator_name": "Blink Commerce Private Limited",
+    "operator_tax_id": "24AAFCG9846E1ZH",
+    "operator_fssai": "10018064001545",
+    "operator_company_reg": "U74140HR2015FTC055568",
+    "operator_pan": "AAFCG9846E",
+    "buyer_name": "akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_cgst": 9.17,
+    "amount_sgst": 9.17,
+    "amount": 173.0,
+    "total_in_words": "One Hundred And Seventy-Three Rupees And Zero Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Bingo Cheese Nachos with Free Dip(Packet) (HSN- 21069099)",
+     "price_unit": 50.0,
+     "discount_unit": 7.0,
+     "qty": 1,
+     "price_subtotal": 40.95,
+     "cgst_rate": 2.5,
+     "cgst_amount": 1.02,
+     "sgst_rate": 2.5,
+     "sgst_amount": 1.02,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 43.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 2.51,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.06,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.06,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 2.64
+    },
+    {
+     "pos": 2,
+     "name": "Thums Up X Force Zero Sugar Cola Soft Drink(Can) (HSN-22021010)",
+     "price_unit": 40.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 28.57,
+     "cgst_rate": 20.0,
+     "cgst_amount": 5.71,
+     "sgst_rate": 20.0,
+     "sgst_amount": 5.71,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 40.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 1.75,
+     "cgst_rate": 20.0,
+     "cgst_amount": 0.35,
+     "sgst_rate": 20.0,
+     "sgst_amount": 0.35,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 2.45
+    },
+    {
+     "pos": 3,
+     "name": "Kurkure Puffcorn Yummy Cheese Puffs(Pack) (HSN- 21069099)",
+     "price_unit": 20.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 19.05,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.48,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.48,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 20.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 1.17,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.03,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.03,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 1.23
+    },
+    {
+     "pos": 4,
+     "name": "Uncle Chipps Spicy Treat Flavour Potato Chips(Pack) (HSN-20051000)",
+     "price_unit": 20.0,
+     "discount_unit": 0.0,
+     "qty": 1,
+     "price_subtotal": 19.05,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.48,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.48,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 20.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 1.17,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.03,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.03,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 1.23
+    },
+    {
+     "pos": 5,
+     "name": "Kurkure Solid Masti Masala Twisteez Crisps(Pack) (HSN- 21069099)",
+     "price_unit": 20.0,
+     "discount_unit": 0.0,
+     "qty": 2,
+     "price_subtotal": 38.1,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.95,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.95,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 40.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 2.34,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.06,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.06,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 2.45
+    }
+   ],
+   "added": "2026-10-26T16:40:07"
+  },
+  {
+   "pdf": "273d8030565bb759489e",
+   "name": "ForwardInvoice_ORD07524055172.pdf",
+   "pages": [
+    2,
+    3
+   ],
+   "template": "blinkit_goods_invoice.yml",
+   "family": "blinkit_goods_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Blinkit",
+    "document_type": "tax_invoice",
+    "invoice_number": "C491568T26014935",
+    "date": "2026-04-15",
+    "order_number": "1972518046",
+    "place_of_supply": "Gujarat",
+    "reverse_charge": "No",
+    "seller_name": "BLINK COMMERCE PRIVATE LIMITED",
+    "seller_trade_name": "BLINK COMMERCE PRIVATE LIMITED - SS Ahmedabad Nava Naroda 3 ES82",
+    "seller_address": "Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf Shop No - 24 To 33 ,B/H S R P Camp, Nr Mahipat Bunglows, Naroda Ahmedabad , 382345 Ahmedabad 382330",
+    "seller_tax_id": "24AAFCG9846E1ZH",
+    "seller_fssai": "10018064001545",
+    "seller_company_reg": "U74140HR2015FTC055568",
+    "seller_pan": "AAFCG9846E",
+    "operator_name": "Blink Commerce Private Limited",
+    "operator_tax_id": "24AAFCG9846E1ZH",
+    "operator_fssai": "10018064001545",
+    "operator_company_reg": "U74140HR2015FTC055568",
+    "operator_pan": "AAFCG9846E",
+    "buyer_name": "akash",
+    "buyer_address": "akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_cgst": 2.78,
+    "amount_sgst": 2.78,
+    "amount": 117.48,
+    "total_in_words": "One Hundred And Seventeen Rupees And Forty-Eight Paisa Only",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "SuperYou Multigrain Cheese & Tomato Chips(Pouch) (HSN-21069099)",
+     "price_unit": 40.0,
+     "discount_unit": 2.0,
+     "qty": 1,
+     "price_subtotal": 36.19,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.9,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.9,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 38.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 1.1,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.03,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.03,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 1.16
+    },
+    {
+     "pos": 2,
+     "name": "SuperYou Multigrain Super Masala Chips(Pack) (HSN- 21069099)",
+     "price_unit": 40.0,
+     "discount_unit": 2.0,
+     "qty": 1,
+     "price_subtotal": 36.19,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.9,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.9,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 38.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 1.1,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.03,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.03,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 1.16
+    },
+    {
+     "pos": 3,
+     "name": "SuperYou Multigrain Sour Cream & Onion Chips(Pack) (HSN- 21069099)",
+     "price_unit": 40.0,
+     "discount_unit": 2.0,
+     "qty": 1,
+     "price_subtotal": 36.19,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.9,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.9,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 38.0
+    },
+    {
+     "pos": null,
+     "name": "Delivery and other charges",
+     "price_unit": null,
+     "discount_unit": null,
+     "qty": null,
+     "price_subtotal": 1.1,
+     "cgst_rate": 2.5,
+     "cgst_amount": 0.03,
+     "sgst_rate": 2.5,
+     "sgst_amount": 0.03,
+     "cess_rate": 0.0,
+     "additional_cess": 0.0,
+     "price_total": 1.16
+    }
+   ],
+   "added": "2026-10-26T16:40:15"
+  },
+  {
+   "pdf": "ca0ca71b47446882feca",
+   "name": "oyo.pdf",
+   "pages": [
+    1
+   ],
+   "template": "oyo_payment_receipt.yml",
+   "family": "oyo_payment_receipt",
+   "status": "OK",
+   "fields": {
+    "issuer": "OYO (Oravel Stays)",
+    "document_type": "payment_receipt",
+    "invoice_number": "IBZY2087",
+    "date": "2017-12-31",
+    "payment_mode": "Cash at Hotel",
+    "buyer_name": "Sanjay",
+    "hotel_name": "OYO 4189 Resort Nanganallur",
+    "hotel_address": "25,Vembuliamman Koil Street,, Pazhavanthangal, Chennai",
+    "date_check_in": "2017-12-31",
+    "date_check_out": "2018-01-01",
+    "rooms": 1,
+    "seller_name": "Oravel Stays Private Limited",
+    "seller_address": "Delhi Rectangle Regus, Level 4, Rectangle 1, Commercial Complex D-4, Saket, New Delhi - 110017",
+    "seller_tax_id": "06AABCO6063D1ZQ",
+    "seller_company_reg": "U63090DL2012PTC231770",
+    "amount": 1939.0,
+    "amount_paid": 1939.0,
+    "amount_due": 0.0,
+    "tax_note": "Amount payable is inclusive of Central & State Goods & Services Tax at applicable slab rates. Please ask Hotel for invoice at the time of check-out.",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Room Charges",
+     "price_unit": 1939.0,
+     "qty": 1,
+     "rooms": 1,
+     "price_total": 1939.0
+    }
+   ],
+   "added": "2026-10-26T16:51:10"
+  },
+  {
+   "pdf": "e33124038dfb87cc5a4d",
+   "name": "QualityHosting.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "qualityhosting_custom.yml",
+   "family": "qualityhosting_custom",
+   "status": "OK",
+   "fields": {
+    "issuer": "QualityHosting AG",
+    "document_type": "invoice",
+    "invoice_number": "30064443",
+    "date": "2014-05-07",
+    "date_due": "2014-05-21",
+    "customer_number": "47774",
+    "contract_number": "CON02858",
+    "payment_method": "Banküberweisung",
+    "payment_terms": "14 Tage netto",
+    "seller_name": "QualityHosting AG",
+    "seller_address": "Uferweg 40-42, D-63571 Gelnhausen",
+    "seller_tax_id": "DE232446240",
+    "seller_tax_number": "044 241 601 03",
+    "seller_company_reg": "HRB 13302",
+    "iban": "DE30507500940000048567",
+    "bic": "HELADEF1GEL",
+    "buyer_name": "iViveLabs Ltd.",
+    "buyer_address": "93B Sai Yu Chung, Yuen Long, N.T., Hong Kong",
+    "amount": 34.73,
+    "amount_untaxed": 34.73,
+    "currency": "EUR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "qty": 1,
+     "name": "Small Business StandardExchange 2010",
+     "price_unit": 3.89,
+     "price_subtotal": 3.89,
+     "line_note": "Grundgebühr pro Einheit",
+     "service": "OUDJQ_strukan",
+     "date_start": "2014-05-01",
+     "date_end": "2014-05-31"
+    },
+    {
+     "pos": 2,
+     "qty": 1,
+     "name": "Small Business QualityExchange 2010",
+     "price_unit": 5.39,
+     "price_subtotal": 5.39,
+     "line_note": "Grundgebühr pro Einheit",
+     "service": "OUDJQ_schneider",
+     "date_start": "2014-05-01",
+     "date_end": "2014-05-31"
+    },
+    {
+     "pos": 3,
+     "qty": 1,
+     "name": "Small Business QualityExchange 2010",
+     "price_unit": 5.39,
+     "price_subtotal": 5.39,
+     "line_note": "Grundgebühr pro Einheit",
+     "service": "OUDJQ_minar",
+     "date_start": "2014-05-01",
+     "date_end": "2014-05-31"
+    },
+    {
+     "pos": 4,
+     "qty": 1,
+     "name": "Small Business QualityExchange 2010",
+     "price_unit": 5.39,
+     "price_subtotal": 5.39,
+     "line_note": "Grundgebühr pro Einheit",
+     "service": "OUDJQ_mayr",
+     "date_start": "2014-05-01",
+     "date_end": "2014-05-31"
+    },
+    {
+     "pos": 5,
+     "qty": 1,
+     "name": "Small Business QualityExchange 2010",
+     "price_unit": 5.39,
+     "price_subtotal": 5.39,
+     "line_note": "Grundgebühr pro Einheit",
+     "service": "OUDJQ_jenewein",
+     "date_start": "2014-05-01",
+     "date_end": "2014-05-31"
+    },
+    {
+     "pos": 6,
+     "qty": 1,
+     "name": "Small Business QualityExchange 2010",
+     "price_unit": 5.39,
+     "price_subtotal": 5.39,
+     "line_note": "Grundgebühr pro Einheit",
+     "service": "OUDJQ_jauernik",
+     "date_start": "2014-05-01",
+     "date_end": "2014-05-31"
+    },
+    {
+     "pos": 7,
+     "qty": 1,
+     "name": "Small Business StandardExchange 2010",
+     "price_unit": 3.89,
+     "price_subtotal": 3.89,
+     "line_note": "Grundgebühr pro Einheit",
+     "service": "OUDJQ_office",
+     "date_start": "2014-05-01",
+     "date_end": "2014-05-31"
+    }
+   ],
+   "added": "2026-10-26T16:51:41"
+  },
+  {
+   "pdf": "6527fe2d37fc01c59331",
+   "name": "invoice.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "shopify_bill.yml",
+   "family": "shopify_bill",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shopify",
+    "document_type": "tax_invoice",
+    "invoice_number": "462798055",
+    "date": "2025-12-21",
+    "billing_period": "30-day billing cycle",
+    "seller_name": "Shopify Commerce Singapore Pte. Ltd.",
+    "seller_address": "77 Robinson Road #13-00 Robinson 77 Singapore 068896 Singapore",
+    "seller_tax_id": "9921SGP29003OS0",
+    "buyer_name": "Ekarshi OpenSource Foundation",
+    "buyer_email": "ekarshi.data@gmail.com",
+    "buyer_trade_name": "Odisha Desi Haat",
+    "buyer_address": "A 303, THE FIRST. B/H KESHAVBAUG PARTY PLOT, VASTRAPUR THE FIRST. Ahmedabad, 380015 Gujarat - 24 India",
+    "buyer_state": "Gujarat",
+    "buyer_state_code": "24",
+    "amount_untaxed": 3230.89,
+    "tax_rate": 18.0,
+    "amount_igst": 581.56,
+    "amount": 3812.45,
+    "amount_due": 3812.45,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Apps (1 item)",
+     "hsn_sac": "998315",
+     "line_note": "Hosting and information technology (IT) infrastructure provisioning services",
+     "price_subtotal": 3217.56
+    },
+    {
+     "name": "Transaction fees (3 items)",
+     "hsn_sac": "998315",
+     "line_note": "Hosting and information technology (IT) infrastructure provisioning services",
+     "price_subtotal": 13.33
+    },
+    {
+     "name": "Subscription (1 item)",
+     "hsn_sac": "998315",
+     "line_note": "Hosting and information technology (IT) infrastructure provisioning services",
+     "price_subtotal": 20.0
+    },
+    {
+     "name": "Credit",
+     "hsn_sac": "",
+     "line_note": "",
+     "price_subtotal": -20.0
+    }
+   ],
+   "added": "2026-10-26T16:52:36"
+  },
+  {
+   "pdf": "e1aa5d1ffd4ca6775ad5",
+   "name": "OD437334801620974100.pdf",
+   "pages": [
+    1
+   ],
+   "template": "flipkart_seller_tax_invoice.yml",
+   "family": "flipkart_seller_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "LIAALHX270001900",
+    "order_number": "OD437334801620974100",
+    "date_order": "2026-04-18",
+    "date": "2026-04-18",
+    "seller_name": "Bhumika Highstreet India Private Limited",
+    "ship_from_address": "Warehouse Building Nos. WE-II, Renaissance IntegratedIndustrial Area, Village Vashere, Bhiwandi , Thane , Mumbai , Maharashtra -421302, Bhiwandi , MAHARASHTRA, India - 421302, IN-MH",
+    "seller_tax_id": "27AAICB4842N1Z8",
+    "seller_pan": "AAICB4842N",
+    "seller_company_reg": "U45209DL2019PTC351146",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha. Ahmedabad 382345 Gujarat",
+    "amount_gross": 785.0,
+    "amount_discount": -135.0,
+    "amount_untaxed": 619.05,
+    "amount_igst": 30.95,
+    "amount": 650.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "category": "Casual Shoes",
+     "name": "RED TAPE Sneakers for Men | Premium PU Finish, Lace-Up Closure & Stylish Uplift Sneakers For Men",
+     "qty": 1,
+     "gross_amount": 785.0,
+     "discount": -135.0,
+     "price_subtotal": 619.05,
+     "igst_amount": 30.95,
+     "price_total": 650.0,
+     "code": "SHOH8YUGNXA9QYRE",
+     "hsn_sac": "64039990",
+     "igst_rate": 5.0
+    }
+   ],
+   "added": "2026-10-26T16:54:51"
+  },
+  {
+   "pdf": "e1aa5d1ffd4ca6775ad5",
+   "name": "OD437334801620974100.pdf",
+   "pages": [
+    2,
+    3
+   ],
+   "template": "flipkart_bill_of_supply.yml",
+   "family": "flipkart_bill_of_supply",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "bill_of_supply",
+    "invoice_number": "NBAAJ27001754498",
+    "date": "2026-04-22",
+    "order_number": "OD437334801620974100",
+    "nature_of_transaction": "INTRA",
+    "nature_of_supply": "Service",
+    "seller_name": "Flipkart India Private Limited",
+    "seller_address": "KH NO 14/6 MIN,7 MIN,13 MIN,14,15,17,18,MIN, 23,24,25,16/1,2,, 9,10,11,12/1,17/3,4,5,6,7,8,11/2, 12,13,14,15 BINOLLA, Gurugram, Gurugram, Haryana, 122413 , Haryana, IN-HR, IN - 122413",
+    "seller_tax_id": "06AABCF8078M1Z5",
+    "seller_pan": "AABCF8078M",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, India - 382345",
+    "buyer_state": "Gujarat",
+    "place_of_supply": "HARYANA",
+    "ship_from_address": "KHASRA NO. 21//16, 21//25, 22//20/2, 22//21 & 25//5/1, 24//1, 25//5/2 & 25//6/1, 24//9 & 24//10,25//7, 20//24, 20 //25, 21//19, 21//21, 21//22, 21//23& 21//24, AND OTHERS, VILLAGE SANPKA, TEHSIL FARUKHNAGAR, DISTRICT GURUGRAM, HARYANA, INDIA-122503, HARYANA, IN-HR, India- 122503",
+    "amount_gross": 154.0,
+    "amount_untaxed": 154.0,
+    "amount_sgst": 0.0,
+    "amount_cgst": 0.0,
+    "amount": 154.0,
+    "goods_description": "RED TAPE Shoes for Men | Lifestyle Casual Sneakers for Men | Sports Shoes Sneakers For Men (1)",
+    "goods_weight_grams": 492.0,
+    "goods_value": 681.0,
+    "transporter": "Flipkart India Private Limited",
+    "vehicle_number": "NL01AF1335",
+    "reverse_charge": "No",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "GT Charges",
+     "hsn_sac": "996511",
+     "qty": 1.0,
+     "gross_amount": 154.0,
+     "price_subtotal": 154.0,
+     "sgst_amount": 0.0,
+     "cgst_amount": 0.0,
+     "price_total": 154.0,
+     "cgst_rate": 0.0,
+     "sgst_rate": 0.0
+    }
+   ],
+   "added": "2026-10-26T16:54:52"
+  },
+  {
+   "pdf": "e1aa5d1ffd4ca6775ad5",
+   "name": "OD437334801620974100.pdf",
+   "pages": [
+    4
+   ],
+   "template": "flipkart_platform_fee_invoice.yml",
+   "family": "flipkart_platform_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "MXACT27000404679",
+    "order_number": "OD437334801620974100",
+    "date_order": "2026-04-18",
+    "date": "2026-04-18",
+    "seller_name": "Flipkart Internet Private Limited",
+    "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+    "seller_company_reg": "U51109KA2012PTC066107",
+    "seller_tax_id": "29AACCF0683K1ZD",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_gross": 4.0,
+    "amount_discount": 0.0,
+    "amount_untaxed": 3.39,
+    "amount_igst": 0.61,
+    "amount": 4.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 4.0,
+     "discount": 0.0,
+     "price_subtotal": 3.39,
+     "igst_amount": 0.61,
+     "price_total": 4.0,
+     "serial_no": "B26A0328881",
+     "igst_rate": 18.0
+    }
+   ],
+   "added": "2026-10-26T16:54:53"
+  },
+  {
+   "pdf": "e1aa5d1ffd4ca6775ad5",
+   "name": "OD437334801620974100.pdf",
+   "pages": [
+    5
+   ],
+   "template": "flipkart_platform_fee_invoice.yml",
+   "family": "flipkart_platform_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "MXAB427000407204",
+    "order_number": "OD437334801620974100",
+    "date_order": "2026-04-18",
+    "date": "2026-04-18",
+    "seller_name": "Flipkart Internet Private Limited",
+    "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+    "seller_company_reg": "U51109KA2012PTC066107",
+    "seller_tax_id": "29AACCF0683K1ZD",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_gross": 3.0,
+    "amount_discount": 0.0,
+    "amount_untaxed": 2.54,
+    "amount_igst": 0.46,
+    "amount": 3.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 3.0,
+     "discount": 0.0,
+     "price_subtotal": 2.54,
+     "igst_amount": 0.46,
+     "price_total": 3.0,
+     "igst_rate": 18.0
+    }
+   ],
+   "added": "2026-10-26T16:54:54"
+  },
+  {
+   "pdf": "e1aa5d1ffd4ca6775ad5",
+   "name": "OD437334801620974100.pdf",
+   "pages": [
+    6,
+    7
+   ],
+   "template": "flipkart_bill_of_supply.yml",
+   "family": "flipkart_bill_of_supply",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "bill_of_supply",
+    "invoice_number": "NBAEJ27000391211",
+    "date": "2026-04-20",
+    "order_number": "OD437334801620974100",
+    "nature_of_transaction": "INTRA",
+    "nature_of_supply": "Service",
+    "seller_name": "Flipkart India Private Limited",
+    "seller_address": "Warehouse Building Nos. WE-II, Renaissance Integrated Industrial Area, Village Vashere, Bhiwandi , Thane , Mumbai , Maharashtra, Thane, Maharashtra, 421302 , Maharashtra, IN-MH, IN - 421302",
+    "seller_tax_id": "27AABCF8078M1Z1",
+    "seller_pan": "AABCF8078M",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, India - 382345",
+    "buyer_state": "Gujarat",
+    "place_of_supply": "MAHARASHTRA",
+    "ship_from_address": "FLIPKART INSTAKART SERVICES PVT LTD, WAREHOUSE BUILDING NO.2, RENAISSANCE INTEGRATED INDUSTRIAL AREA,VILLAGE VASHERE,BHIWANDI,THANE.421302, MAHARASHTRA, IN-MH, India- 421302",
+    "amount_gross": 154.0,
+    "amount_untaxed": 154.0,
+    "amount_sgst": 0.0,
+    "amount_cgst": 0.0,
+    "amount": 154.0,
+    "goods_description": "RED TAPE Sneakers for Men | Premium PU Finish, Lace-Up Closure & Stylish Uplift Sneakers For Men (1)",
+    "goods_weight_grams": 1161.0,
+    "goods_value": 650.0,
+    "transporter": "Flipkart India Private Limited",
+    "vehicle_number": "MH04GR4916",
+    "reverse_charge": "No",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "GT Charges",
+     "hsn_sac": "996511",
+     "qty": 1.0,
+     "gross_amount": 154.0,
+     "price_subtotal": 154.0,
+     "sgst_amount": 0.0,
+     "cgst_amount": 0.0,
+     "price_total": 154.0,
+     "cgst_rate": 0.0,
+     "sgst_rate": 0.0
+    }
+   ],
+   "added": "2026-10-26T16:54:54"
+  },
+  {
+   "pdf": "e1aa5d1ffd4ca6775ad5",
+   "name": "OD437334801620974100.pdf",
+   "pages": [
+    8
+   ],
+   "template": "flipkart_seller_tax_invoice.yml",
+   "family": "flipkart_seller_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "LIAAJOT270003715",
+    "order_number": "OD437334801620974100",
+    "date_order": "2026-04-18",
+    "date": "2026-04-18",
+    "seller_name": "Bhumika Highstreet India Private Limited",
+    "ship_from_address": "Sunsat warehousing Pvt. Ltd., Hadbast No. 23, Village Sanpka,Tehsil Farukhnagar, District - Gurgaon, Haryana- 122503, Farukhnagar , HARYANA, India - 122503, IN-HR",
+    "seller_tax_id": "06AAICB4842N1ZC",
+    "seller_pan": "AAICB4842N",
+    "seller_company_reg": "U45209DL2019PTC351146",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha. Ahmedabad 382345 Gujarat",
+    "amount_gross": 825.0,
+    "amount_discount": -144.0,
+    "amount_untaxed": 648.57,
+    "amount_igst": 32.43,
+    "amount": 681.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "category": "Casual Shoes",
+     "name": "RED TAPE Shoes for Men | Lifestyle Casual Sneakers for Men | Sports Shoes Sneakers For Men",
+     "qty": 1,
+     "gross_amount": 825.0,
+     "discount": -144.0,
+     "price_subtotal": 648.57,
+     "igst_amount": 32.43,
+     "price_total": 681.0,
+     "code": "SHOH4FGBBE6CYW5W",
+     "hsn_sac": "64039990",
+     "serial_no": "B26A0328881",
+     "igst_rate": 5.0
+    }
+   ],
+   "added": "2026-10-26T16:54:54"
+  },
+  {
+   "pdf": "a75cf9bc532236a7fd62",
+   "name": "ACK735221680300726.pdf",
+   "pages": [
+    1
+   ],
+   "template": "income_tax_itr_acknowledgement.yml",
+   "family": "income_tax_itr_acknowledgement",
+   "status": "OK",
+   "fields": {
+    "issuer": "Income Tax Department (India)",
+    "document_type": "itr_acknowledgement",
+    "invoice_number": "735221680300726",
+    "date": "2026-07-30",
+    "assessment_year": "2026-27",
+    "form_number": "ITR-4",
+    "filed_under": "139(1)-On or before due date",
+    "taxpayer_status": "Individual",
+    "taxpayer_pan": "AEGPC8346H",
+    "taxpayer_name": "CHANDRESHBHAI MOHANLAL CHAUHAN",
+    "taxpayer_address": "A-11, GANGARAM FLAT, , DHARAMNAGAR,, Sabarmati S.O, Ahmadabad City , AHMEDABAD , 11-Gujarat, 91-INDIA, 380005",
+    "amount_current_year_loss": 0.0,
+    "amount_total_income": 862320.0,
+    "amount_book_profit_mat": 0.0,
+    "amount_adjusted_income_amt": 0.0,
+    "amount_net_tax_payable": 0.0,
+    "amount_interest_fee_payable": 0.0,
+    "amount_total_tax_payable": 0.0,
+    "amount_taxes_paid": 33565.0,
+    "amount_tax_payable_refundable": -33570.0,
+    "amount_accreted_income": 0.0,
+    "amount_additional_tax": 0.0,
+    "amount_interest_115te": 0.0,
+    "amount_additional_tax_interest": 0.0,
+    "amount_tax_interest_paid": 0.0,
+    "amount_additional_payable_refundable": 0.0,
+    "currency": "INR"
+   },
+   "lines": [],
+   "added": "2026-10-26T17:48:45"
+  },
+  {
+   "pdf": "7fa2ee10195dd90153f8",
+   "name": "irctc.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "indian_railways_train_ticket.yml",
+   "family": "irctc_e_ticket_2",
+   "status": "OK",
+   "fields": {
+    "issuer": "Indian Railways",
+    "document_type": "invoice",
+    "seller_name": "Indian Railways",
+    "invoice_number": "100006522561796",
+    "date": "2026-04-27",
+    "date_travel": "2026-04-27",
+    "amount": 1379.0,
+    "seller_address": "Indian Railways New Delhi",
+    "amount_untaxed": 1340.0,
+    "amount_cgst": 0.0,
+    "amount_igst": 0.0,
+    "amount_tax": 0.0,
+    "booking_reference": "2950519531",
+    "train_number": "01905",
+    "travel_from": "ETAWAH JN (ETW)",
+    "travel_to": "ASARVA JN (ASV)",
+    "place_of_supply": "Gurgaon",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Ticket Fare",
+     "price_total": 1340.0
+    },
+    {
+     "name": "Convenience Fee (Incl. of GST)",
+     "price_total": 17.7
+    },
+    {
+     "name": "Agent Service Charge (Incl. of GST)",
+     "price_total": 20.0
+    },
+    {
+     "name": "Travel Insurance Premium (Incl. of GST)",
+     "price_total": 0.9
+    },
+    {
+     "name": "Payment Gateway Charge",
+     "price_total": 0.0
+    }
+   ],
+   "added": "2026-10-27T12:04:18"
+  },
+  {
+   "pdf": "7fa2ee10195dd90153f8",
+   "name": "irctc.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indian_railways_invoice.yml",
+   "family": "indian_railways_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Indian Railways",
+    "document_type": "tax_invoice",
+    "invoice_number": "Train",
+    "booking_reference": "Train",
+    "date": "2026-10-27",
+    "seller_name": "Indian Railways",
+    "seller_address": "Indian Railways New Delhi",
+    "amount": 1379.0,
+    "date_travel": "2026-04-27",
+    "boarding_from": "ETAWAH JN (ETW)",
+    "travel_to": "ASARVA JN (ASV)",
+    "train_number": "01905",
+    "travel_class": "SLEEPER CLASS (SL)",
+    "operator_name": "Le Travenues Technology Ltd",
+    "transaction_id": "100006522561796",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Ticket Fare",
+     "price_total": 1340.0
+    },
+    {
+     "name": "Convenience Fee (Incl. of GST)",
+     "price_total": 17.7
+    },
+    {
+     "name": "Agent Service Charge (Incl. of GST)",
+     "price_total": 20.0
+    },
+    {
+     "name": "Travel Insurance Premium (Incl. of GST)",
+     "price_total": 0.9
+    },
+    {
+     "name": "Payment Gateway Charge",
+     "price_total": 0.0
+    }
+   ],
+   "added": "2026-10-27T12:43:04"
+  },
+  {
+   "pdf": "39c3aa19c25f034f7e5d",
+   "name": "2147438163.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "indian_railways_train_ticket.yml",
+   "family": "indian_railways_train_ticket",
+   "status": "OK",
+   "fields": {
+    "issuer": "Indian Railways",
+    "document_type": "invoice",
+    "seller_name": "Indian Railways",
+    "invoice_number": "100006249683480",
+    "date": "2026-10-27",
+    "date_travel": "2026-02-16",
+    "amount": 519.0,
+    "seller_address": "Indian Railways New Delhi",
+    "amount_untaxed": 480.0,
+    "amount_cgst": 0.0,
+    "amount_sgst": 0.0,
+    "amount_tax": 0.0,
+    "booking_reference": "2147438163",
+    "train_number": "12547",
+    "travel_from": "AGRA CANTT (AGC)",
+    "travel_to": "SABARMATI BG (SBIB)",
+    "travel_class": "SLEEPER CLASS (SL)",
+    "passengers": 1,
+    "place_of_supply": "Gurgaon",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Ticket Fare",
+     "price_total": 480.0
+    },
+    {
+     "name": "Convenience Fee (Incl. of GST)",
+     "price_total": 17.7
+    },
+    {
+     "name": "Agent Service Charge (Incl. of GST)",
+     "price_total": 20.0
+    },
+    {
+     "name": "Travel Insurance Premium (Incl. of GST)",
+     "price_total": 0.45
+    },
+    {
+     "name": "Payment Gateway Charge",
+     "price_total": 0.0
+    }
+   ],
+   "added": "2026-10-27T15:12:40"
+  },
+  {
+   "pdf": "964001684dd8d6ebbbb3",
+   "name": "irc.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "irctc_e_ticket.yml",
+   "family": "irctc_e_ticket",
+   "status": "OK",
+   "fields": {
+    "issuer": "IRCTC (Indian Railways)",
+    "document_type": "e_ticket",
+    "seller_name": "Indian Railway Catering and Tourism Corporation (IRCTC)",
+    "invoice_number": "100004155406431",
+    "date": "2023-05-10",
+    "date_travel": "2023-05-15",
+    "booking_reference": "2260854256",
+    "train_number": "14803/JSM SBIB EXP",
+    "travel_class": "THIRD AC (3A)",
+    "boarding_from": "JAISALMER (JSM)",
+    "travel_from": "JAISALMER (JSM)",
+    "travel_to": "SABARMATI BG (SBIB)",
+    "passengers": 1,
+    "gst_invoice_number": "PS23226085425611",
+    "gst_taxable_value": 1037.0,
+    "gst_tax_total": 51.85,
+    "place_of_supply": "Rajasthan(8)",
+    "amount": 1125.75,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Ticket Fare",
+     "price_total": 1090.0
+    },
+    {
+     "name": "IRCTC Convenience Fee (Incl. of GST)",
+     "price_total": 35.4
+    },
+    {
+     "name": "Travel Insurance Premium (Incl. of GST)",
+     "price_total": 0.35
+    }
+   ],
+   "added": "2026-10-27T16:49:51"
+  },
+  {
+   "pdf": "de6f1867f8c34bff9f34",
+   "name": "pdf-sofa-invoice-amazon_compress.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "IN-XSAD-8836",
+    "date": "2020-10-22",
+    "order_number": "404-4743252-7105105",
+    "seller_name": "Cloudtail India Private Limited",
+    "seller_pan": "AAQCS4259Q",
+    "seller_tax_id": "36AAQCS4259Q1ZB",
+    "buyer_tax_id": "29AACCU5941P1ZL",
+    "buyer_state_code": "29",
+    "place_of_supply": "KARNATAKA",
+    "amount_tax": 2669.34,
+    "amount": 17499.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Amazon Brand - Solimo Bliss Leatherette 3 Seater Sofa (Brown) | B07RG6YHTS ( B07RG6YHTS )",
+     "price_unit": 14829.66,
+     "discount": null,
+     "qty": 1,
+     "price_subtotal": 14829.66,
+     "igst_rate": 18.0,
+     "igst_amount": 2669.34,
+     "price_total": 17499.0,
+     "hsn_sac": "9401"
+    }
+   ],
+   "added": "2026-10-28T10:05:48"
+  },
+  {
+   "pdf": "1b53d80bf53b6389081b",
+   "name": "invoice _2_.pdf",
+   "pages": [
+    2
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "LKO1-15628",
+    "date": "2025-09-26",
+    "order_number": "404-5591708-2967550",
+    "seller_name": "AURO FRUIT AND NUT PRIVATE LIMITED",
+    "seller_pan": "AAFCA3069H",
+    "seller_tax_id": "09AAFCA3069H1ZM",
+    "buyer_state_code": "24",
+    "place_of_supply": "GUJARAT",
+    "amount_tax": 42.81,
+    "amount": 899.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Nutraj Cashews 1 Kg Pouch | Kaju | Dry Fruits and Nuts | Grocery Items | B08SJ29W8H ( 8906019773060-1 )",
+     "price_unit": 856.19,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 856.19,
+     "igst_rate": 5.0,
+     "igst_amount": 42.81,
+     "price_total": 899.0,
+     "hsn_sac": "08013220"
+    },
+    {
+     "name": "Shipping Charges",
+     "price_unit": 75.24,
+     "discount": -75.24,
+     "qty": null,
+     "price_subtotal": 0.0,
+     "igst_rate": 5.0,
+     "igst_amount": 0.0,
+     "price_total": 0.0
+    }
+   ],
+   "added": "2026-10-28T10:12:29"
+  },
+  {
+   "pdf": "8d823facca41c94124cf",
+   "name": "amz.pdf",
+   "pages": [
+    1
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "IN-5615",
+    "date": "2026-10-06",
+    "order_number": "404-0055151-5300367",
+    "seller_name": "ABHAY TECHNO SERVICES PRIVATE LIMITED",
+    "seller_pan": "AAKCA6869Q",
+    "seller_tax_id": "06AAKCA6869Q1ZQ",
+    "buyer_state_code": "24",
+    "place_of_supply": "GUJARAT",
+    "amount_tax": 30.2,
+    "amount": 198.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "OlivLife 4-in-1 Fast Charging Data Cable | USB Multi Charging Cable with Type-C, Micro USB & IOS | Fast Charge & Data Sync | Durable Design | Compatible with Smartphones, Tablets & Power Banks (Black) | B0GN2PMQ9Z ( OL_4IN1-BLCK-CBL )",
+     "price_unit": 83.9,
+     "discount": null,
+     "qty": 2,
+     "price_subtotal": 167.8,
+     "igst_rate": 18.0,
+     "igst_amount": 30.2,
+     "price_total": 198.0,
+     "hsn_sac": "85183000"
+    }
+   ],
+   "added": "2026-10-28T10:12:57"
+  },
+  {
+   "pdf": "17aa5c78356378951a8d",
+   "name": "invoice _1_.pdf",
+   "pages": [
+    1
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "DEL4-1804",
+    "date": "2026-04-20",
+    "order_number": "404-7477498-6223512",
+    "seller_name": "Mrigendra Foods Private Limited",
+    "seller_pan": "AAQCM3941B",
+    "seller_tax_id": "06AAQCM3941B1ZK",
+    "place_of_supply": "GUJARAT",
+    "amount_tax": 13.67,
+    "amount": 287.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "GreenFinity Basil Seeds 750g | Raw Sabja Seeds for Eating | Healthy Snacks | Jar Pack | B0F5BT3VD2 ( Basil-Seeds-750g-Jar )",
+     "price_unit": 273.33,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 273.33,
+     "igst_rate": 5.0,
+     "igst_amount": 13.67,
+     "price_total": 287.0,
+     "hsn_sac": "12119094"
+    },
+    {
+     "name": "Shipping Charges",
+     "price_unit": 38.1,
+     "discount": -38.1,
+     "qty": null,
+     "price_subtotal": 0.0,
+     "igst_rate": 5.0,
+     "igst_amount": 0.0,
+     "price_total": 0.0
+    }
+   ],
+   "added": "2026-10-28T10:19:14"
+  },
+  {
+   "pdf": "1b53d80bf53b6389081b",
+   "name": "invoice _2_.pdf",
+   "pages": [
+    1
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "MKT-202671925",
+    "date": "2025-09-26",
+    "order_number": "404-5591708-2967550",
+    "seller_name": "Amazon Seller Services Private Limited",
+    "seller_pan": "AAICA3918J",
+    "seller_tax_id": "29AAICA3918J1ZE",
+    "buyer_state_code": "24",
+    "place_of_supply": "GUJARAT",
+    "amount_tax": 0.37,
+    "amount": 2.4,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Marketplace Fees",
+     "price_unit": 2.03,
+     "discount": null,
+     "qty": null,
+     "price_subtotal": 2.03,
+     "igst_rate": 18.0,
+     "igst_amount": 0.37,
+     "price_total": 2.4
+    }
+   ],
+   "added": "2026-10-28T10:19:26"
+  },
+  {
+   "pdf": "8d823facca41c94124cf",
+   "name": "amz.pdf",
+   "pages": [
+    2
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "MKT-393884271",
+    "date": "2026-10-06",
+    "order_number": "404-0055151-5300367",
+    "seller_name": "Amazon Seller Services Private Limited",
+    "seller_pan": "AAICA3918J",
+    "seller_tax_id": "29AAICA3918J1ZE",
+    "buyer_state_code": "24",
+    "place_of_supply": "GUJARAT",
+    "amount_tax": 0.76,
+    "amount": 5.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Marketplace Fees",
+     "price_unit": 2.12,
+     "discount": null,
+     "qty": null,
+     "price_subtotal": 4.24,
+     "igst_rate": 18.0,
+     "igst_amount": 0.76,
+     "price_total": 5.0
+    }
+   ],
+   "added": "2026-10-28T10:19:38"
+  },
+  {
+   "pdf": "2db4d5139367304bf2a9",
+   "name": "invoice _3_.pdf",
+   "pages": [
+    1
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "MKT-182305212",
+    "date": "2025-09-17",
+    "order_number": "404-3212025-3990718",
+    "seller_name": "Amazon Seller Services Private Limited",
+    "seller_pan": "AAICA3918J",
+    "seller_tax_id": "29AAICA3918J1ZE",
+    "buyer_state_code": "24",
+    "place_of_supply": "GUJARAT",
+    "amount_tax": 0.76,
+    "amount": 5.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Marketplace Fees",
+     "price_unit": 4.24,
+     "discount": null,
+     "qty": null,
+     "price_subtotal": 4.24,
+     "igst_rate": 18.0,
+     "igst_amount": 0.76,
+     "price_total": 5.0
+    }
+   ],
+   "added": "2026-10-28T10:20:19"
+  },
+  {
+   "pdf": "2db4d5139367304bf2a9",
+   "name": "invoice _3_.pdf",
+   "pages": [
+    2
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "AMD2-2008161",
+    "date": "2025-09-17",
+    "order_number": "404-3212025-3990718",
+    "seller_name": "CLICKTECH RETAIL PRIVATE LIMITED",
+    "seller_pan": "AAJCC9783E",
+    "seller_tax_id": "24AAJCC9783E1ZD",
+    "buyer_state_code": "24",
+    "place_of_supply": "GUJARAT",
+    "amount_tax": 15.1,
+    "amount": 99.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Lapster Laptop Camera Cover Webcam Cover Slider, Ultra Thin Slide Blocker for All Laptop PC Tablet (Pack of 6pcs) | B09SQ57YKY ( B09SQ57YKY )",
+     "price_unit": 83.9,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 83.9,
+     "cgst_rate": 9.0,
+     "cgst_amount": 7.55,
+     "price_total": 99.0,
+     "hsn_sac": "85044090",
+     "sgst_rate": 9.0,
+     "sgst_amount": 7.55
+    },
+    {
+     "name": "Shipping Charges",
+     "price_unit": 33.9,
+     "discount": -33.9,
+     "qty": null,
+     "price_subtotal": 0.0,
+     "cgst_rate": 9.0,
+     "cgst_amount": 0.0,
+     "price_total": 0.0,
+     "sgst_rate": 9.0,
+     "sgst_amount": 0.0
+    }
+   ],
+   "added": "2026-10-28T10:20:20"
+  },
+  {
+   "pdf": "a9d0666c994133d9b19d",
+   "name": "OD437298764051095100.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "template": "flipkart_bill_of_supply.yml",
+   "family": "flipkart_bill_of_supply",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "bill_of_supply",
+    "invoice_number": "NBAAJ27001255221",
+    "date": "2026-04-18",
+    "order_number": "OD437298764051095100",
+    "nature_of_transaction": "INTRA",
+    "nature_of_supply": "Service",
+    "seller_name": "Flipkart India Private Limited",
+    "seller_address": "KH NO 14/6 MIN,7 MIN,13 MIN,14,15,17,18,MIN, 23,24,25,16/1,2,, 9,10,11,12/1,17/3,4,5,6,7,8,11/2, 12,13,14,15 BINOLLA, Gurugram, Gurugram, Haryana, 122413 , Haryana, IN-HR, IN - 122413",
+    "seller_tax_id": "06AABCF8078M1Z5",
+    "seller_pan": "AABCF8078M",
+    "buyer_name": "Akshita Lodhi",
+    "buyer_address": "House no.2,Raj co op society opposite arya samaj mandir saijpur, Kuber Nagar, Maharshi Dayanand Road, Om Nagar, Saijpur Bogha, India - 382345",
+    "buyer_state": "Gujarat",
+    "place_of_supply": "HARYANA",
+    "ship_from_address": "Block A Pragati two Khasra no-83//21/1 Min and other Village Yakubpur Tehsil Badli Dist Jhjjar Haryana, HARYANA, IN-HR, India- 124105",
+    "amount_gross": 211.0,
+    "amount_untaxed": 211.0,
+    "amount_sgst": 0.0,
+    "amount_cgst": 0.0,
+    "amount": 211.0,
+    "goods_description": "YOURCITYSELLER super sliver rambo glass Motorbike Helmet (1)",
+    "goods_weight_grams": 900.0,
+    "goods_value": 354.0,
+    "transporter": "Flipkart India Private Limited",
+    "vehicle_number": "GJ03BZ7575",
+    "reverse_charge": "No",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "GT Charges",
+     "hsn_sac": "996511",
+     "qty": 1.0,
+     "gross_amount": 211.0,
+     "price_subtotal": 211.0,
+     "sgst_amount": 0.0,
+     "cgst_amount": 0.0,
+     "price_total": 211.0,
+     "cgst_rate": 0.0,
+     "sgst_rate": 0.0
+    }
+   ],
+   "added": "2026-10-28T11:46:03"
+  },
+  {
+   "pdf": "a9d0666c994133d9b19d",
+   "name": "OD437298764051095100.pdf",
+   "pages": [
+    3
+   ],
+   "template": "flipkart_platform_fee_invoice.yml",
+   "family": "flipkart_platform_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "MXAAJ27000277637",
+    "order_number": "OD437298764051095100",
+    "date_order": "2026-04-14",
+    "date": "2026-04-15",
+    "seller_name": "Flipkart Internet Private Limited",
+    "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+    "seller_company_reg": "U51109KA2012PTC066107",
+    "seller_tax_id": "29AACCF0683K1ZD",
+    "buyer_name": "Akshita Lodhi",
+    "buyer_address": "House no.2,Raj co op society opposite arya samaj mandir saijpur, Kuber Nagar, Maharshi Dayanand Road, Om Nagar, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_gross": 7.0,
+    "amount_discount": 0.0,
+    "amount_untaxed": 5.93,
+    "amount_igst": 1.07,
+    "amount": 7.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 7.0,
+     "discount": 0.0,
+     "price_subtotal": 5.93,
+     "igst_amount": 1.07,
+     "price_total": 7.0,
+     "igst_rate": 18.0
+    }
+   ],
+   "added": "2026-10-28T11:46:04"
+  },
+  {
+   "pdf": "df6c0fe02fbfde05d1ee",
+   "name": "OD437334801620974100-1.pdf",
+   "pages": [
+    1
+   ],
+   "template": "flipkart_seller_tax_invoice.yml",
+   "family": "flipkart_seller_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "LIAALHX270001900",
+    "order_number": "OD437334801620974100",
+    "date_order": "2026-04-18",
+    "date": "2026-04-18",
+    "seller_name": "Bhumika Highstreet India Private Limited",
+    "ship_from_address": "Warehouse Building Nos. WE-II, Renaissance IntegratedIndustrial Area, Village Vashere, Bhiwandi , Thane , Mumbai , Maharashtra -421302, Bhiwandi , MAHARASHTRA, India - 421302, IN-MH",
+    "seller_tax_id": "27AAICB4842N1Z8",
+    "seller_pan": "AAICB4842N",
+    "seller_company_reg": "U45209DL2019PTC351146",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha. Ahmedabad 382345 Gujarat",
+    "amount_gross": 785.0,
+    "amount_discount": -135.0,
+    "amount_untaxed": 619.05,
+    "amount_igst": 30.95,
+    "amount": 650.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "category": "Casual Shoes",
+     "name": "RED TAPE Sneakers for Men | Premium PU Finish, Lace-Up Closure & Stylish Uplift Sneakers For Men",
+     "qty": 1,
+     "gross_amount": 785.0,
+     "discount": -135.0,
+     "price_subtotal": 619.05,
+     "igst_amount": 30.95,
+     "price_total": 650.0,
+     "code": "SHOH8YUGNXA9QYRE",
+     "hsn_sac": "64039990",
+     "igst_rate": 5.0
+    }
+   ],
+   "added": "2026-10-28T11:46:40"
+  },
+  {
+   "pdf": "df6c0fe02fbfde05d1ee",
+   "name": "OD437334801620974100-1.pdf",
+   "pages": [
+    2,
+    3
+   ],
+   "template": "flipkart_bill_of_supply.yml",
+   "family": "flipkart_bill_of_supply",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "bill_of_supply",
+    "invoice_number": "NBAAJ27001754498",
+    "date": "2026-04-22",
+    "order_number": "OD437334801620974100",
+    "nature_of_transaction": "INTRA",
+    "nature_of_supply": "Service",
+    "seller_name": "Flipkart India Private Limited",
+    "seller_address": "KH NO 14/6 MIN,7 MIN,13 MIN,14,15,17,18,MIN, 23,24,25,16/1,2,, 9,10,11,12/1,17/3,4,5,6,7,8,11/2, 12,13,14,15 BINOLLA, Gurugram, Gurugram, Haryana, 122413 , Haryana, IN-HR, IN - 122413",
+    "seller_tax_id": "06AABCF8078M1Z5",
+    "seller_pan": "AABCF8078M",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, India - 382345",
+    "buyer_state": "Gujarat",
+    "place_of_supply": "HARYANA",
+    "ship_from_address": "KHASRA NO. 21//16, 21//25, 22//20/2, 22//21 & 25//5/1, 24//1, 25//5/2 & 25//6/1, 24//9 & 24//10,25//7, 20//24, 20 //25, 21//19, 21//21, 21//22, 21//23& 21//24, AND OTHERS, VILLAGE SANPKA, TEHSIL FARUKHNAGAR, DISTRICT GURUGRAM, HARYANA, INDIA-122503, HARYANA, IN-HR, India- 122503",
+    "amount_gross": 154.0,
+    "amount_untaxed": 154.0,
+    "amount_sgst": 0.0,
+    "amount_cgst": 0.0,
+    "amount": 154.0,
+    "goods_description": "RED TAPE Shoes for Men | Lifestyle Casual Sneakers for Men | Sports Shoes Sneakers For Men (1)",
+    "goods_weight_grams": 492.0,
+    "goods_value": 681.0,
+    "transporter": "Flipkart India Private Limited",
+    "vehicle_number": "NL01AF1335",
+    "reverse_charge": "No",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "GT Charges",
+     "hsn_sac": "996511",
+     "qty": 1.0,
+     "gross_amount": 154.0,
+     "price_subtotal": 154.0,
+     "sgst_amount": 0.0,
+     "cgst_amount": 0.0,
+     "price_total": 154.0,
+     "cgst_rate": 0.0,
+     "sgst_rate": 0.0
+    }
+   ],
+   "added": "2026-10-28T11:46:41"
+  },
+  {
+   "pdf": "df6c0fe02fbfde05d1ee",
+   "name": "OD437334801620974100-1.pdf",
+   "pages": [
+    4
+   ],
+   "template": "flipkart_platform_fee_invoice.yml",
+   "family": "flipkart_platform_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "MXACT27000404679",
+    "order_number": "OD437334801620974100",
+    "date_order": "2026-04-18",
+    "date": "2026-04-18",
+    "seller_name": "Flipkart Internet Private Limited",
+    "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+    "seller_company_reg": "U51109KA2012PTC066107",
+    "seller_tax_id": "29AACCF0683K1ZD",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_gross": 4.0,
+    "amount_discount": 0.0,
+    "amount_untaxed": 3.39,
+    "amount_igst": 0.61,
+    "amount": 4.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 4.0,
+     "discount": 0.0,
+     "price_subtotal": 3.39,
+     "igst_amount": 0.61,
+     "price_total": 4.0,
+     "serial_no": "B26A0328881",
+     "igst_rate": 18.0
+    }
+   ],
+   "added": "2026-10-28T11:46:41"
+  },
+  {
+   "pdf": "df6c0fe02fbfde05d1ee",
+   "name": "OD437334801620974100-1.pdf",
+   "pages": [
+    5
+   ],
+   "template": "flipkart_platform_fee_invoice.yml",
+   "family": "flipkart_platform_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "MXAB427000407204",
+    "order_number": "OD437334801620974100",
+    "date_order": "2026-04-18",
+    "date": "2026-04-18",
+    "seller_name": "Flipkart Internet Private Limited",
+    "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+    "seller_company_reg": "U51109KA2012PTC066107",
+    "seller_tax_id": "29AACCF0683K1ZD",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha, Ahmedabad 382345",
+    "buyer_state": "Gujarat",
+    "amount_gross": 3.0,
+    "amount_discount": 0.0,
+    "amount_untaxed": 2.54,
+    "amount_igst": 0.46,
+    "amount": 3.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 3.0,
+     "discount": 0.0,
+     "price_subtotal": 2.54,
+     "igst_amount": 0.46,
+     "price_total": 3.0,
+     "igst_rate": 18.0
+    }
+   ],
+   "added": "2026-10-28T11:46:42"
+  },
+  {
+   "pdf": "a9d0666c994133d9b19d",
+   "name": "OD437298764051095100.pdf",
+   "pages": [
+    4
+   ],
+   "template": "flipkart_seller_own_invoice.yml",
+   "family": "flipkart_seller_own_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "LWAAS08270000712",
+    "date": "2026-04-15",
+    "order_number": "OD437298764051095100",
+    "date_order": "2026-04-14",
+    "seller_tax_id": "07CIVPC2488R2Z7",
+    "seller_pan": "CIVPC2488R",
+    "seller_name": "SUNSHINE ENTERPRISES",
+    "buyer_name": "Akshita Lodhi",
+    "seller_address": "SUNSHINE ENTERPRISES, PLOT NO 617-A1 KH. NO. 16/18 GROUND FLOOR MUBARAK PUR EXTN, BLK-F INDER ENCLAVE PH-2 CITY DELHI 110086, NEW DELHI - 110086",
+    "amount": 354.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "YOURCITYSELLER super sliver rambo glass Motorbike Helmet Black 1 Free Size 0 Full Face | super s-18 |",
+     "hsn_sac": "67021010",
+     "igst_rate": 18.0,
+     "qty": 1,
+     "gross_amount": 404.0,
+     "discount": -50.0,
+     "price_subtotal": 300.0,
+     "igst_amount": 54.0,
+     "cess_amount": 0.0,
+     "price_total": 354.0,
+     "cess_rate": 0.0,
+     "serial_no": ""
+    },
+    {
+     "name": "Shipping and Handling Charges",
+     "qty": 1,
+     "gross_amount": 0.0,
+     "discount": 0.0,
+     "price_subtotal": 0.0,
+     "igst_amount": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 0.0
+    }
+   ],
+   "added": "2026-10-28T12:02:08"
+  },
+  {
+   "pdf": "c9ff32c3f5fb89389d07",
+   "name": "OD435477552035539200.pdf",
+   "pages": [
+    1
+   ],
+   "template": "flipkart_platform_fee_invoice.yml",
+   "family": "flipkart_platform_fee_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "FBF2726006861524",
+    "order_number": "OD435477552035539200",
+    "date_order": "2025-09-15",
+    "date": "2025-09-15",
+    "seller_name": "Flipkart Internet Private Limited",
+    "seller_address": "Buildings Alyssa, Begonia & Clover, Embassy Tech Village, Outer Ring Road, Devarabeesanahalli Village, Bengaluru, Bengaluru, Karnataka, IN - 560103",
+    "seller_company_reg": "U51109KA2012PTC066107",
+    "seller_tax_id": "29AACCF0683K1ZD",
+    "buyer_name": "AAKASH",
+    "buyer_address": "House no.2 Raj co op society opposite arya samaj mandir saijpur, Maharshi Dayanand Road, Om Nagar, Saijpur Bogha, Ahmedabad 382345 Gujarat",
+    "amount_gross": 12.0,
+    "amount_discount": 0.0,
+    "amount_untaxed": 10.17,
+    "amount_igst": 1.83,
+    "amount": 12.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 1.0,
+     "discount": 0.0,
+     "price_subtotal": 0.85,
+     "igst_amount": 0.15,
+     "price_total": 1.0,
+     "igst_rate": 18.0
+    },
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 2.0,
+     "discount": 0.0,
+     "price_subtotal": 1.69,
+     "igst_amount": 0.31,
+     "price_total": 2.0,
+     "igst_rate": 18.0
+    },
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 3.0,
+     "discount": 0.0,
+     "price_subtotal": 2.54,
+     "igst_amount": 0.46,
+     "price_total": 3.0,
+     "igst_rate": 18.0
+    },
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 1.0,
+     "discount": 0.0,
+     "price_subtotal": 0.85,
+     "igst_amount": 0.15,
+     "price_total": 1.0,
+     "igst_rate": 18.0
+    },
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 1.0,
+     "discount": 0.0,
+     "price_subtotal": 0.85,
+     "igst_amount": 0.15,
+     "price_total": 1.0,
+     "igst_rate": 18.0
+    },
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 1.0,
+     "discount": 0.0,
+     "price_subtotal": 0.85,
+     "igst_amount": 0.15,
+     "price_total": 1.0,
+     "igst_rate": 18.0
+    },
+    {
+     "hsn_sac": "998599",
+     "name": "Platform Fee",
+     "qty": 1,
+     "gross_amount": 3.0,
+     "discount": 0.0,
+     "price_subtotal": 2.54,
+     "igst_amount": 0.46,
+     "price_total": 3.0,
+     "igst_rate": 18.0
+    }
+   ],
+   "added": "2026-10-28T12:02:09"
+  },
+  {
+   "pdf": "c9ff32c3f5fb89389d07",
+   "name": "OD435477552035539200.pdf",
+   "pages": [
+    2,
+    3
+   ],
+   "template": "flipkart_bill_of_supply.yml",
+   "family": "flipkart_bill_of_supply",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "bill_of_supply",
+    "invoice_number": "FAAB926004772956",
+    "date": "2025-09-16",
+    "order_number": "OD435477552035539200",
+    "nature_of_transaction": "INTRA",
+    "nature_of_supply": "Service",
+    "seller_name": "Flipkart India Private Limited",
+    "seller_address": "Survey No. 672, Hillway Industrial & Logistic Park, b/h BPCL Gas Plant, Vadala Road, NH 8, Hariyala, Hariyala, Kheda, Gujarat, 387570 , Gujarat, IN-GJ, IN - 387570",
+    "seller_tax_id": "24AABCF8078M2Z6",
+    "seller_pan": "AABCF8078M",
+    "buyer_name": "AAKASH",
+    "buyer_address": "House no.2 Raj co op society opposite arya samaj mandir saijpur, Maharshi Dayanand Road, Om Nagar, Saijpur Bogha, India - 382345",
+    "buyer_state": "Gujarat",
+    "place_of_supply": "GUJARAT",
+    "ship_from_address": "Survey No.432/1,433/1,434,435,436,437/1,443/2,444/2 Village Bavla, Taluk Bavla, District Ahmedabad, Situated at Platina Logistic Park, Opposite Honest Restaurant Ahmedabad Rajkot National Highway 8,Bavla,Ahmedabad - 382220, GUJARAT, IN-GJ, India- 382220",
+    "amount_gross": 414.0,
+    "amount_untaxed": 414.0,
+    "amount_sgst": 0.0,
+    "amount_cgst": 0.0,
+    "amount": 414.0,
+    "goods_description": "Dukes NICE Sugar Sprinkled Coconut Biscotti Biscuit (4), Classic Kabuli Chana (Whole) by Flipkart Grocery (1), ProV California Independence Almonds (1), WONDERLAND Raw W320 Cashews (1), Sunfeast YiPPee! 100% Suji Cheese Treat Pasta (1), MOTHER'S RECIPE Desi Szechwan Chutney Paste (1), BRITANNIA Gobbles Fruity Fun Cake (1), WONDERLAND Plain (Kishmish) Raisins (1), Delish by",
+    "goods_weight_kg": 7.7015996,
+    "goods_value": 1241.0,
+    "transporter": "Flipkart India Private Limited",
+    "vehicle_number": "GJ01JT8860",
+    "reverse_charge": "No",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "GT Charges",
+     "hsn_sac": "996511",
+     "qty": 17.0,
+     "gross_amount": 414.0,
+     "price_subtotal": 414.0,
+     "sgst_amount": 0.0,
+     "cgst_amount": 0.0,
+     "price_total": 414.0,
+     "cgst_rate": 0.0,
+     "sgst_rate": 0.0
+    }
+   ],
+   "added": "2026-10-28T12:02:10"
+  },
+  {
+   "pdf": "c9ff32c3f5fb89389d07",
+   "name": "OD435477552035539200.pdf",
+   "pages": [
+    4,
+    5
+   ],
+   "template": "flipkart_grocery_invoice.yml",
+   "family": "flipkart_grocery_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "FAPHLI2656823424",
+    "date": "2025-09-15",
+    "order_number": "OD435477552035539200",
+    "date_order": "2025-09-15",
+    "seller_name": "Shreyash Retail Private Limited",
+    "seller_address": "Survey No.432/1,433/1,434,435,436,437/1,443/2,444/2 Village Bavla, Taluk Bavla, District Ahmedabad, Situated at Platina Logistic Park, Opposite Honest Restaurant Ahmedabad Rajkot National Highway 8,Bavla,Ahmedabad - 382220, Ahmedabad, GUJARAT, India - 382220, IN-GJ",
+    "seller_tax_id": "24AAXCS0655F1Z4",
+    "seller_pan": "AAXCS0655F",
+    "seller_company_reg": "U52399DL2016PTC299716",
+    "buyer_address": "AAKASH House no.2 Raj co op society opposite arya samaj mandir saijpur, Maharshi Dayanand Road, Om Nagar, Saijpur Bogha, Ahmedabad, 382345, Gujarat",
+    "amount_gross": 2544.0,
+    "amount_discount": 1568.0,
+    "amount_untaxed": 915.7,
+    "amount_sgst": 30.15,
+    "amount_cgst": 30.15,
+    "amount": 976.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Too Yumm! Sour Cream and Onion Veggie Stix No Palm Oil, 41 g",
+     "hsn_sac": "21069019ab",
+     "qty": 1,
+     "price_unit": 20.0,
+     "discount": 7.0,
+     "price_total": 13.0,
+     "line_tax_percent": 18.0
+    },
+    {
+     "pos": 2,
+     "name": "Classic Phool Makhana by Flipkart Grocery, 100 g",
+     "hsn_sac": "12074010aa",
+     "qty": 1,
+     "price_unit": 210.0,
+     "discount": 110.0,
+     "price_total": 100.0,
+     "line_tax_percent": 5.0
+    },
+    {
+     "pos": 3,
+     "name": "Sunfeast YiPPee! 100% Suji Cheese Treat Pasta, 70 g",
+     "hsn_sac": "19023010",
+     "qty": 1,
+     "price_unit": 35.0,
+     "discount": 22.0,
+     "price_total": 13.0,
+     "line_tax_percent": 12.0
+    },
+    {
+     "pos": 4,
+     "name": "Cadbury Oreo Chocolate Flavour Cream Sandwich Biscuit, 41.75 g",
+     "hsn_sac": "19053100",
+     "qty": 2,
+     "price_unit": 10.0,
+     "discount": 6.0,
+     "price_total": 14.0,
+     "line_tax_percent": 18.0
+    },
+    {
+     "pos": 5,
+     "name": "Classic Kabuli Chana (Whole) by Flipkart Grocery, 1 kg",
+     "hsn_sac": "07132000",
+     "qty": 1,
+     "price_unit": 230.0,
+     "discount": 150.0,
+     "price_total": 80.0,
+     "line_tax_percent": 5.0
+    },
+    {
+     "pos": 6,
+     "name": "BRITANNIA Gobbles Fruity Fun Cake, 100 g",
+     "hsn_sac": "19059010",
+     "qty": 1,
+     "price_unit": 30.0,
+     "discount": 13.0,
+     "price_total": 17.0,
+     "line_tax_percent": 18.0
+    },
+    {
+     "pos": 7,
+     "name": "MOTHER'S RECIPE Desi Szechwan Chutney Paste, 1 kg",
+     "hsn_sac": "21039010",
+     "qty": 1,
+     "price_unit": 290.0,
+     "discount": 207.0,
+     "price_total": 83.0,
+     "line_tax_percent": 12.0
+    },
+    {
+     "pos": 8,
+     "name": "WONDERLAND Raw W320 Cashews, 500 g",
+     "hsn_sac": "08013220",
+     "qty": 1,
+     "price_unit": 770.0,
+     "discount": 473.0,
+     "price_total": 297.0,
+     "line_tax_percent": 5.0
+    },
+    {
+     "pos": 9,
+     "name": "Delish by Flipkart Urad Papad, 200 g",
+     "hsn_sac": "19059040",
+     "qty": 1,
+     "price_unit": 110.0,
+     "discount": 80.0,
+     "price_total": 30.0,
+     "line_tax_percent": 0.0
+    },
+    {
+     "pos": 10,
+     "name": "Classic Red Rajma (Whole) by Flipkart Grocery, 1 kg",
+     "hsn_sac": "07133300",
+     "qty": 1,
+     "price_unit": 240.0,
+     "discount": 144.0,
+     "price_total": 96.0,
+     "line_tax_percent": 5.0
+    },
+    {
+     "pos": 11,
+     "name": "Dukes NICE Sugar Sprinkled Coconut Biscotti Biscuit, 145 g",
+     "hsn_sac": "19053100",
+     "qty": 4,
+     "price_unit": 35.0,
+     "discount": 93.0,
+     "price_total": 47.0,
+     "line_tax_percent": 18.0
+    },
+    {
+     "pos": 12,
+     "name": "WONDERLAND Plain (Kishmish) Raisins, 500 g",
+     "hsn_sac": "08062010",
+     "qty": 1,
+     "price_unit": 300.0,
+     "discount": 115.0,
+     "price_total": 185.0,
+     "line_tax_percent": 5.0
+    },
+    {
+     "pos": 13,
+     "name": "Ariel MATIC LIQUID TOP LOAD Fresh Liquid Detergent, 1 L",
+     "hsn_sac": "34025000",
+     "qty": 1,
+     "price_unit": 149.0,
+     "discount": 148.0,
+     "price_total": 1.0,
+     "line_tax_percent": 18.0
+    }
+   ],
+   "added": "2026-10-28T12:02:13"
+  },
+  {
+   "pdf": "c9ff32c3f5fb89389d07",
+   "name": "OD435477552035539200.pdf",
+   "pages": [
+    6
+   ],
+   "template": "flipkart_grocery_invoice.yml",
+   "family": "flipkart_grocery_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "FAUJRR2609826862",
+    "date": "2025-09-15",
+    "order_number": "OD435477552035539200",
+    "date_order": "2025-09-15",
+    "seller_name": "TAMS Overseas LLP",
+    "seller_address": "Survey No.432/1,433/1,434,435,436,437/1,443/2,444/2 Village Bavla, Taluk Bavla, District Ahmedabad, Situated at Platina Logistic Park, Opposite Honest Restaurant Ahmedabad Rajkot National Highway 8,Bavla,Ahmedabad - 382220, Ahmedabad, GUJARAT, India - 382220, IN-GJ",
+    "seller_tax_id": "24AAHFT7456J1ZR",
+    "seller_pan": "AJEPA2477N",
+    "seller_company_reg": "U74110MH2020PTC405020",
+    "buyer_address": "AAKASH House no.2 Raj co op society opposite arya samaj mandir saijpur, Maharshi Dayanand Road, Om Nagar, Saijpur Bogha, Ahmedabad, 382345, Gujarat",
+    "amount_gross": 698.0,
+    "amount_discount": 433.0,
+    "amount_untaxed": 236.6,
+    "amount_sgst": 14.2,
+    "amount_cgst": 14.2,
+    "amount": 265.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "ProV California Independence Almonds, 500 g",
+     "hsn_sac": "08021200",
+     "qty": 1,
+     "price_unit": 698.0,
+     "discount": 433.0,
+     "price_total": 265.0,
+     "line_tax_percent": 12.0
+    }
+   ],
+   "added": "2026-10-28T12:02:13"
+  },
+  {
+   "pdf": "78387f1fe4b6fe8f2a6b",
+   "name": "OD429168492908441100-2.pdf",
+   "pages": [
+    1
+   ],
+   "template": "flipkart_seller_tax_invoice.yml",
+   "family": "flipkart_seller_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "FAJ1GT2400077167",
+    "order_number": "OD429168492908441100",
+    "date_order": "2023-09-16",
+    "date": "2023-09-16",
+    "seller_name": "Sri Ramana Solvex Private Limited",
+    "ship_from_address": "Hillway industrial and logistic park,Survey no.672,village Hariyala, N.H-8, Vadala Road,, Nr BPCL Gas Plant at Hariyala Village Ta & District Kheda 387570, Gujarat, Ahmedabad, GUJARAT, India - 387570, IN-GJ",
+    "seller_tax_id": "24AAHCS7535A1ZL",
+    "seller_pan": "AAHCS7535A",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha. Ahmedabad 382345 Gujarat",
+    "amount_gross": 949.0,
+    "amount_discount": -104.0,
+    "amount_untaxed": 716.1,
+    "amount_cgst": 64.45,
+    "amount_sgst": 64.45,
+    "amount": 845.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "category": "True Wireless",
+     "name": "Boult Audio X10 TWS with 45Hrs Playtime, ENC Mic, 40ms Lowest Latency, Fast Charging, 5.3v Bluetooth Headset Warranty: 1 Year Manufacturing Warranty",
+     "qty": 1,
+     "gross_amount": 899.0,
+     "discount": -59.0,
+     "price_subtotal": 711.86,
+     "cgst_amount": 64.07,
+     "sgst_amount": 64.07,
+     "price_total": 840.0,
+     "code": "ACCGHTP8AJ9A6FBE",
+     "hsn_sac": "85183011",
+     "cgst_rate": 9.0,
+     "sgst_rate": 9.0
+    },
+    {
+     "name": "Shipping And Handling Charges",
+     "qty": 1,
+     "gross_amount": 50.0,
+     "discount": -45.0,
+     "price_subtotal": 4.24,
+     "cgst_amount": 0.38,
+     "sgst_amount": 0.38,
+     "price_total": 5.0
+    }
+   ],
+   "added": "2026-10-28T12:03:19"
+  },
+  {
+   "pdf": "78387f1fe4b6fe8f2a6b",
+   "name": "OD429168492908441100-2.pdf",
+   "pages": [
+    2
+   ],
+   "template": "flipkart_seller_tax_invoice.yml",
+   "family": "flipkart_seller_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Flipkart",
+    "document_type": "tax_invoice",
+    "invoice_number": "FAGR6O2400141858",
+    "order_number": "OD429168492908441100",
+    "date_order": "2023-09-16",
+    "date": "2023-09-16",
+    "seller_name": "ASIAN RETAIL VENTURES",
+    "ship_from_address": "Warehouse Building Nos. WE-II, Renaissance IntegratedIndustrial Area, Village Vashere, Bhiwandi , Thane , Mumbai ,Maharashtra -421302, Bhiwandi , MAHARASHTRA, India - 421302, IN-MH",
+    "seller_tax_id": "27ABAFA8599B1ZC",
+    "seller_pan": "ABAFA8599B",
+    "buyer_name": "Akash Rajput",
+    "buyer_address": "House no.2, Raj Society, opposite arya mandir, Saijpur Bogha. Ahmedabad 382345 Gujarat",
+    "amount_gross": 768.0,
+    "amount_discount": -176.0,
+    "amount_untaxed": 528.57,
+    "amount_igst": 63.43,
+    "amount": 592.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "category": "Sports Shoes",
+     "name": "asian Thar-01 White Sneakers,Sports,Training, Gym,Walking,Stylish For Men",
+     "qty": 1,
+     "gross_amount": 728.0,
+     "discount": -136.0,
+     "price_subtotal": 528.57,
+     "igst_amount": 63.43,
+     "price_total": 592.0,
+     "code": "SHOGHCHGHQR4GZHA",
+     "hsn_sac": "64041120",
+     "igst_rate": 12.0
+    },
+    {
+     "name": "Shipping And Handling Charges",
+     "qty": 1,
+     "gross_amount": 40.0,
+     "discount": -40.0,
+     "price_subtotal": 0.0,
+     "igst_amount": 0.0,
+     "price_total": 0.0
+    }
+   ],
+   "added": "2026-10-28T12:03:20"
+  },
+  {
+   "pdf": "760f21d16e25ca370011",
+   "name": "CNSRFLD27H010116.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_credit_note.yml",
+   "family": "shiprocket_credit_note",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "credit_note",
+    "invoice_number": "CNSRFLD27H010116",
+    "date": "2026-04-30",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana Gurugram, Haryana - 122002",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303 The First vastrapur Ahmedabad 380015, India Ahmedabad, Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "buyer_state_code": "24",
+    "supply_description": "Credit note issued against Lost/Damage refund against -",
+    "amount_untaxed": 600.0,
+    "amount_igst": 0.0,
+    "amount": 600.0,
+    "currency": "INR"
+   },
+   "lines": [],
+   "added": "2026-10-29T16:20:25"
+  },
+  {
+   "pdf": "e4df58fea780646a4ca9",
+   "name": "CNSRFW27HR003248.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_credit_note.yml",
+   "family": "shiprocket_credit_note",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "credit_note",
+    "invoice_number": "CNSRFW27HR003248",
+    "date": "2026-04-20",
+    "original_document_number": "SRF27HR000000736",
+    "irn": "d7ee77d3e0dc7732fef40e3c72ed04b601d3c0f7f34208d0411ebba14a8dbb9a",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana Gurugram, Haryana - 122002",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad 380015, India Ahmedabad, Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "buyer_state_code": "24",
+    "supply_description": "Credit note issued against Weight/Freight refund against - SRF27HR000000736",
+    "amount_untaxed": 274.75,
+    "tax_rate": 18.0,
+    "amount_igst": 49.45,
+    "amount": 324.2,
+    "currency": "INR"
+   },
+   "lines": [],
+   "added": "2026-10-29T16:20:26"
+  },
+  {
+   "pdf": "9405b7bc1669738234f7",
+   "name": "CNSRFW27HR005195.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_credit_note.yml",
+   "family": "shiprocket_credit_note",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "credit_note",
+    "invoice_number": "CNSRFW27HR005195",
+    "date": "2026-05-05",
+    "original_document_number": "SRF27HR000094683",
+    "irn": "30e1f3787bae5c45b1188b589a3c523a27855c08312dcd1368b4a2b2c50ed052",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana Gurugram, Haryana - 122002",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad 380015, India Ahmedabad, Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "buyer_state_code": "24",
+    "supply_description": "Credit note issued against Weight/Freight refund against - SRF27HR000094683",
+    "amount_untaxed": 1016.95,
+    "tax_rate": 18.0,
+    "amount_igst": 183.05,
+    "amount": 1200.0,
+    "currency": "INR"
+   },
+   "lines": [],
+   "added": "2026-10-29T16:20:26"
+  },
+  {
+   "pdf": "2a5c30838edb8c8cbc76",
+   "name": "CNSRSI27HR006998.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_credit_note.yml",
+   "family": "shiprocket_credit_note",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "credit_note",
+    "invoice_number": "CNSRSI27HR006998",
+    "date": "2026-06-04",
+    "original_document_number": "SRSI27HR00014852",
+    "irn": "f89b3c855f35669d9e4ff001b73db2af56b0424e9ccfec35fe4838d8852e870c",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416 Phase-III, Udhyog Vihar Gurugram, Haryana - 122002",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303 The First vastrapur Ahmedabad 380015, Ahmedabad, Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "buyer_state_code": "24",
+    "supply_description": "Saas Plan",
+    "amount_untaxed": 168.64,
+    "tax_rate": 18.0,
+    "amount_igst": 30.36,
+    "amount": 199.0,
+    "currency": "INR"
+   },
+   "lines": [],
+   "added": "2026-10-29T16:20:27"
+  },
+  {
+   "pdf": "c74d16c29250759cceb8",
+   "name": "Proforma Invoice of RTA13294 FY 2025-26 (2).pdf",
+   "pages": [
+    1
+   ],
+   "template": "maashitla_proforma_invoice.yml",
+   "family": "maashitla_proforma_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Maashitla Securities",
+    "document_type": "proforma_invoice",
+    "invoice_number": "2025-26 / RTA13294",
+    "date": "2025-04-01",
+    "billing_period": "01.04.2025-31.03.2026",
+    "customer_number": "RTA13294",
+    "seller_name": "MAASHITLA SECURITIES PRIVATE LIMITED",
+    "seller_address": "451, KRISHNA APRA BUSINESS SQUARE, NETAJI SUBHASH PLACE PITAMPURA, NEW DELHI-110034",
+    "seller_email": "accounts@maashitla.com",
+    "seller_tax_id": "07AACCI4191H1ZK",
+    "seller_pan": "AACCI4191H",
+    "seller_company_reg": "U67100DL2010PTC208725",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303 THE FIRST, B/S KESHAVBAUG PARTY PLOT, VASTRAPUR, AHMEDABAD, Gujarat, India, 380015",
+    "buyer_state": "Gujarat",
+    "buyer_state_code": "24",
+    "supply_description": "AMC FOR NSDL EQUITY ISIN: INE1M5J01013 FOR FY 2025-26",
+    "tax_rate": 18.0,
+    "amount_untaxed": 7500.0,
+    "amount_cgst": 0.0,
+    "amount_sgst": 0.0,
+    "amount_igst": 1350.0,
+    "amount_utgst": 0.0,
+    "amount_subtotal": 8850.0,
+    "amount_previous_balance": 0.0,
+    "amount_other_charges": 1050.0,
+    "amount": 9900.0,
+    "total_in_words": "Rupees Nine Thousand Nine Hundred Only",
+    "bank_name": "HDFC Bank Limited",
+    "bank_account": "50200058628786",
+    "bank_ifsc": "HDFC0000935",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "hsn_sac": "998399",
+     "price_subtotal": 7500.0
+    }
+   ],
+   "added": "2026-10-29T16:20:37"
+  },
+  {
+   "pdf": "38fbdc66c70fc182a992",
+   "name": "SALES 1 ISHWAM.pdf",
+   "pages": [
+    1
+   ],
+   "template": "ishwam_sales_invoice.yml",
+   "family": "ishwam_sales_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Ishwam Infrasystems",
+    "document_type": "tax_invoice",
+    "invoice_number": "SALES/01/26-27",
+    "date": "2026-08-19",
+    "order_number": "CS/RPSF/06BN(166)/6/2025/47",
+    "date_order": "2025-02-01",
+    "seller_name": "ISHWAM INFRASYSTEMS LIMITED",
+    "seller_address": "A-303,The First,B/S Keshavbaug Party Plot, Vastrapur,Ahmedabad, Gujarat,India.",
+    "seller_tax_id": "24AAGCE0636D1Z6",
+    "seller_state": "Gujarat",
+    "buyer_name": "RAILWAY PROTECTION SPECIAL FORCE",
+    "buyer_address": "HEADQUATERS 6TH BATTALION DAYABASTI DELHI-35",
+    "buyer_state": "Delhi",
+    "buyer_state_code": "07",
+    "amount_untaxed": 450000.0,
+    "tax_rate": 18.0,
+    "amount_igst": 81000.0,
+    "amount": 531000.0,
+    "total_in_words": "Indian Rupees Five Lakh Thirty One Thousand Only",
+    "bank_name": "ICICI Bank",
+    "bank_account": "324305000428",
+    "bank_ifsc": "ICIC0003243",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "SECURE SOCKET LAYER",
+     "qty": 1,
+     "price_unit": 78500.0,
+     "price_subtotal": 78500.0
+    },
+    {
+     "pos": 2,
+     "name": "SECURITY AUDIT",
+     "qty": 1,
+     "price_unit": 154000.0,
+     "price_subtotal": 154000.0,
+     "line_note": "EXTENDED UPTO 31.3.2025"
+    },
+    {
+     "pos": 3,
+     "name": "I-OS SUB",
+     "qty": 1,
+     "price_unit": 90000.0,
+     "price_subtotal": 90000.0,
+     "line_note": "EXTENDED UPTO 31.03.2025"
+    },
+    {
+     "pos": 4,
+     "name": "BULK SMS OTY-10 LAC",
+     "qty": 1,
+     "price_unit": 127500.0,
+     "price_subtotal": 127500.0,
+     "line_note": "AS PER WORK ORDER NO: CS/RPSF/06BN (166)/6/2025/47 DATED: 01.02.2025"
+    }
+   ],
+   "added": "2026-10-29T16:20:40"
+  },
+  {
+   "pdf": "a6865066b9bb8f56c5bd",
+   "name": "SRC27DL000011945.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_charges_invoice.yml",
+   "family": "shiprocket_charges_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRC27DL000011945",
+    "date": "2026-04-30",
+    "irn": "e2bacdad4aa9e551a7e2f7099c3ecda4896641ef21d5d6d1922326af5a951050",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot No. B, Khasra-360, Sultanpur, MG Road, New Delhi, Delhi 110030",
+    "seller_pan": "AAECB7131Q",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "seller_tax_id": "07AAECB7131Q1ZC",
+    "seller_email": "support@shiprocket.in",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_state_code": "24",
+    "place_of_supply": "Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "reverse_charge": "No",
+    "tax_rate": 18.0,
+    "amount_igst": 2.38,
+    "amount": 15.57,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "996812",
+     "name": "EARLY COD/ Instant COD CHARGES*",
+     "price_subtotal": 13.19
+    }
+   ],
+   "added": "2026-10-29T16:20:48"
+  },
+  {
+   "pdf": "c8be7b75d86222e4b35e",
+   "name": "SRF27HR000000736.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_charges_invoice.yml",
+   "family": "shiprocket_charges_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRF27HR000000736",
+    "date": "2026-04-14",
+    "irn": "029d77572be1ffb5066a2ce580506b098bcc5fd0db884881f1cedc24ce3587b8",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_state_code": "24",
+    "place_of_supply": "Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "reverse_charge": "No",
+    "tax_rate": 18.0,
+    "amount_igst": 342.98,
+    "amount": 2248.4,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "996812",
+     "name": "Shiprocket V2 Freight*",
+     "price_subtotal": 1905.42
+    }
+   ],
+   "added": "2026-10-29T16:20:49"
+  },
+  {
+   "pdf": "a5c9f90ac38827934e8f",
+   "name": "SRF27HR000094683.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_charges_invoice.yml",
+   "family": "shiprocket_charges_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRF27HR000094683",
+    "date": "2026-04-29",
+    "irn": "5affd44f391e7cb40afc70a52c9708dc06324710beaaff77b2b198a6bcd393ac",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_state_code": "24",
+    "place_of_supply": "Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "reverse_charge": "No",
+    "tax_rate": 18.0,
+    "amount_igst": 600.9,
+    "amount": 3939.24,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "996812",
+     "name": "Shiprocket V2 Freight*",
+     "price_subtotal": 3338.34
+    }
+   ],
+   "added": "2026-10-29T16:20:49"
+  },
+  {
+   "pdf": "8d70e913b44aeb137404",
+   "name": "SRF27HR000102553.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_charges_invoice.yml",
+   "family": "shiprocket_charges_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRF27HR000102553",
+    "date": "2026-05-15",
+    "irn": "6abb9a936ce9d4326b34ffca33bdb3a6eb619c20eaf1ae1a27e27a9e27411951",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_state_code": "24",
+    "place_of_supply": "Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "reverse_charge": "No",
+    "tax_rate": 18.0,
+    "amount_igst": 448.97,
+    "amount": 2943.26,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "996812",
+     "name": "Shiprocket V2 Freight*",
+     "price_subtotal": 2494.29
+    }
+   ],
+   "added": "2026-10-29T16:20:51"
+  },
+  {
+   "pdf": "a50d767c48205985a3cb",
+   "name": "SRSI27HR00006281.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_charges_invoice.yml",
+   "family": "shiprocket_charges_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRSI27HR00006281",
+    "date": "2026-04-25",
+    "irn": "7cd3f5421fb2fa9a12d5150a4f2d5501a5a85bccfa40f30e7dba8c449549650c",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303 The First vastrapur Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_state_code": "24",
+    "place_of_supply": "Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "reverse_charge": "No",
+    "tax_rate": 18.0,
+    "amount_igst": 30.36,
+    "amount": 199.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998313",
+     "name": "Business Plan | (25-04-2026-25-05-2026 )*",
+     "price_subtotal": 168.64
+    }
+   ],
+   "added": "2026-10-29T16:20:52"
+  },
+  {
+   "pdf": "21795b22178b56e34ba4",
+   "name": "SRSI27HR00014852.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_charges_invoice.yml",
+   "family": "shiprocket_charges_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRSI27HR00014852",
+    "date": "2026-05-25",
+    "irn": "17c62eebea302d76a029c7b269ee480d70ee7afaa15014b4f463862a79730893",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_company_reg": "U72900DL2011PLC225614",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "seller_email": "support@shiprocket.in",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303 The First vastrapur Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_state_code": "24",
+    "place_of_supply": "Gujarat",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "reverse_charge": "No",
+    "tax_rate": 18.0,
+    "amount_igst": 30.36,
+    "amount": 199.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "hsn_sac": "998313",
+     "name": "Business Plan | (25-05-2026-25-06-2026 )*",
+     "price_subtotal": 168.64
+    }
+   ],
+   "added": "2026-10-29T16:20:55"
+  },
+  {
+   "pdf": "1c2b729f9590089d9446",
+   "name": "SRV27HR000029089.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_services_invoice.yml",
+   "family": "shiprocket_services_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRV27HR000029089",
+    "date": "2026-04-04",
+    "date_due": "2026-04-11",
+    "irn": "c96e9d6621f71a2303e3d49ba1df4a6ba643d7c57c649f2742a7b22ff98c3cef",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "buyer_name": "EKARSHI OPENSOURCE FOUNDATION",
+    "buyer_address": "A-303, The First, B/H Keshavbaug Party Plot, Vastrapur, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_tax_id": "24AAGCE1259A1Z7",
+    "place_of_supply": "24 - Gujarat",
+    "reverse_charge": "No",
+    "amount_untaxed": 84.24,
+    "amount_igst": 15.16,
+    "amount": 99.4,
+    "total_in_words": "Ninety Nine Rupees And Forty Paisa(s)",
+    "amount_due": 0.0,
+    "bank_account": "BFRS8502170",
+    "bank_ifsc": "ICIC0000104",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Fastrr/Checkout Services",
+     "qty": 6,
+     "hsn_sac": "998313",
+     "gross_amount": 99.4,
+     "discount": 0.0,
+     "price_total": 99.4,
+     "price_subtotal": 84.24,
+     "igst_rate": 18.0,
+     "igst_amount": 15.16
+    }
+   ],
+   "added": "2026-10-29T16:21:05"
+  },
+  {
+   "pdf": "a7b3fddadb187e0d7b86",
+   "name": "SRV27HR000090197.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_services_invoice.yml",
+   "family": "shiprocket_services_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRV27HR000090197",
+    "date": "2026-05-13",
+    "date_due": "2026-05-19",
+    "irn": "8a0c21be95453e0f35226d76b6c6a3fbb2504e77da61d65a504b0944e86a682d",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "place_of_supply": "24 - Gujarat",
+    "reverse_charge": "No",
+    "amount_untaxed": 383.1,
+    "amount_igst": 68.96,
+    "amount": 452.06,
+    "total_in_words": "Four Hundred Fifty Two Rupees And Six Paisa(s)",
+    "amount_due": 0.0,
+    "bank_account": "BFRS8502170",
+    "bank_ifsc": "ICIC0000104",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Fastrr/Checkout Services",
+     "qty": 30,
+     "hsn_sac": "998313",
+     "gross_amount": 452.06,
+     "discount": 0.0,
+     "price_total": 452.06,
+     "price_subtotal": 383.1,
+     "igst_rate": 18.0,
+     "igst_amount": 68.96
+    }
+   ],
+   "added": "2026-10-29T16:21:06"
+  },
+  {
+   "pdf": "28b721570cde622d84e4",
+   "name": "SRV27HR000109533.pdf",
+   "pages": [
+    1
+   ],
+   "template": "shiprocket_services_invoice.yml",
+   "family": "shiprocket_services_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Shiprocket",
+    "document_type": "tax_invoice",
+    "invoice_number": "SRV27HR000109533",
+    "date": "2026-05-29",
+    "date_due": "2026-06-05",
+    "irn": "5b91e6f4f8bc50193d9ac51dd1c7e4ce570d21f5ce22aa333d56e167b8fd1c7b",
+    "seller_name": "Shiprocket Limited",
+    "seller_address": "Plot 416, Phase-III, Udhyog Vihar, Gurugram, Haryana 122002",
+    "seller_pan": "AAECB7131Q",
+    "seller_tax_id": "06AAECB7131Q1ZE",
+    "buyer_name": "SECUREIOTPAY FINTECH PRIVATE LIMITED",
+    "buyer_address": "A-303, The First, vastrapur, keshavbaug party plot, Ahmedabad, Ahmedabad Ahmedabad Gujarat - 380015",
+    "buyer_tax_id": "24ABGCS6913E1ZG",
+    "place_of_supply": "24 - Gujarat",
+    "reverse_charge": "No",
+    "amount_untaxed": 308.14,
+    "amount_igst": 55.47,
+    "amount": 363.61,
+    "total_in_words": "Three Hundred Sixty Three Rupees And Sixty One Paisa(s)",
+    "amount_due": 0.0,
+    "bank_account": "BFRS8502170",
+    "bank_ifsc": "ICIC0000104",
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Fastrr/Checkout Services",
+     "qty": 24,
+     "hsn_sac": "998313",
+     "gross_amount": 363.61,
+     "discount": 0.0,
+     "price_total": 363.61,
+     "price_subtotal": 308.14,
+     "igst_rate": 18.0,
+     "igst_amount": 55.47
+    }
+   ],
+   "added": "2026-10-29T16:21:06"
+  },
+  {
+   "pdf": "5682566037e6bcef6e30",
+   "name": "TaxInvoiceGJ1262708AO14512.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indigo_tax_invoice.yml",
+   "family": "indigo_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "IndiGo (InterGlobe Aviation)",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJ1262708AO14512",
+    "date": "2026-08-04",
+    "booking_reference": "ZBSKSJ",
+    "flight_number": "6E - 6468",
+    "travel_from": "AMD",
+    "travel_to": "BOM",
+    "place_of_supply": "Gujarat",
+    "seller_name": "InterGlobe Aviation Limited",
+    "seller_address": "Sardar Vallabhbhai Patel International Airport Near King Fisher Black Office Sardarnagar Ahmedabad Gujarat - 380003",
+    "seller_tax_id": "24AABCI2726B1Z8",
+    "seller_pan": "AABCI2726B",
+    "seller_company_reg": "L62100DL2004PLC129768",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "buyer_name": "TECTONA SOFTSOLUTIONS PVT LTD",
+    "amount_untaxed": 13055.0,
+    "amount_exempt": 1033.0,
+    "amount_value_before_tax": 14088.0,
+    "amount_igst": 0.0,
+    "amount_cgst": 326.0,
+    "amount_sgst": 326.0,
+    "amount_cess": 0.0,
+    "amount": 14740.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Air Travel and related charges",
+     "hsn_sac": "996425",
+     "price_subtotal": 13055.0,
+     "exempt_amount": 0.0,
+     "value_before_tax": 13055.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 2.5,
+     "cgst_amount": 326.0,
+     "sgst_rate": 2.5,
+     "sgst_amount": 326.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 13707.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_subtotal": 0.0,
+     "exempt_amount": 1033.0,
+     "value_before_tax": 1033.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 1033.0
+    }
+   ],
+   "added": "2026-10-29T16:21:13"
+  },
+  {
+   "pdf": "eccaf59d04aabdc2d656",
+   "name": "TaxInvoiceGJ1262708AO60349.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indigo_tax_invoice.yml",
+   "family": "indigo_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "IndiGo (InterGlobe Aviation)",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJ1262708AO60349",
+    "date": "2026-08-08",
+    "booking_reference": "E9FFMM",
+    "flight_number": "6E - 6237",
+    "travel_from": "AMD",
+    "travel_to": "BBI",
+    "place_of_supply": "Gujarat",
+    "seller_name": "InterGlobe Aviation Limited",
+    "seller_address": "Sardar Vallabhbhai Patel International Airport Near King Fisher Black Office Sardarnagar Ahmedabad Gujarat - 380003",
+    "seller_tax_id": "24AABCI2726B1Z8",
+    "seller_pan": "AABCI2726B",
+    "seller_company_reg": "L62100DL2004PLC129768",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "buyer_name": "Tectona SOFTSOLUTIONS pvt ltdt",
+    "amount_untaxed": 11250.0,
+    "amount_exempt": 944.0,
+    "amount_value_before_tax": 12194.0,
+    "amount_igst": 0.0,
+    "amount_cgst": 281.0,
+    "amount_sgst": 281.0,
+    "amount_cess": 0.0,
+    "amount": 12756.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Air Travel and related charges",
+     "hsn_sac": "996425",
+     "price_subtotal": 11250.0,
+     "exempt_amount": 0.0,
+     "value_before_tax": 11250.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 2.5,
+     "cgst_amount": 281.0,
+     "sgst_rate": 2.5,
+     "sgst_amount": 281.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 11812.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_subtotal": 0.0,
+     "exempt_amount": 944.0,
+     "value_before_tax": 944.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 944.0
+    }
+   ],
+   "added": "2026-10-29T16:21:13"
+  },
+  {
+   "pdf": "85dd9fd9c0388634f336",
+   "name": "TaxInvoiceGJ1262708AO85542.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indigo_tax_invoice.yml",
+   "family": "indigo_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "IndiGo (InterGlobe Aviation)",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJ1262708AO85542",
+    "date": "2026-08-10",
+    "booking_reference": "Q6JTKI",
+    "flight_number": "6E - 6468",
+    "travel_from": "AMD",
+    "travel_to": "BOM",
+    "place_of_supply": "Gujarat",
+    "seller_name": "InterGlobe Aviation Limited",
+    "seller_address": "Sardar Vallabhbhai Patel International Airport Near King Fisher Black Office Sardarnagar Ahmedabad Gujarat - 380003",
+    "seller_tax_id": "24AABCI2726B1Z8",
+    "seller_pan": "AABCI2726B",
+    "seller_company_reg": "L62100DL2004PLC129768",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "buyer_name": "Tectona SOFTSOLUTIONS pvt ltd",
+    "amount_untaxed": 7661.0,
+    "amount_exempt": 1033.0,
+    "amount_value_before_tax": 8694.0,
+    "amount_igst": 0.0,
+    "amount_cgst": 191.0,
+    "amount_sgst": 191.0,
+    "amount_cess": 0.0,
+    "amount": 9076.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Air Travel and related charges",
+     "hsn_sac": "996425",
+     "price_subtotal": 7661.0,
+     "exempt_amount": 0.0,
+     "value_before_tax": 7661.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 2.5,
+     "cgst_amount": 191.0,
+     "sgst_rate": 2.5,
+     "sgst_amount": 191.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 8043.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_subtotal": 0.0,
+     "exempt_amount": 1033.0,
+     "value_before_tax": 1033.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 1033.0
+    }
+   ],
+   "added": "2026-10-29T16:21:14"
+  },
+  {
+   "pdf": "039262966c9f82e49ff0",
+   "name": "TaxInvoiceGJ1262708AQ53962.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indigo_tax_invoice.yml",
+   "family": "indigo_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "IndiGo (InterGlobe Aviation)",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJ1262708AQ53962",
+    "date": "2026-08-25",
+    "booking_reference": "J5DVGL",
+    "flight_number": "6E - 5078",
+    "travel_from": "AMD",
+    "travel_to": "BOM",
+    "place_of_supply": "Gujarat",
+    "seller_name": "InterGlobe Aviation Limited",
+    "seller_address": "Sardar Vallabhbhai Patel International Airport Near King Fisher Black Office Sardarnagar Ahmedabad Gujarat - 380003",
+    "seller_tax_id": "24AABCI2726B1Z8",
+    "seller_pan": "AABCI2726B",
+    "seller_company_reg": "L62100DL2004PLC129768",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "buyer_name": "TECTONA SOFTSOLUTIONS PVT LTD",
+    "amount_untaxed": 8439.0,
+    "amount_exempt": 1033.0,
+    "amount_value_before_tax": 9472.0,
+    "amount_igst": 0.0,
+    "amount_cgst": 210.5,
+    "amount_sgst": 210.5,
+    "amount_cess": 0.0,
+    "amount": 9893.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Air Travel and related charges",
+     "hsn_sac": "996425",
+     "price_subtotal": 8439.0,
+     "exempt_amount": 0.0,
+     "value_before_tax": 8439.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 2.5,
+     "cgst_amount": 210.5,
+     "sgst_rate": 2.5,
+     "sgst_amount": 210.5,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 8860.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_subtotal": 0.0,
+     "exempt_amount": 1033.0,
+     "value_before_tax": 1033.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 1033.0
+    }
+   ],
+   "added": "2026-10-29T16:21:14"
+  },
+  {
+   "pdf": "dab58e47a7d6b2ae53f9",
+   "name": "TaxInvoiceGJ1262708AQ92155.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indigo_tax_invoice.yml",
+   "family": "indigo_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "IndiGo (InterGlobe Aviation)",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJ1262708AQ92155",
+    "date": "2026-08-28",
+    "booking_reference": "HIJ4WR",
+    "flight_number": "6E - 868",
+    "travel_from": "AMD",
+    "travel_to": "BOM",
+    "place_of_supply": "Gujarat",
+    "seller_name": "InterGlobe Aviation Limited",
+    "seller_address": "Sardar Vallabhbhai Patel International Airport Near King Fisher Black Office Sardarnagar Ahmedabad Gujarat - 380003",
+    "seller_tax_id": "24AABCI2726B1Z8",
+    "seller_pan": "AABCI2726B",
+    "seller_company_reg": "L62100DL2004PLC129768",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "buyer_name": "Tectona SOFTSOLUTIONS pvt ltd",
+    "amount_untaxed": 6840.0,
+    "amount_exempt": 1033.0,
+    "amount_value_before_tax": 7873.0,
+    "amount_igst": 0.0,
+    "amount_cgst": 170.5,
+    "amount_sgst": 170.5,
+    "amount_cess": 0.0,
+    "amount": 8214.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Air Travel and related charges",
+     "hsn_sac": "996425",
+     "price_subtotal": 6840.0,
+     "exempt_amount": 0.0,
+     "value_before_tax": 6840.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 2.5,
+     "cgst_amount": 170.5,
+     "sgst_rate": 2.5,
+     "sgst_amount": 170.5,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 7181.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_subtotal": 0.0,
+     "exempt_amount": 1033.0,
+     "value_before_tax": 1033.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 1033.0
+    }
+   ],
+   "added": "2026-10-29T16:21:15"
+  },
+  {
+   "pdf": "2859e1583936a4a7744d",
+   "name": "TaxInvoiceGJ1262708AR03070.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indigo_tax_invoice.yml",
+   "family": "indigo_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "IndiGo (InterGlobe Aviation)",
+    "document_type": "tax_invoice",
+    "invoice_number": "GJ1262708AR03070",
+    "date": "2026-08-29",
+    "booking_reference": "KDF32A",
+    "flight_number": "6E - 6237",
+    "travel_from": "AMD",
+    "travel_to": "BBI",
+    "place_of_supply": "Gujarat",
+    "seller_name": "InterGlobe Aviation Limited",
+    "seller_address": "Sardar Vallabhbhai Patel International Airport Near King Fisher Black Office Sardarnagar Ahmedabad Gujarat - 380003",
+    "seller_tax_id": "24AABCI2726B1Z8",
+    "seller_pan": "AABCI2726B",
+    "seller_company_reg": "L62100DL2004PLC129768",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "buyer_name": "Tectona SOFTSOLUTIONS pvt ltd",
+    "amount_untaxed": 9141.0,
+    "amount_exempt": 944.0,
+    "amount_value_before_tax": 10085.0,
+    "amount_igst": 0.0,
+    "amount_cgst": 228.0,
+    "amount_sgst": 228.0,
+    "amount_cess": 0.0,
+    "amount": 10541.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Air Travel and related charges",
+     "hsn_sac": "996425",
+     "price_subtotal": 9141.0,
+     "exempt_amount": 0.0,
+     "value_before_tax": 9141.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 2.5,
+     "cgst_amount": 228.0,
+     "sgst_rate": 2.5,
+     "sgst_amount": 228.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 9597.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_subtotal": 0.0,
+     "exempt_amount": 944.0,
+     "value_before_tax": 944.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 944.0
+    }
+   ],
+   "added": "2026-10-29T16:21:15"
+  },
+  {
+   "pdf": "79605c748f6d6e4bba90",
+   "name": "TaxInvoiceMH1262708CE38070.pdf",
+   "pages": [
+    1
+   ],
+   "template": "indigo_tax_invoice.yml",
+   "family": "indigo_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "IndiGo (InterGlobe Aviation)",
+    "document_type": "tax_invoice",
+    "invoice_number": "MH1262708CE38070",
+    "date": "2026-08-29",
+    "booking_reference": "KCHQVG",
+    "flight_number": "6E - 7017",
+    "travel_from": "NMI",
+    "travel_to": "AMD",
+    "place_of_supply": "Gujarat",
+    "seller_name": "InterGlobe Aviation Limited",
+    "seller_address": "Interglobe Aviation Limited Navi Mumbai International Airport Near Ulwe Gaothan Bus Stop Patalganga Raigad Maharashtra 410206",
+    "seller_tax_id": "27AABCI2726B1Z2",
+    "seller_pan": "AABCI2726B",
+    "seller_company_reg": "L62100DL2004PLC129768",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "buyer_name": "Tectona SOFTSOLUTIONS pvt ltd",
+    "amount_untaxed": 14401.0,
+    "amount_exempt": 968.0,
+    "amount_value_before_tax": 15369.0,
+    "amount_igst": 720.0,
+    "amount_cgst": 0.0,
+    "amount_sgst": 0.0,
+    "amount_cess": 0.0,
+    "amount": 16089.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Air Travel and related charges",
+     "hsn_sac": "996425",
+     "price_subtotal": 14401.0,
+     "exempt_amount": 0.0,
+     "value_before_tax": 14401.0,
+     "igst_rate": 5.0,
+     "igst_amount": 720.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 15121.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_subtotal": 0.0,
+     "exempt_amount": 968.0,
+     "value_before_tax": 968.0,
+     "igst_rate": 0.0,
+     "igst_amount": 0.0,
+     "cgst_rate": 0.0,
+     "cgst_amount": 0.0,
+     "sgst_rate": 0.0,
+     "sgst_amount": 0.0,
+     "cess_rate": 0.0,
+     "cess_amount": 0.0,
+     "price_total": 968.0
+    }
+   ],
+   "added": "2026-10-29T16:21:16"
+  },
+  {
+   "pdf": "74237adfb7376c4287f6",
+   "name": "TI26-2701230.pdf",
+   "pages": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "template": "mtalkz_tax_invoice.yml",
+   "family": "mtalkz_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Mtalkz Mobility Services",
+    "document_type": "tax_invoice",
+    "invoice_number": "TI/26-27/01230",
+    "date": "2026-08-14",
+    "date_due": "2026-08-14",
+    "payment_terms": "Due on Receipt",
+    "place_of_supply": "Gujarat (24)",
+    "irn": "11590fe0f3e8864da4157531300862378daf94f1add55e707761d461678c31d9",
+    "seller_name": "Mtalkz Mobility Services Private Limited",
+    "seller_address": "91Springboard, C-2, Sector-1, Noida Uttar Pradesh- 201301, India",
+    "seller_email": "support@mtalkz.com",
+    "seller_tax_id": "09AALCM4489M1ZJ",
+    "seller_pan": "AALCM4489M",
+    "buyer_name": "TECTONA SOFTSOLUTIONS PRIVATE LIMITED",
+    "buyer_address": "1st, 101, RAJSI, RAJVANSH COMPLEX, JUDGES BUNGALOWS, BODAKDEV Ahmedabad 380054 Gujarat India",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "total_in_words": "Rupees Seven Thousand Three Hundred Seventy-Five Only",
+    "bank_name": "ICICI Bank Limited",
+    "bank_account": "197205000153",
+    "bank_ifsc": "ICIC0001972",
+    "amount_untaxed": 6250.0,
+    "tax_rate": 18.0,
+    "amount_igst": 1125.0,
+    "amount": 7375.0,
+    "amount_due": 7375.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "OTP Sms",
+     "qty": 50000.0,
+     "price_unit": 0.1,
+     "igst_rate": 18.0,
+     "igst_amount": 900.0,
+     "price_subtotal": 5000.0,
+     "hsn_sac": "998319"
+    },
+    {
+     "pos": 2,
+     "name": "DLT Scrubbing Charges",
+     "qty": 50000.0,
+     "price_unit": 0.025,
+     "igst_rate": 18.0,
+     "igst_amount": 225.0,
+     "price_subtotal": 1250.0,
+     "hsn_sac": "998319"
+    }
+   ],
+   "added": "2026-10-29T16:21:23"
+  },
+  {
+   "pdf": "bd33d98f4f5bce2da3bf",
+   "name": "VIL_bill_7573001478_2026-08-22_statement.pdf",
+   "pages": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "template": "vodafone_idea_postpaid_bill.yml",
+   "family": "vodafone_idea_postpaid_bill",
+   "status": "OK",
+   "fields": {
+    "issuer": "Vodafone Idea",
+    "document_type": "telecom_bill",
+    "invoice_number": "GJI0608675537364",
+    "date": "2026-08-22",
+    "date_due": "2026-09-01",
+    "billing_period": "22.07.26 to 21.08.26",
+    "service_number": "7573001478",
+    "customer_number": "40283068",
+    "service_plan": "Entertainment Plus 501",
+    "supply_description": "Telecommunications",
+    "place_of_supply": "Gujarat",
+    "buyer_state_code": "24",
+    "buyer_tax_id": "24AABCT4561D1ZO",
+    "hsn_sac": "998413",
+    "irn": "ada243f0bc6afbd69dd1cb780648a358ff3f113a618c5b827764673cb7c26474",
+    "seller_name": "Vodafone Idea Limited",
+    "seller_address": "Building A, 4th, Vodafone House, Corporate Road, Prahalad Nagar,Off SG Highway, Ahmedabad, Gujarat, 380015",
+    "seller_tax_id": "24AAACB2100P1Z3",
+    "seller_company_reg": "L32100GJ1996PLC030976",
+    "buyer_name": "Co. Tectona Softsolutions Pvt Ltd C/o Rajesh",
+    "buyer_address": "A/304 The First Beside Keshav Baug Party Plot,Vastrapur Ahmedabad-380015, Gujarat",
+    "amount_previous_balance": 918.57,
+    "amount_payments_received": 918.57,
+    "amount_account_adjustments": 0.0,
+    "amount_due": 933.96,
+    "amount_discount": 149.0,
+    "amount_untaxed": 791.5,
+    "amount_tax": 142.46,
+    "amount": 933.96,
+    "total_in_words": "Nine Hundred Thirty Three Rupees and Ninety Six Paise",
+    "amount_sgst": 71.23,
+    "amount_cgst": 71.23,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "One Time Charges",
+     "price_subtotal": 0.0
+    },
+    {
+     "name": "Monthly Charges",
+     "price_subtotal": 700.0
+    },
+    {
+     "name": "Usage Charges",
+     "price_subtotal": 91.5
+    },
+    {
+     "name": "International Roaming Service Charges",
+     "price_subtotal": 149.0
+    },
+    {
+     "name": "Other Credits / Charges",
+     "price_subtotal": 0.0
+    },
+    {
+     "name": "Miscellaneous Charges",
+     "price_subtotal": 0.0
+    },
+    {
+     "name": "Late payment charges",
+     "price_subtotal": 0.0
+    }
+   ],
+   "added": "2026-10-29T16:21:29"
+  },
+  {
+   "pdf": "14c8c81490f4ec952aa5",
+   "name": "pdf-amazon-gst-invoice-for-retail-purchase_compress.pdf",
+   "pages": [
+    1
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "REHL-8093",
+    "date": "2024-05-23",
+    "order_number": "403-0662873-6416303",
+    "seller_name": "RETAILEZ PRIVATE LIMITED",
+    "seller_pan": "AALCR3173P",
+    "seller_tax_id": "27AALCR3173P1ZN",
+    "buyer_state_code": "27",
+    "place_of_supply": "MAHARASHTRA",
+    "amount_tax": 228.66,
+    "amount": 1499.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Pigeon by Stovekraft Cruise 1800 watt Induction Cooktop With Crystal Glass,7 Segments LED Display, Auto Switch Off - Black | B01GFTEV5Y ( B01GFTEV5Y )",
+     "price_unit": 1270.34,
+     "discount": 0.0,
+     "qty": 1,
+     "price_subtotal": 1270.34,
+     "cgst_rate": 9.0,
+     "cgst_amount": 114.33,
+     "price_total": 1499.0,
+     "hsn_sac": "85166000",
+     "sgst_rate": 9.0,
+     "sgst_amount": 114.33
+    },
+    {
+     "name": "Shipping Charges",
+     "price_unit": 33.9,
+     "discount": -33.9,
+     "price_subtotal": 0.0,
+     "cgst_rate": 9.0,
+     "cgst_amount": 0.0,
+     "price_total": 0.0,
+     "sgst_rate": 9.0,
+     "sgst_amount": 0.0
+    }
+   ],
+   "added": "2026-10-29T17:08:55"
+  },
+  {
+   "pdf": "a28175e55ee85fc12533",
+   "name": "pdf-tax-invoice-for-samsung-refrigerator-purchase_compress.pdf",
+   "pages": [
+    1
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "SCJF-77440",
+    "date": "2025-07-17",
+    "order_number": "407-8087007-3820322",
+    "seller_name": "DAWNTECH ELECTRONICS PRIVATE LIMITED",
+    "seller_pan": "AAMCM3175B",
+    "seller_tax_id": "33AAMCM3175B2ZO",
+    "buyer_state_code": "33",
+    "place_of_supply": "TAMIL NADU",
+    "amount_tax": 5795.08,
+    "amount": 37990.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Samsung 350 L, 3 Star, Convertible 5-in-1, Digital Inverter, Frost Free Double Door, WiFi Enabled Bespoke AI Refrigerator (RT38DG5A4DS8HL, Elegant Inox, Silver) | B0DQDMGWTT ( B0DQDMGWTT )",
+     "price_unit": 33889.84,
+     "discount": -1694.92,
+     "qty": 1,
+     "price_subtotal": 32194.92,
+     "cgst_rate": 9.0,
+     "cgst_amount": 2897.54,
+     "price_total": 37990.0,
+     "hsn_sac": "84181090",
+     "sgst_rate": 9.0,
+     "sgst_amount": 2897.54
+    }
+   ],
+   "added": "2026-10-29T17:18:45"
+  },
+  {
+   "pdf": "a28175e55ee85fc12533",
+   "name": "pdf-tax-invoice-for-samsung-refrigerator-purchase_compress.pdf",
+   "pages": [
+    2
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "IBD-26-1623442",
+    "date": "2025-07-17",
+    "order_number": "407-8087007-3820322",
+    "seller_name": "Amazon Seller Services Private Limited",
+    "seller_pan": "AAICA3918J",
+    "seller_tax_id": "29AAICA3918J1ZE",
+    "buyer_state_code": "33",
+    "place_of_supply": "TAMIL NADU",
+    "amount_tax": 7.47,
+    "amount": 49.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Offer Processing Fees",
+     "price_unit": 41.53,
+     "price_subtotal": 41.53,
+     "igst_rate": 18.0,
+     "igst_amount": 7.47,
+     "price_total": 49.0
+    }
+   ],
+   "added": "2026-10-29T17:18:45"
+  },
+  {
+   "pdf": "db1394d70bc4b7ddb59e",
+   "name": "pdf-amazon-tax-invoice-for-retail-purchase_compress.pdf",
+   "pages": [
+    1
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "FPNA-54835",
+    "date": "2025-08-22",
+    "order_number": "171-7759404-2088360",
+    "seller_name": "RETAILEZ PRIVATE LIMITED",
+    "seller_pan": "AALCR3173P",
+    "seller_tax_id": "27AALCR3173P1ZN",
+    "buyer_state_code": "27",
+    "place_of_supply": "MAHARASHTRA",
+    "amount_tax": 274.42,
+    "amount": 1799.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Philips HD4934/00 1300W Induction Cooktop with Triple MOV for 4kW surge protection with soft touch control | 7 Preset Menus | 3 Years warranty on Coil | B0DGKWNGKZ ( B0DGKWNGKZ )",
+     "price_unit": 1524.58,
+     "qty": 1,
+     "price_subtotal": 1524.58,
+     "cgst_rate": 9.0,
+     "cgst_amount": 137.21,
+     "price_total": 1799.0,
+     "hsn_sac": "85166000",
+     "sgst_rate": 9.0,
+     "sgst_amount": 137.21
+    }
+   ],
+   "added": "2026-10-29T17:25:27"
+  },
+  {
+   "pdf": "db1394d70bc4b7ddb59e",
+   "name": "pdf-amazon-tax-invoice-for-retail-purchase_compress.pdf",
+   "pages": [
+    2
+   ],
+   "template": "amazon_in_tax_invoice.yml",
+   "family": "amazon_in_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Amazon.in (marketplace seller)",
+    "document_type": "tax_invoice",
+    "invoice_number": "MKT-139548550",
+    "date": "2025-08-22",
+    "order_number": "171-7759404-2088360",
+    "seller_name": "Amazon Seller Services Private Limited",
+    "seller_pan": "AAICA3918J",
+    "seller_tax_id": "29AAICA3918J1ZE",
+    "buyer_state_code": "27",
+    "place_of_supply": "MAHARASHTRA",
+    "amount_tax": 0.76,
+    "amount": 5.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "pos": 1,
+     "name": "Marketplace Fees",
+     "price_unit": 4.24,
+     "price_subtotal": 4.24,
+     "igst_rate": 18.0,
+     "igst_amount": 0.76,
+     "price_total": 5.0
+    }
+   ],
+   "added": "2026-10-29T17:25:27"
+  },
+  {
+   "pdf": "fd8366e357fe0124d7e8",
+   "name": "pdf-makemytrip-tax-invoice-for-transportation_compress.pdf",
+   "pages": [
+    1
+   ],
+   "template": "makemytrip_tax_invoice.yml",
+   "family": "makemytrip_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "MakeMyTrip (India) Private Limited",
+    "document_type": "tax_invoice",
+    "invoice_number": "M06CR26I01129561",
+    "date": "2025-12-20",
+    "booking_reference": "NC769161330373636761",
+    "seller_name": "MAKEMYTRIP (INDIA) PRIVATE LIMITED",
+    "seller_address": "19th Floor, Epitome Building No.5, DLF Cybercity, DLF Phase III, Gurgaon, Haryana, 122001",
+    "seller_tax_id": "06AADCM5146R1ZZ",
+    "seller_pan": "AADCM5146R",
+    "seller_company_reg": "U63040HR2000PTC090846",
+    "hsn_sac": "998551",
+    "place_of_supply": "KARNATAKA",
+    "supply_description": "Reservation service for transportation",
+    "reverse_charge": "No",
+    "buyer_name": "Prasad Kishor Aswale",
+    "buyer_tax_id": "Unregistered",
+    "operator_name": "Waveslight Technologies Pvt Ltd",
+    "amount": 1048.62,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "*Cab Hire Charges (Inclusive of applicable taxes collected on behalf of Cab operator)",
+     "price_total": 833.0
+    },
+    {
+     "name": "Toll Charges",
+     "price_total": 120.0
+    },
+    {
+     "name": "Airport Charges",
+     "price_total": 47.62
+    },
+    {
+     "name": "Service Fees",
+     "price_total": 40.68
+    },
+    {
+     "name": "Reversal of MakeMyTrip Service Fee",
+     "price_total": -0.0
+    },
+    {
+     "name": "IGST @18%",
+     "price_total": 7.32
+    }
+   ],
+   "added": "2026-10-30T12:09:40"
+  },
+  {
+   "pdf": "0ecb0310ee39ada50402",
+   "name": "pdf-makemytrip-tax-invoice-details_compress _1_.pdf",
+   "pages": [
+    1
+   ],
+   "template": "makemytrip_tax_invoice_v2.yml",
+   "family": "makemytrip_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "MakeMyTrip (India) Private Limited",
+    "document_type": "tax_invoice",
+    "invoice_number": "M06RL26I03895998",
+    "date": "01 Sep 2025",
+    "booking_reference": "NR7424623678472802",
+    "seller_name": "MAKEMYTRIP (INDIA) PRIVATE LIMITED",
+    "seller_address": "19th Floor, Epitome Building No.5, DLF Cybercity, DLF Phase III, Gurgaon, Haryana, 122001",
+    "seller_tax_id": "06AADCM5146R1ZZ",
+    "seller_pan": "AADCM5146R",
+    "seller_company_reg": "U63040HR2000PTC090846",
+    "hsn_sac": "998551",
+    "place_of_supply": "Haryana",
+    "supply_description": "Reservation service for transportation",
+    "reverse_charge": "No",
+    "buyer_name": "MASOOM RAZA",
+    "operator_name": "IRCTC",
+    "date_travel": "02 Sep 2025",
+    "travel_from": "YNRK",
+    "travel_to": "LKO",
+    "amount_cgst": 44.54,
+    "amount_sgst": 44.54,
+    "amount": 1881.7,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "*Rail Fare",
+     "price_total": 1280.0
+    },
+    {
+     "name": "*IRCTC Convenience fees (Including GST)",
+     "price_total": 17.7
+    },
+    {
+     "name": "Effective Service Fees*",
+     "price_total": 16.95
+    },
+    {
+     "name": "Reversal of MakeMyTrip Service Fee*",
+     "price_total": 0.0
+    },
+    {
+     "name": "Trip Guarantee Premium",
+     "price_total": 477.97
+    },
+    {
+     "name": "CGST @9%",
+     "price_total": 44.54
+    },
+    {
+     "name": "SGST @9%",
+     "price_total": 44.54
+    }
+   ],
+   "added": "2026-10-30T12:24:30"
+  },
+  {
+   "pdf": "f15dcd84db6974d3ced9",
+   "name": "pdf-makemytrip-tax-invoice-details_compress.pdf",
+   "pages": [
+    1
+   ],
+   "template": "makemytrip_tax_invoice.yml",
+   "family": "makemytrip_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "MakeMyTrip (India) Private Limited",
+    "document_type": "tax_invoice",
+    "invoice_number": "M06CR26I00621384",
+    "date": "2025-09-02",
+    "booking_reference": "NC759968365394650317",
+    "seller_name": "MAKEMYTRIP (INDIA) PRIVATE LIMITED",
+    "seller_address": "19th Floor, Epitome Building No.5, DLF Cybercity, DLF Phase III, Gurgaon, Haryana, 122001",
+    "seller_tax_id": "06AADCM5146R1ZZ",
+    "seller_pan": "AADCM5146R",
+    "seller_company_reg": "U63040HR2000PTC090846",
+    "hsn_sac": "998551",
+    "place_of_supply": "Haryana",
+    "supply_description": "Reservation service for transportation",
+    "reverse_charge": "No",
+    "buyer_name": "Anshu Kumar",
+    "buyer_tax_id": "Unregistered",
+    "operator_name": "Triptivo Technologies Private Limited",
+    "amount": 317.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "*Cab Hire Charges (Inclusive of applicable taxes collected on behalf of Cab operator)",
+     "price_total": 283.0
+    },
+    {
+     "name": "Toll Charges",
+     "price_total": 100.0
+    },
+    {
+     "name": "Service Fees",
+     "price_total": 34.0
+    },
+    {
+     "name": "Reversal of MakeMyTrip Service Fee",
+     "price_total": -34.0
+    },
+    {
+     "name": "Effective Discount",
+     "price_total": -66.0
+    }
+   ],
+   "added": "2026-10-30T12:24:39"
+  },
+  {
+   "pdf": "4d2210c5454ed7e7f12b",
+   "name": "pdf-myntra-tax-invoice-details_compress.pdf",
+   "pages": [
+    1
+   ],
+   "template": "myntra_tax_invoice.yml",
+   "family": "myntra_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Myntra Designs Private Limited",
+    "document_type": "tax_invoice",
+    "invoice_number": "I2924MY125922900",
+    "order_number": "125436667638480867901",
+    "date": "2023-12-13",
+    "place_of_supply": "BIHAR",
+    "nature_of_transaction": "Inter-State",
+    "nature_of_supply": "Service",
+    "seller_name": "MYNTRA DESIGNS PVT LTD",
+    "seller_tax_id": "29AAECM9636P1ZJ",
+    "seller_address": "SY no 8 to 14 and 55, Alyssa begonia clover Embassy tech village, outer ring road, devarbisanahalli varthur hobli, Bengaluru (Bangalore) Urban, Karnataka, 560103, Bengaluru, Karnataka-560103",
+    "buyer_name": "Kavish kumar",
+    "buyer_address": "Ward no 4, Near pirbaba ashthan, Tetarabad chandpura, Khagaria Khagaria - 851204 BR, India",
+    "amount_untaxed": 16.95,
+    "amount_igst": 3.05,
+    "amount": 20.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Platform Fee",
+     "hsn_sac": "999799",
+     "igst_rate": 18.0,
+     "qty": 1,
+     "gross_amount": 20.0,
+     "discount": 0.0,
+     "other_charges": 0.0,
+     "price_subtotal": 16.95,
+     "igst_amount": 3.05,
+     "price_total": 20.0
+    }
+   ],
+   "added": "2026-10-30T14:54:46"
+  },
+  {
+   "pdf": "53c5ac58b50b0b2d68c5",
+   "name": "pdf-myntra-gst-invoice-details-and-claims_compress.pdf",
+   "pages": [
+    1
+   ],
+   "template": "myntra_tax_invoice.yml",
+   "family": "myntra_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Myntra Designs Private Limited",
+    "document_type": "tax_invoice",
+    "invoice_number": "I2924MY102525222",
+    "order_number": "125079604074393475901",
+    "date": "2023-11-02",
+    "place_of_supply": "MADHYA PRADESH",
+    "nature_of_transaction": "Inter-State",
+    "nature_of_supply": "Service",
+    "seller_name": "MYNTRA DESIGNS PVT LTD",
+    "seller_tax_id": "29AAECM9636P1ZJ",
+    "seller_address": "SY no 8 to 14 and 55, Alyssa begonia clover Embassy tech village, outer ring road, devarbisanahalli varthur hobli, Bengaluru (Bangalore) Urban, Karnataka, 560103, Bengaluru, Karnataka-560103",
+    "buyer_name": "VINAY",
+    "buyer_address": "3, KRISHNAPURA, DHARNAKA INDORE Mhow - 453441, MP, India",
+    "amount_untaxed": 16.95,
+    "amount_igst": 3.05,
+    "amount": 20.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Convenience Fee",
+     "hsn_sac": "999799",
+     "igst_rate": 18.0,
+     "qty": 1,
+     "gross_amount": 20.0,
+     "discount": 0.0,
+     "other_charges": 0.0,
+     "price_subtotal": 16.95,
+     "igst_amount": 3.05,
+     "price_total": 20.0
+    }
+   ],
+   "added": "2026-10-30T15:16:18"
+  },
+  {
+   "pdf": "098eb82ee1ba6f3665a5",
+   "name": "pdf-myntra-tax-invoice-details_compress _1_.pdf",
+   "pages": [
+    2
+   ],
+   "template": "myntra_tax_invoice.yml",
+   "family": "myntra_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Myntra Designs Private Limited",
+    "document_type": "tax_invoice",
+    "invoice_number": "I2924MY109401268",
+    "order_number": "125199075660086804901",
+    "date": "2023-11-16",
+    "place_of_supply": "GUJARAT",
+    "nature_of_transaction": "Inter-State",
+    "nature_of_supply": "Service",
+    "seller_name": "MYNTRA DESIGNS PVT LTD",
+    "seller_tax_id": "29AAECM9636P1ZJ",
+    "seller_address": "SY no 8 to 14 and 55, Alyssa begonia clover Embassy tech village, outer ring road, devarbisanahalli varthur hobli, Bengaluru (Bangalore) Urban, Karnataka, 560103, Bengaluru, Karnataka-560103",
+    "buyer_name": "Prapti",
+    "buyer_address": "Crest House, Near BMW Gallops Makarba Ahmedabad -, 380051 GJ, India",
+    "amount_untaxed": 83.9,
+    "amount_igst": 15.1,
+    "amount": 99.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Convenience Fee",
+     "hsn_sac": "999799",
+     "igst_rate": 18.0,
+     "qty": 1,
+     "gross_amount": 99.0,
+     "discount": 0.0,
+     "other_charges": 0.0,
+     "price_subtotal": 83.9,
+     "igst_amount": 15.1,
+     "price_total": 99.0
+    }
+   ],
+   "added": "2026-10-30T15:24:00"
+  },
+  {
+   "pdf": "098eb82ee1ba6f3665a5",
+   "name": "pdf-myntra-tax-invoice-details_compress 1.pdf",
+   "pages": [
+    1
+   ],
+   "template": "myntra_seller_tax_invoice.yml",
+   "family": "myntra_seller_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Myntra (seller invoice)",
+    "document_type": "tax_invoice",
+    "invoice_number": "I2724CO001821321",
+    "date": "2023-11-16",
+    "order_number": "1251990-7566008-6804901",
+    "date_order": "2023-11-16",
+    "place_of_supply": "GUJARAT",
+    "nature_of_transaction": "Inter-State",
+    "nature_of_supply": "Goods",
+    "seller_name": "Consulting Rooms Pvt Ltd",
+    "seller_address": "Ksquare Industrial Park, Warehouse 4, Before Padgha Toll naka, Nashik-Mumbai Highway, Near Pushkar Mela Hotel Rahul Narkhede, Padgha-Bhiwandi, Thane, MAHARASHTRA-421101",
+    "seller_tax_id": "27AAGCC4236P1Z9",
+    "seller_company_reg": "U52100DL2016PTC291626",
+    "buyer_name": "Prapti",
+    "buyer_address": "Crest House, Near BMW, Gallops Makarba Ahmedabad - 380051 GJ, India",
+    "amount_gross": 3198.0,
+    "amount_discount": 2149.0,
+    "amount_untaxed": 999.05,
+    "amount_igst": 49.95,
+    "amount": 1049.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "HENWSWSH73398270 - HERE&NOW Solid Full Sleeves Casual Sweatshirt, Size: M",
+     "hsn_sac": "61102000",
+     "igst_rate": 5.0,
+     "qty": 1,
+     "gross_amount": 1599.0,
+     "discount": 1053.0,
+     "other_charges": 0.0,
+     "price_subtotal": 520.0,
+     "igst_amount": 26.0,
+     "price_total": 546.0
+    },
+    {
+     "name": "HENWSWSH73398374 - HERE&NOW Round Neck Solid Sweatshirt, Size: M",
+     "hsn_sac": "61102000",
+     "igst_rate": 5.0,
+     "qty": 1,
+     "gross_amount": 1599.0,
+     "discount": 1096.0,
+     "other_charges": 0.0,
+     "price_subtotal": 479.05,
+     "igst_amount": 23.95,
+     "price_total": 503.0
+    }
+   ],
+   "added": "2026-10-30T15:57:56"
+  },
+  {
+   "pdf": "864021bdc9f2e1fe6f62",
+   "name": "pdf-myntra-tax-invoice-details_compress _2_.pdf",
+   "pages": [
+    2
+   ],
+   "template": "myntra_tax_invoice.yml",
+   "family": "myntra_tax_invoice",
+   "status": "OK",
+   "fields": {
+    "issuer": "Myntra Designs Private Limited",
+    "document_type": "tax_invoice",
+    "invoice_number": "I2924MY169655677",
+    "order_number": "126305278180406988301",
+    "date": "2024-03-23",
+    "place_of_supply": "BIHAR",
+    "nature_of_transaction": "Inter-State",
+    "nature_of_supply": "Service",
+    "seller_name": "MYNTRA DESIGNS PVT LTD",
+    "seller_tax_id": "29AAECM9636P1ZJ",
+    "seller_address": "SY no 8 to 14 and 55, Alyssa begonia clover Embassy tech village, outer ring road, devarbisanahalli varthur hobli, Bengaluru (Bangalore) Urban, Karnataka, 560103, Bengaluru, Karnataka-560103",
+    "buyer_name": "Shashwat",
+    "buyer_address": "1st floor, Shanti Kutir, Sahwazpur Road, Ahiyapur Gyan, Dhara School Muzaffarpur - 842002 BR, India",
+    "amount_untaxed": 92.37,
+    "amount_igst": 16.63,
+    "amount": 109.0,
+    "currency": "INR"
+   },
+   "lines": [
+    {
+     "name": "Shipping Fee",
+     "hsn_sac": "999799",
+     "igst_rate": 18.0,
+     "qty": 1,
+     "gross_amount": 79.0,
+     "discount": 0.0,
+     "other_charges": 0.0,
+     "price_subtotal": 66.95,
+     "igst_amount": 12.05,
+     "price_total": 79.0
+    },
+    {
+     "name": "Cash/Pay on Delivery Fee",
+     "hsn_sac": "999799",
+     "igst_rate": 18.0,
+     "qty": 1,
+     "gross_amount": 10.0,
+     "discount": 0.0,
+     "other_charges": 0.0,
+     "price_subtotal": 8.47,
+     "igst_amount": 1.53,
+     "price_total": 10.0
+    },
+    {
+     "name": "Platform Fee",
+     "hsn_sac": "999799",
+     "igst_rate": 18.0,
+     "qty": 1,
+     "gross_amount": 20.0,
+     "discount": 0.0,
+     "other_charges": 0.0,
+     "price_subtotal": 16.95,
+     "igst_amount": 3.05,
+     "price_total": 20.0
+    }
+   ],
+   "added": "2026-10-30T15:59:35"
+  }
+ ],
+ "templates": {
+  "anthropic_invoice.yml": {
+   "hash": "005c893ab3db356a",
+   "state": "new",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:19:28",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "blinkit_fee_invoice.yml": {
+   "hash": "fda0a3c77a9c4ab2",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:19:32",
+   "samples": 4,
+   "problems": [],
+   "notes": []
+  },
+  "blinkit_goods_invoice.yml": {
+   "hash": "ac651d1ad00b21d7",
+   "state": "admitted",
+   "checked": "2026-10-29T16:12:30",
+   "samples": 7,
+   "problems": [],
+   "notes": []
+  },
+  "bolcom_invoice.yml": {
+   "hash": "6d6dfcd7e863072e",
+   "state": "new",
+   "checked": "2026-10-26T16:09:00",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "flipkart_bill_of_supply.yml": {
+   "hash": "e1c9b6135e198f2f",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:19:38",
+   "samples": 6,
+   "problems": [],
+   "notes": []
+  },
+  "flipkart_platform_fee_invoice.yml": {
+   "hash": "afc9197b5d4947a2",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:19:49",
+   "samples": 6,
+   "problems": [],
+   "notes": []
+  },
+  "flipkart_seller_tax_invoice.yml": {
+   "hash": "bc02f726d3d3f289",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:19:57",
+   "samples": 6,
+   "problems": [],
+   "notes": []
+  },
+  "indigo_tax_invoice.yml": {
+   "hash": "4c6ac612763bfae3",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:21:13",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "irctc_e_ticket.yml": {
+   "hash": "07dd29829ee4d1a6",
+   "state": "admitted",
+   "checked": "2026-10-29T16:12:35",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "ishwam_sales_invoice.yml": {
+   "hash": "8a9657c262e49e74",
+   "state": "admitted",
+   "engine": "903d4c5f02a431e7",
+   "checked": "2026-10-30T14:53:49",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "maashitla_proforma_invoice.yml": {
+   "hash": "ebd025241f122a20",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:20:37",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "meesho_bill_of_supply.yml": {
+   "hash": "014d10666bd72cfc",
+   "state": "new",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:20:03",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "meesho_bill_of_supply_credit_note.yml": {
+   "hash": "f094d7394661763d",
+   "state": "new",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:20:05",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "meesho_consignment_note.yml": {
+   "hash": "405992ed62b94b6d",
+   "state": "new",
+   "checked": "2026-10-26T16:09:00",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "meesho_credit_note.yml": {
+   "hash": "231b12d42eee0c0d",
+   "state": "new",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:20:08",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "meesho_tax_invoice.yml": {
+   "hash": "fa1b39e6ca78d78e",
+   "state": "new",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:20:10",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "mtalkz_tax_invoice.yml": {
+   "hash": "99e6aa7ca6102267",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:21:23",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "oyo_payment_receipt.yml": {
+   "hash": "8ea0d6c21e81882c",
+   "state": "admitted",
+   "checked": "2026-10-26T16:51:10",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "qualityhosting_custom.yml": {
+   "hash": "6f818142378a71de",
+   "state": "admitted",
+   "checked": "2026-10-26T16:51:41",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "shiprocket_charges_invoice.yml": {
+   "hash": "d1d472bc14c969c5",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:20:48",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "shiprocket_credit_note.yml": {
+   "hash": "853a4451916b5a54",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:20:25",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "shiprocket_services_invoice.yml": {
+   "hash": "1e5b2f186e822dcb",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:21:03",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "shopify_bill.yml": {
+   "hash": "11dc30288d3578f1",
+   "state": "admitted",
+   "checked": "2026-10-29T16:12:39",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "vodafone_idea_postpaid_bill.yml": {
+   "hash": "caf8ee257134ac0b",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:21:29",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "zomato_platform_fee_invoice.yml": {
+   "hash": "74f980eddeec4346",
+   "state": "new",
+   "checked": "2026-10-29T16:12:43",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "zomato_restaurant_invoice.yml": {
+   "hash": "08099c88ddcef25b",
+   "state": "new",
+   "checked": "2026-10-29T16:12:45",
+   "samples": 0,
+   "problems": [],
+   "notes": []
+  },
+  "income_tax_itr_acknowledgement.yml": {
+   "hash": "68b95c1d6d02a2b7",
+   "state": "admitted",
+   "checked": "2026-10-26T17:48:45",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "irctc_e_ticket_2.yml": {
+   "hash": "fca3d5fde67b109c",
+   "state": "admitted",
+   "checked": "2026-10-27T12:04:16",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "indian_railways_invoice.yml": {
+   "hash": "4db47cf310e10167",
+   "state": "admitted",
+   "checked": "2026-10-27T12:43:02",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "indian_railways_train_ticket.yml": {
+   "hash": "a996edb55505787f",
+   "state": "admitted",
+   "engine": "de4eb66d5744f768",
+   "checked": "2026-10-27T17:00:04",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "amazon_in_tax_invoice.yml": {
+   "hash": "52cbe506599781dc",
+   "state": "admitted",
+   "checked": "2026-10-28T10:19:13",
+   "samples": 5,
+   "problems": [],
+   "notes": []
+  },
+  "flipkart_grocery_invoice.yml": {
+   "hash": "8c7f4b273b2e0057",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:19:44",
+   "samples": 2,
+   "problems": [],
+   "notes": []
+  },
+  "flipkart_seller_own_invoice.yml": {
+   "hash": "776ff7de34c827d3",
+   "state": "admitted",
+   "engine": "f272755c2b68fa0b",
+   "checked": "2026-10-29T16:19:52",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "makemytrip_tax_invoice.yml": {
+   "hash": "6b74f09b2537d1c7",
+   "state": "admitted",
+   "engine": "5d3f4bb49b2e8b3c",
+   "checked": "2026-10-31T10:46:23",
+   "samples": 2,
+   "problems": [],
+   "notes": []
+  },
+  "makemytrip_tax_invoice_v2.yml": {
+   "hash": "7053473af0543a6d",
+   "state": "admitted",
+   "engine": "84fad20154c36acc",
+   "checked": "2026-10-30T12:24:28",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  },
+  "myntra_tax_invoice.yml": {
+   "hash": "4e37350025471a92",
+   "state": "admitted",
+   "engine": "c53554e8ecb7dbd7",
+   "checked": "2026-10-30T15:23:38",
+   "samples": 2,
+   "problems": [],
+   "notes": []
+  },
+  "myntra_seller_tax_invoice.yml": {
+   "hash": "73d16999dd4b662a",
+   "state": "admitted",
+   "engine": "cacf2ec8f96935c8",
+   "checked": "2026-10-30T15:57:38",
+   "samples": 1,
+   "problems": [],
+   "notes": []
+  }
+ },
+ "ai_attempts": {
+  "7fa2ee10195dd90153f8:1,2": {
+   "when": "2026-10-27T14:42:38",
+   "outcome": "admitted",
+   "template": "indian_railways_train_ticket.yml",
+   "problems": []
+  },
+  "f15dcd84db6974d3ced9:1": {
+   "when": "2026-10-30T11:00:30",
+   "outcome": "admitted",
+   "template": "makemytrip_tax_invoice.yml",
+   "problems": []
+  },
+  "4d2210c5454ed7e7f12b:1": {
+   "when": "2026-10-30T13:07:41",
+   "outcome": "failed",
+   "template": null,
+   "problems": [
+    "when the document is printed with short decimals, the template loses values (missing: line 1 igst_amount): amounts can be printed without decimals (202) or with one (212.1): use (\\d[\\d,]*(?:\\.\\d{1,3})?)"
+   ],
+   "setup": "[\"deepseek-v4.1-flash:free\", 64000, {\"reasoning_effort\": \"low\"}]",
+   "service_error": false
+  },
+  "0ecb0310ee39ada50402:1": {
+   "when": "2026-10-30T12:24:28",
+   "outcome": "admitted",
+   "template": "makemytrip_tax_invoice_v2.yml",
+   "problems": []
+  },
+  "098eb82ee1ba6f3665a5:1": {
+   "when": "2026-10-30T15:38:41",
+   "outcome": "failed",
+   "template": null,
+   "problems": [
+    "the document is read with status FAIL, it must be OK",
+    "ERROR: no line items found although the template defines line rules",
+    "AI service: the answer was cut off at ai.max_tokens (64000) while the model was still thinking (250120 characters of thinking, no answer): raise ai.max_tokens or use a model that thinks less"
+   ],
+   "setup": "[\"deepseek-v4.1-flash:free\", 64000, {\"reasoning_effort\": \"low\"}]",
+   "service_error": true
+  },
+  "f5fb188d56a69ce4b502:1": {
+   "when": "2026-10-30T16:24:46",
+   "outcome": "failed",
+   "template": null,
+   "problems": [
+    "AI service: the answer was cut off at ai.max_tokens (64000) while the model was still thinking (186640 characters of thinking, no answer): raise ai.max_tokens or use a model that thinks less"
+   ],
+   "setup": "[\"deepseek-v4.1-flash:free\", 64000, {\"reasoning_effort\": \"low\"}]",
+   "service_error": true
+  }
+ },
+ "problems": [
+  {
+   "pdf": "1236cea0ef0422e5aade",
+   "name": "ACK742817410300726.pdf",
+   "pages": [
+    1
+   ],
+   "family": "income_tax_itr_acknowledgement",
+   "template": "income_tax_itr_acknowledgement.yml",
+   "status": "CHECK",
+   "reason": "amounts are not verified (amount_current_year_loss, amount_total_income, amount_book_profit_mat, ...): no arithmetic check passed (checks on all-zero values prove nothing)",
+   "added": "2026-10-30T14:16:44"
+  },
+  {
+   "pdf": "1886a7091b04d353edbe",
+   "name": "new delhi ticket 20260817.pdf",
+   "pages": [
+    1,
+    2
+   ],
+   "family": "irctc_e_ticket",
+   "template": "irctc_e_ticket.yml",
+   "status": "CHECK",
+   "reason": "second opinion: train_number differs: template read '12957 / SBIB NDLS RAJ', the AI reads '12957'",
+   "added": "2026-10-30T14:18:19"
+  },
+  {
+   "pdf": "ff5ee1cb93313b69910e",
+   "name": "SALES 2 ISHWAM.pdf",
+   "pages": [
+    1
+   ],
+   "family": "ishwam_sales_invoice",
+   "template": "ishwam_sales_invoice.yml",
+   "status": "CHECK",
+   "reason": "second opinion: total_in_words differs: template read 'Indian Rupees Nine Lakh Eighty Six Thousand Nine', the AI reads 'Indian Rupees Nine Lakh Eighty Six Thousand Nine Hundred Ninety Nine Only'; not in the template's value: 'hundredninetynineonly'",
+   "added": "2026-10-30T14:19:06"
+  },
+  {
+   "pdf": "864021bdc9f2e1fe6f62",
+   "name": "pdf-myntra-tax-invoice-details_compress _2_.pdf",
+   "pages": [
+    1
+   ],
+   "family": "myntra_seller_tax_invoice",
+   "template": "myntra_seller_tax_invoice.yml",
+   "status": "CHECK",
+   "reason": "second opinion: ship_from_address differs: template read '\"Puma Sports India Pvt Ltd No. 01, Sy No. 491, 492/3,492/4,494,493 /1,493/2,493/3,493/4,493/5,513/1, 513/2,516/1,516/2,5', the AI reads '\"Puma Sports India Pvt Ltd No. 01, Sy No. 491, 492/3,492/4,494,493, /1,493/2,493/3,493/4,493/5,513/1, 513/2,516/1,516/2,'; only in the template's value: 'sgstcgstugst'",
+   "added": "2026-10-30T15:59:35"
+  },
+  {
+   "pdf": "df6c0fe02fbfde05d1ee",
+   "name": "OD437334801620974100-1.pdf",
+   "pages": [
+    6,
+    7
+   ],
+   "family": "flipkart_bill_of_supply",
+   "template": "flipkart_bill_of_supply.yml",
+   "status": "CHECK",
+   "reason": "second opinion: ship_from_address differs: template read 'FLIPKART INSTAKART SERVICES PVT LTD, WAREHOUSE BUILDING NO.2, RENAISSANCE INTEGRATED INDUSTRIAL AREA,VILLAGE VASHERE,BHI', the AI reads 'WAREHOUSE, BUILDING NO.2, RENAISSANCE INTEGRATED INDUSTRIAL, AREA,VILLAGE VASHERE,BHIWANDI,THANE.421302, MAHARASHTRA, IN'; only in the template's value: 'flipkartinstakartservicespvtltd'",
+   "added": "2026-10-30T16:07:55"
+  },
+  {
+   "pdf": "df6c0fe02fbfde05d1ee",
+   "name": "OD437334801620974100-1.pdf",
+   "pages": [
+    8
+   ],
+   "family": "flipkart_seller_tax_invoice",
+   "template": "flipkart_seller_tax_invoice.yml",
+   "status": "CHECK",
+   "reason": "second opinion: ship_from_address differs: template read 'Sunsat warehousing Pvt. Ltd., Hadbast No. 23, Village Sanpka,Tehsil Farukhnagar, District - Gurgaon, Haryana- 122503, Fa', the AI reads 'Hadbast No. 23, Village Sanpka,Tehsil Farukhnagar, District - Gurgaon, Haryana- 122503, Farukhnagar , HARYANA, India - 1'; only in the template's value: 'sunsatwarehousingpvtltd'",
+   "added": "2026-10-30T16:07:56"
+  }
+ ],
+ "second_opinions": {
+  "makemytrip_tax_invoice.yml": {
+   "hash": "06fc07628701be39",
+   "trusted": false,
+   "documents": {
+    "fd8366e357fe0124d7e8:1": {
+     "agreed": true,
+     "source": "pdf-makemytrip-tax-invoice-for-transportation_compress.pdf p1",
+     "when": "2026-10-30T12:09:40",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_name (the template's value stands)"
+      }
+     ]
+    },
+    "f15dcd84db6974d3ced9:1": {
+     "agreed": true,
+     "source": "pdf-makemytrip-tax-invoice-details_compress.pdf p1",
+     "when": "2026-10-30T14:55:38",
+     "question": "739f0def4360",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_name (the template's value stands)"
+      }
+     ]
+    }
+   }
+  },
+  "amazon_in_tax_invoice.yml": {
+   "hash": "52cbe506599781dc",
+   "trusted": false,
+   "documents": {
+    "db1394d70bc4b7ddb59e:1": {
+     "agreed": true,
+     "source": "pdf-amazon-tax-invoice-for-retail-purchase_compress.pdf p1 (stored sample)",
+     "when": "2026-10-30T11:19:00",
+     "issues": []
+    },
+    "db1394d70bc4b7ddb59e:2": {
+     "agreed": true,
+     "source": "pdf-amazon-tax-invoice-for-retail-purchase_compress.pdf p2 (stored sample)",
+     "when": "2026-10-30T11:19:08",
+     "issues": []
+    },
+    "a28175e55ee85fc12533:1": {
+     "agreed": true,
+     "source": "pdf-tax-invoice-for-samsung-refrigerator-purchase_compress.pdf p1 (stored sample)",
+     "when": "2026-10-30T11:19:13",
+     "issues": []
+    }
+   }
+  },
+  "blinkit_fee_invoice.yml": {
+   "hash": "fda0a3c77a9c4ab2",
+   "trusted": false,
+   "documents": {
+    "273d8030565bb759489e:4": {
+     "agreed": false,
+     "source": "ForwardInvoice_ORD07524055172.pdf p4 (stored sample)",
+     "when": "2026-10-30T11:19:47",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: buyer_address differs: template read 'akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha,', the AI reads 'HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha, Ahmeda'; only in the template's value: 'akash'"
+      }
+     ]
+    },
+    "63e5e111b621763a753b:2": {
+     "agreed": false,
+     "source": "ForwardInvoice_ORD00909758158.pdf p2 (stored sample)",
+     "when": "2026-10-30T11:20:42",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: buyer_address differs: template read 'akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha,', the AI reads 'HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ, MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur, Bogha, Ahme'; only in the template's value: 'akash'"
+      }
+     ]
+    },
+    "2414ea22959f73f5e89f:2": {
+     "agreed": false,
+     "source": "ForwardInvoice_ORD85101206944.pdf p2 (stored sample)",
+     "when": "2026-10-30T11:21:47",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: buyer_address differs: template read 'akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur Bogha,', the AI reads 'HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ, MANDIR SAIJPUR, Arya samaj mandir, Shanti Nagar, Saijpur, Bogha, Ahme'; only in the template's value: 'akash'"
+      }
+     ]
+    }
+   }
+  },
+  "blinkit_goods_invoice.yml": {
+   "hash": "ac651d1ad00b21d7",
+   "trusted": false,
+   "documents": {
+    "273d8030565bb759489e:2,3": {
+     "agreed": false,
+     "source": "ForwardInvoice_ORD07524055172.pdf p2,3 (stored sample)",
+     "when": "2026-10-30T11:23:07",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no seller_trade_name (the template's value stands)"
+      },
+      {
+       "level": "WARN",
+       "message": "second opinion: seller_address differs: template read 'Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf Shop No - 24 To 33 ,B/H S R P Camp, Nr Mahipat Bunglows, Naroda Ahm', the AI reads 'BLINK COMMERCE PRIVATE LIMITED - SS Ahmedabad Nava Naroda 3 ES82, Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf S'; not in the template's value: 'blinkcommerceprivatelimitedssahmedabadnavanaroda3es82'"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_name (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_tax_id (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_fssai (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_company_reg (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_pan (the template's value stands)"
+      },
+      {
+       "level": "WARN",
+       "message": "second opinion: buyer_address differs: template read 'akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, ', the AI reads 'HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ, MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha,, Ahmed'; only in the template's value: 'akash', '382345'"
+      }
+     ]
+    },
+    "39bd5f14079d1e836e53:1,2": {
+     "agreed": false,
+     "source": "ForwardInvoice_ORD97311390276.pdf p1,2 (stored sample)",
+     "when": "2026-10-30T11:24:26",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_name (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_tax_id (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_fssai (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_company_reg (the template's value stands)"
+      },
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_pan (the template's value stands)"
+      },
+      {
+       "level": "WARN",
+       "message": "second opinion: buyer_address differs: template read 'akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, ', the AI reads 'HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedab'; only in the template's value: 'akash', '382345'"
+      }
+     ]
+    },
+    "273d8030565bb759489e:1": {
+     "agreed": false,
+     "source": "ForwardInvoice_ORD07524055172.pdf p1 (stored sample)",
+     "when": "2026-10-30T11:25:35",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no seller_trade_name (the template's value stands)"
+      },
+      {
+       "level": "WARN",
+       "message": "second opinion: seller_address differs: template read 'Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf Shop No - 24 To 33 ,B/H S R P Camp, Nr Mahipat Bunglows, Naroda Ahm', the AI reads 'ZHPL - SS Ahmedabad Nava Naroda 3 ES82, Sur.No 1035 T.P. 1 F P 283 Pushpak Corner Block-B Gf Shop No - 24 To 33 ,B/H S R'; not in the template's value: 'zhplssahmedabadnavanaroda3es82'"
+      },
+      {
+       "level": "WARN",
+       "message": "second opinion: buyer_address differs: template read 'akash, HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, ', the AI reads 'HOUSE NO 2 ,RAJ CO OP SOCIETY OPPOSITE ARYA SAMAJ MANDIR SAIJPUR, Arya samaj mandir,Shanti Nagar, Saijpur Bogha, Ahmedab'; only in the template's value: 'akash', '382345'"
+      }
+     ]
+    }
+   }
+  },
+  "flipkart_bill_of_supply.yml": {
+   "hash": "e1c9b6135e198f2f",
+   "trusted": false,
+   "documents": {
+    "c9ff32c3f5fb89389d07:2,3": {
+     "agreed": false,
+     "source": "OD435477552035539200.pdf p2,3 (stored sample)",
+     "when": "2026-10-30T11:26:39",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: goods_description differs: template read 'Dukes NICE Sugar Sprinkled Coconut Biscotti Biscuit (4), Classic Kabuli Chana (Whole) by Flipkart Grocery (1), ProV Cali', the AI reads 'Dukes NICE Sugar Sprinkled Coconut Biscotti Biscuit (4), Classic Kabuli Chana (Whole) by Flipkart Grocery (1), ProV Cali'; not in the template's value: 'flipkarturadpapad1tooyummsourcreamandonionveggiestixnopalmoil1classicphoolmakhanabyflipkartgrocery1cadburyoreochocolateflavourcreamsandwichbiscuit2classicredrajmawholebyflipkartgrocery1'"
+      }
+     ]
+    },
+    "df6c0fe02fbfde05d1ee:6,7": {
+     "agreed": false,
+     "source": "OD437334801620974100-1.pdf p6,7",
+     "when": "2026-10-30T16:07:17",
+     "question": "e5c1ee8b16b8",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: ship_from_address differs: template read 'FLIPKART INSTAKART SERVICES PVT LTD, WAREHOUSE BUILDING NO.2, RENAISSANCE INTEGRATED INDUSTRIAL AREA,VILLAGE VASHERE,BHI', the AI reads 'WAREHOUSE, BUILDING NO.2, RENAISSANCE INTEGRATED INDUSTRIAL, AREA,VILLAGE VASHERE,BHIWANDI,THANE.421302, MAHARASHTRA, IN'; only in the template's value: 'flipkartinstakartservicespvtltd'"
+      }
+     ]
+    },
+    "df6c0fe02fbfde05d1ee:2,3": {
+     "agreed": true,
+     "source": "OD437334801620974100-1.pdf p2,3",
+     "when": "2026-10-30T16:05:32",
+     "question": "e5c1ee8b16b8",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no transporter (the template's value stands)"
+      }
+     ]
+    }
+   }
+  },
+  "makemytrip_tax_invoice_v2.yml": {
+   "hash": "7053473af0543a6d",
+   "trusted": false,
+   "documents": {
+    "0ecb0310ee39ada50402:1": {
+     "agreed": true,
+     "source": "pdf-makemytrip-tax-invoice-details_compress _1_.pdf p1",
+     "when": "2026-10-30T14:55:03",
+     "question": "02c91c4109a4",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no operator_name (the template's value stands)"
+      }
+     ]
+    }
+   }
+  },
+  "income_tax_itr_acknowledgement.yml": {
+   "hash": "68b95c1d6d02a2b7",
+   "trusted": false,
+   "documents": {
+    "a75cf9bc532236a7fd62:1": {
+     "agreed": true,
+     "source": "ACK735221680300726.pdf p1",
+     "when": "2026-10-30T14:16:43",
+     "issues": []
+    }
+   }
+  },
+  "shiprocket_credit_note.yml": {
+   "hash": "853a4451916b5a54",
+   "trusted": false,
+   "documents": {
+    "760f21d16e25ca370011:1": {
+     "agreed": true,
+     "source": "CNSRFLD27H010116.pdf p1",
+     "when": "2026-10-30T14:16:49",
+     "issues": []
+    },
+    "e4df58fea780646a4ca9:1": {
+     "agreed": true,
+     "source": "CNSRFW27HR003248.pdf p1",
+     "when": "2026-10-30T14:17:20",
+     "issues": []
+    },
+    "9405b7bc1669738234f7:1": {
+     "agreed": true,
+     "source": "CNSRFW27HR005195.pdf p1",
+     "when": "2026-10-30T14:17:44",
+     "issues": []
+    }
+   }
+  },
+  "irctc_e_ticket.yml": {
+   "hash": "07dd29829ee4d1a6",
+   "trusted": false,
+   "documents": {
+    "1886a7091b04d353edbe:1,2": {
+     "agreed": false,
+     "source": "new delhi ticket 20260817.pdf p1,2",
+     "when": "2026-10-30T14:18:19",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no invoice_number (the template's value stands)"
+      },
+      {
+       "level": "WARN",
+       "message": "second opinion: train_number differs: template read '12957 / SBIB NDLS RAJ', the AI reads '12957'"
+      }
+     ]
+    }
+   }
+  },
+  "maashitla_proforma_invoice.yml": {
+   "hash": "ebd025241f122a20",
+   "trusted": false,
+   "documents": {
+    "c74d16c29250759cceb8:1": {
+     "agreed": true,
+     "source": "Proforma Invoice of RTA13294 FY 2025-26 (2).pdf p1",
+     "when": "2026-10-30T14:18:31",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI found no customer_number (the template's value stands)"
+      }
+     ]
+    }
+   }
+  },
+  "ishwam_sales_invoice.yml": {
+   "hash": "f7be0b32d1f864be",
+   "trusted": false,
+   "documents": {
+    "38fbdc66c70fc182a992:1": {
+     "agreed": true,
+     "source": "SALES 1 ISHWAM.pdf p1",
+     "when": "2026-10-30T14:18:37",
+     "issues": []
+    },
+    "ff5ee1cb93313b69910e:1": {
+     "agreed": false,
+     "source": "SALES 2 ISHWAM.pdf p1",
+     "when": "2026-10-30T14:19:06",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: total_in_words differs: template read 'Indian Rupees Nine Lakh Eighty Six Thousand Nine', the AI reads 'Indian Rupees Nine Lakh Eighty Six Thousand Nine Hundred Ninety Nine Only'; not in the template's value: 'hundredninetynineonly'"
+      }
+     ]
+    }
+   }
+  },
+  "shiprocket_charges_invoice.yml": {
+   "hash": "d1d472bc14c969c5",
+   "trusted": false,
+   "documents": {
+    "a6865066b9bb8f56c5bd:1": {
+     "agreed": true,
+     "source": "SRC27DL000011945.pdf p1",
+     "when": "2026-10-30T14:19:10",
+     "issues": []
+    },
+    "c8be7b75d86222e4b35e:1": {
+     "agreed": true,
+     "source": "SRF27HR000000736.pdf p1",
+     "when": "2026-10-30T14:19:22",
+     "issues": []
+    },
+    "a5c9f90ac38827934e8f:1": {
+     "agreed": true,
+     "source": "SRF27HR000094683.pdf p1",
+     "when": "2026-10-30T14:19:36",
+     "issues": []
+    }
+   }
+  },
+  "shiprocket_services_invoice.yml": {
+   "hash": "1e5b2f186e822dcb",
+   "trusted": false,
+   "documents": {
+    "1c2b729f9590089d9446:1": {
+     "agreed": true,
+     "source": "SRV27HR000029089.pdf p1",
+     "when": "2026-10-30T14:19:55",
+     "issues": []
+    },
+    "a7b3fddadb187e0d7b86:1": {
+     "agreed": true,
+     "source": "SRV27HR000090197.pdf p1",
+     "when": "2026-10-30T14:20:08",
+     "issues": []
+    },
+    "28b721570cde622d84e4:1": {
+     "agreed": true,
+     "source": "SRV27HR000109533.pdf p1",
+     "when": "2026-10-30T14:20:27",
+     "issues": []
+    }
+   }
+  },
+  "indigo_tax_invoice.yml": {
+   "hash": "4c6ac612763bfae3",
+   "trusted": false,
+   "documents": {
+    "5682566037e6bcef6e30:1": {
+     "agreed": true,
+     "source": "TaxInvoiceGJ1262708AO14512.pdf p1",
+     "when": "2026-10-30T14:20:46",
+     "issues": []
+    },
+    "eccaf59d04aabdc2d656:1": {
+     "agreed": true,
+     "source": "TaxInvoiceGJ1262708AO60349.pdf p1",
+     "when": "2026-10-30T14:21:03",
+     "issues": []
+    },
+    "85dd9fd9c0388634f336:1": {
+     "agreed": true,
+     "source": "TaxInvoiceGJ1262708AO85542.pdf p1",
+     "when": "2026-10-30T14:21:17",
+     "issues": []
+    }
+   }
+  },
+  "mtalkz_tax_invoice.yml": {
+   "hash": "99e6aa7ca6102267",
+   "trusted": false,
+   "documents": {
+    "74237adfb7376c4287f6:1,2,3,4": {
+     "agreed": true,
+     "source": "TI26-2701230.pdf p1,2,3,4",
+     "when": "2026-10-30T14:21:24",
+     "issues": []
+    }
+   }
+  },
+  "vodafone_idea_postpaid_bill.yml": {
+   "hash": "caf8ee257134ac0b",
+   "trusted": false,
+   "documents": {
+    "bd33d98f4f5bce2da3bf:1,2,3,4,5": {
+     "agreed": true,
+     "source": "VIL_bill_7573001478_2026-08-22_statement.pdf p1,2,3,4,5",
+     "when": "2026-10-30T14:22:11",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI's irn 'ada243f0bc6afbd69dd1cb780648a358ff3f113a618c5b827764673cb7c26474' is not on the page (ignored)"
+      }
+     ]
+    }
+   }
+  },
+  "myntra_tax_invoice.yml": {
+   "hash": "4e37350025471a92",
+   "trusted": false,
+   "documents": {
+    "098eb82ee1ba6f3665a5:2": {
+     "agreed": true,
+     "source": "pdf-myntra-tax-invoice-details_compress _1_.pdf p2",
+     "when": "2026-10-30T15:24:00",
+     "question": "612ede5b49d5",
+     "issues": []
+    },
+    "864021bdc9f2e1fe6f62:2": {
+     "agreed": true,
+     "source": "pdf-myntra-tax-invoice-details_compress _2_.pdf p2",
+     "when": "2026-10-30T15:59:35",
+     "question": "612ede5b49d5",
+     "issues": []
+    }
+   }
+  },
+  "myntra_seller_tax_invoice.yml": {
+   "hash": "73d16999dd4b662a",
+   "trusted": false,
+   "documents": {
+    "098eb82ee1ba6f3665a5:1": {
+     "agreed": true,
+     "source": "pdf-myntra-tax-invoice-details_compress 1.pdf p1",
+     "when": "2026-10-30T15:57:56",
+     "question": "be2225bc2a14",
+     "issues": [
+      {
+       "level": "INFO",
+       "message": "second opinion: the AI's ship_from_address 'Ksquare Industrial Park, Warehouse 4, Before Padgha Toll naka,, Nashik-Mumbai Hi' is not on the page (ignored)"
+      }
+     ]
+    },
+    "864021bdc9f2e1fe6f62:1": {
+     "agreed": false,
+     "source": "pdf-myntra-tax-invoice-details_compress _2_.pdf p1",
+     "when": "2026-10-30T15:59:10",
+     "question": "be2225bc2a14",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: ship_from_address differs: template read '\"Puma Sports India Pvt Ltd No. 01, Sy No. 491, 492/3,492/4,494,493 /1,493/2,493/3,493/4,493/5,513/1, 513/2,516/1,516/2,5', the AI reads '\"Puma Sports India Pvt Ltd No. 01, Sy No. 491, 492/3,492/4,494,493, /1,493/2,493/3,493/4,493/5,513/1, 513/2,516/1,516/2,'; only in the template's value: 'sgstcgstugst'"
+      },
+      {
+       "level": "WARN",
+       "message": "second opinion: the template read nothing for seller_company_reg, the AI reads 'U5190KA2005PTC037319' on the page"
+      }
+     ]
+    }
+   }
+  },
+  "flipkart_seller_tax_invoice.yml": {
+   "hash": "bc02f726d3d3f289",
+   "trusted": false,
+   "documents": {
+    "df6c0fe02fbfde05d1ee:1": {
+     "agreed": true,
+     "source": "OD437334801620974100-1.pdf p1",
+     "when": "2026-10-30T16:04:26",
+     "question": "df858a159793",
+     "issues": []
+    },
+    "df6c0fe02fbfde05d1ee:8": {
+     "agreed": false,
+     "source": "OD437334801620974100-1.pdf p8",
+     "when": "2026-10-30T16:07:55",
+     "question": "df858a159793",
+     "issues": [
+      {
+       "level": "WARN",
+       "message": "second opinion: ship_from_address differs: template read 'Sunsat warehousing Pvt. Ltd., Hadbast No. 23, Village Sanpka,Tehsil Farukhnagar, District - Gurgaon, Haryana- 122503, Fa', the AI reads 'Hadbast No. 23, Village Sanpka,Tehsil Farukhnagar, District - Gurgaon, Haryana- 122503, Farukhnagar , HARYANA, India - 1'; only in the template's value: 'sunsatwarehousingpvtltd'"
+      }
+     ]
+    }
+   }
+  },
+  "flipkart_platform_fee_invoice.yml": {
+   "hash": "afc9197b5d4947a2",
+   "trusted": false,
+   "documents": {
+    "df6c0fe02fbfde05d1ee:4": {
+     "agreed": true,
+     "source": "OD437334801620974100-1.pdf p4",
+     "when": "2026-10-30T16:05:47",
+     "question": "71e31d3cee47",
+     "issues": []
+    },
+    "df6c0fe02fbfde05d1ee:5": {
+     "agreed": true,
+     "source": "OD437334801620974100-1.pdf p5",
+     "when": "2026-10-30T16:06:08",
+     "question": "71e31d3cee47",
+     "issues": []
+    }
+   }
+  }
+ },
+ "waiting": {
+  "documents": [
+   {
+    "pdf": "60a0e7c9b12fefb1b23e",
+    "name": "ForwardInvoice_ORD03239241938.pdf",
+    "pages": [
+     1
+    ],
+    "kind": "opinion",
+    "added": "2026-10-31T10:46:24",
+    "status": "OK",
+    "reason": "",
+    "problems": [],
+    "template": "blinkit_goods_invoice.yml",
+    "template_hash": "ac651d1ad00b21d7",
+    "needed": 3,
+    "group": "opinion:blinkit_goods_invoice.yml"
+   },
+   {
+    "pdf": "60a0e7c9b12fefb1b23e",
+    "name": "ForwardInvoice_ORD03239241938.pdf",
+    "pages": [
+     2
+    ],
+    "kind": "opinion",
+    "added": "2026-10-31T10:46:24",
+    "status": "OK",
+    "reason": "",
+    "problems": [],
+    "template": "blinkit_goods_invoice.yml",
+    "template_hash": "ac651d1ad00b21d7",
+    "needed": 3,
+    "group": "opinion:blinkit_goods_invoice.yml"
+   },
+   {
+    "pdf": "60a0e7c9b12fefb1b23e",
+    "name": "ForwardInvoice_ORD03239241938.pdf",
+    "pages": [
+     3
+    ],
+    "kind": "opinion",
+    "added": "2026-10-31T10:46:24",
+    "status": "OK",
+    "reason": "",
+    "problems": [],
+    "template": "blinkit_fee_invoice.yml",
+    "template_hash": "fda0a3c77a9c4ab2",
+    "needed": 3,
+    "group": "opinion:blinkit_fee_invoice.yml"
+   }
+  ],
+  "groups": {},
+  "jobs": []
+ },
+ "signatures": {}
+}

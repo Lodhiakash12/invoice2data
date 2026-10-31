@@ -1,0 +1,163 @@
+# Written by the AI template author on 2026-10-30 from pdf-makemytrip-tax-invoice-details_compress _1_.pdf
+issuer: MakeMyTrip (India) Private Limited
+keywords:
+- MAKEMYTRIP (INDIA) PRIVATE LIMITED
+- TAX INVOICE
+- Booking ID
+- PAYMENT BREAKUP
+continuation_keywords:
+- Registered Office
+required_fields:
+- issuer
+- document_type
+- invoice_number
+- date
+- amount
+- seller_name
+- buyer_name
+optional_fields:
+- booking_reference
+- seller_address
+- seller_tax_id
+- seller_pan
+- seller_company_reg
+- place_of_supply
+- hsn_sac
+- supply_description
+- reverse_charge
+- operator_name
+- date_travel
+- travel_from
+- travel_to
+- amount_igst
+- amount_cgst
+- amount_sgst
+fields:
+  document_type:
+    parser: static
+    value: tax_invoice
+  invoice_number:
+    parser: region
+    heading: ^Invoice No\.
+    max_lines: 1
+  date:
+    parser: region
+    heading: ^Date
+    max_lines: 1
+  booking_reference:
+    parser: region
+    heading: ^Booking ID
+    max_lines: 1
+  seller_name: (MAKEMYTRIP \(INDIA\) PRIVATE LIMITED)
+  seller_address:
+    parser: regex
+    regex: (?s)PRIVATE LIMITED\s*\n\s*(.*?)\n\s*Booking ID
+    replace:
+    - - TAX INVOICE\s+
+      - ''
+    - - \s+
+      - ' '
+  seller_tax_id:
+    parser: region
+    heading: GSTIN
+    max_lines: 1
+  seller_pan:
+    parser: region
+    heading: PAN
+    max_lines: 1
+  seller_company_reg:
+    parser: region
+    heading: CIN
+    max_lines: 1
+  hsn_sac:
+    parser: region
+    heading: HSN/SAC
+    max_lines: 1
+  place_of_supply:
+    parser: region
+    heading: ^Place of Supply
+    max_lines: 1
+  supply_description:
+    parser: region
+    heading: Service Description
+    stop: Tax Payable
+    max_lines: 1
+  reverse_charge:
+    parser: region
+    heading: Tax Payable under RCM
+    max_lines: 1
+  buyer_name:
+    parser: region
+    heading: ^Customer Name
+    max_lines: 1
+  operator_name:
+    parser: region
+    heading: ^Vendor Name
+    stop: PAYMENT BREAKUP
+    max_lines: 1
+  date_travel:
+    parser: region
+    heading: Travel Date
+    max_lines: 1
+  travel_from:
+    parser: region
+    heading: From Station
+    max_lines: 1
+  travel_to:
+    parser: region
+    heading: To Station
+    max_lines: 1
+  amount_igst: (?m)^\s*IGST @\d+(?:\.\d+)?%\s+[^\d\n]*?(-?\d[\d,]*(?:\.\d{1,3})?)
+  amount_cgst: (?m)^\s*CGST @\d+(?:\.\d+)?%\s+[^\d\n]*?(-?\d[\d,]*(?:\.\d{1,3})?)
+  amount_sgst: (?m)^\s*SGST @\d+(?:\.\d+)?%\s+[^\d\n]*?(-?\d[\d,]*(?:\.\d{1,3})?)
+  amount: (?m)^\s*Grand Total\s+[^\d\n]*?(-?\d[\d,]*(?:\.\d{1,3})?)\s*$
+  lines:
+    parser: lines
+    start: PAYMENT BREAKUP
+    end: Grand Total
+    line: ^\s{2,}(?P<name>\S.*?)\s{2,}[^\d\n]*?(?P<price_total>-?\d[\d,]*(?:\.\d{1,3})?)\s*$
+    skip_line: ^\s*\(Inclusive of applicable taxes\)
+    types:
+      price_total: float
+options:
+  currency: INR
+  decimal_separator: .
+  date_formats:
+  - '%d %b %Y'
+  replace:
+  - - \r
+    - ''
+family: makemytrip_tax_invoice
+version: 2
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['makemytrip', 7]
+    - ['india', 8]
+    - ['private', 9]
+    - ['limited', 10]
+    - ['tax', 0]
+    - ['invoice', 1]
+    - ['booking', 0]
+    - ['invoice', 0]
+    - ['tax', 4]
+    - ['payment', 5]
+    - ['breakup', 6]
+    - ['inclusive', 1]
+    - ['applicable', 1]
+    - ['taxes', 2]
+    - ['makemytrip', 2]
+    - ['cgst', 1]
+    - ['sgst', 1]
+    - ['grand', 1]
+    - ['total', 1]
+    - ['tax', 1]
+    - ['invoice', 8]
+    - ['makemytrip', 3]
+    - ['invoice', 3]
+    - ['invoice', 8]
+    - ['invoice', 2]
+    - ['registered', 0]
+    - ['office', 1]

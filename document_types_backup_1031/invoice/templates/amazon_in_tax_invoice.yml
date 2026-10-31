@@ -1,0 +1,117 @@
+# Amazon.in - "Tax Invoice/Bill of Supply/Cash Memo" issued by the marketplace seller (Cloudtail,
+# Appario, Retailez, any third-party seller) through Amazon India. The seller changes per invoice;
+# the layout is Amazon's. Item rows: description lines, then one row with the amounts (unit price,
+# discount when printed, qty, net amount, first tax, total) and one line per further tax
+# (SGST after CGST). Shipping and other charges are rows without a serial number.
+issuer: Amazon.in (marketplace seller)
+
+keywords:
+  - 'Tax Invoice/Bill of Supply/Cash Memo'
+  - 'Sold By'
+  - 'ASSPL-Amazon Seller Services'
+# a following page repeats the footer but not "Sold By"
+continuation_keywords:
+  - 'ASSPL-Amazon Seller Services'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name, order_number]
+optional_fields: [seller_tax_id, seller_pan, buyer_tax_id, buyer_state_code, place_of_supply, amount_tax]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Invoice Number:\s*(\S+)'
+  date: 'Invoice Date:\s*(\d{2}\.\d{1,2}\.\d{4})'
+  order_number: 'Order Number:\s*(\S+)'
+  # left column of the line after "Sold By:"
+  seller_name: '(?m)^Sold By:[^\n]*\n(\S.*?)(?:\s{2,}|\s*$)'
+  seller_pan: '(?m)^PAN No:\s*([A-Z0-9]+)'
+  seller_tax_id: '(?m)^GST Registration No:\s*([0-9]{2}[A-Z0-9]{13})\b'
+  # the buyer's GSTIN is printed in the right-hand column (business purchases only)
+  buyer_tax_id: '(?m)^\s+GST Registration No:\s*([0-9]{2}[A-Z0-9]{13})\s*$'
+  buyer_state_code: '(?m)^\s+State/UT Code:\s*(\d{1,2})\s*$'
+  place_of_supply: '(?m)Place of supply:\s*(\S.*?)\s*$'
+  # TOTAL: <tax total> <grand total>
+  amount_tax: '(?m)^TOTAL:\s+Rs (-?\d[\d,]*(?:\.\d{1,2})?)\s+Rs -?\d[\d,]*(?:\.\d{1,2})?\s*$'
+  amount: '(?m)^TOTAL:\s+(?:Rs -?\d[\d,]*(?:\.\d{1,2})?\s+)?Rs (\d[\d,]*(?:\.\d{1,2})?)\s*$'
+
+  lines:
+    parser: lines
+    # the last header line: "No  Price  Amount Rate Type Amount Amount" (3-line header) or
+    # "Sl. No Description ... Tax Amount  Total Amount" (1-line header, Amazon's own fee invoices)
+    start: '(?m)^\s*(?:Sl\.\s+)?No\b[^\n]*\bAmount\s*$'
+    end: '(?m)^TOTAL:'
+    first_line:
+      # a row that starts with its serial number and already carries the amounts
+      - '^\s*(?P<pos>\d{1,3})\s+(?P<name>\S.*?)\s+Rs (?P<price_unit>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?:Rs (?P<discount>-?\d[\d,]*(?:\.\d{1,2})?)\s+)?(?:(?P<qty>\d+)\s+)?Rs (?P<price_subtotal>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?P<cgst_rate>[\d.]+)%\s+CGST\s+Rs (?P<cgst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s+Rs (?P<price_total>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      - '^\s*(?P<pos>\d{1,3})\s+(?P<name>\S.*?)\s+Rs (?P<price_unit>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?:Rs (?P<discount>-?\d[\d,]*(?:\.\d{1,2})?)\s+)?(?:(?P<qty>\d+)\s+)?Rs (?P<price_subtotal>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?P<igst_rate>[\d.]+)%\s+IGST\s+Rs (?P<igst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s+Rs (?P<price_total>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      # a row that starts with its serial number; the amounts follow on a later line
+      - '^\s*(?P<pos>\d{1,3})\s+(?P<name>[^\d\s].*?)\s*$'
+      # a charge row (shipping, gift wrap, COD ...): no serial number, no quantity
+      - '^\s*(?P<name>(?:Shipping|Delivery|Gift\s*Wrap|COD|Cash on Delivery|Handling|Convenience)[A-Za-z ]*?)\s+Rs (?P<price_unit>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?:Rs (?P<discount>-?\d[\d,]*(?:\.\d{1,2})?)\s+)?(?:(?P<qty>\d+)\s+)?Rs (?P<price_subtotal>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?P<cgst_rate>[\d.]+)%\s+CGST\s+Rs (?P<cgst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s+Rs (?P<price_total>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      - '^\s*(?P<name>(?:Shipping|Delivery|Gift\s*Wrap|COD|Cash on Delivery|Handling|Convenience)[A-Za-z ]*?)\s+Rs (?P<price_unit>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?:Rs (?P<discount>-?\d[\d,]*(?:\.\d{1,2})?)\s+)?(?:(?P<qty>\d+)\s+)?Rs (?P<price_subtotal>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?P<igst_rate>[\d.]+)%\s+IGST\s+Rs (?P<igst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s+Rs (?P<price_total>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+    line:
+      # the amounts line of an item whose description started on the serial-number line
+      - '^\s*(?:(?P<name>\S.*?)\s+)??Rs (?P<price_unit>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?:Rs (?P<discount>-?\d[\d,]*(?:\.\d{1,2})?)\s+)?(?:(?P<qty>\d+)\s+)?Rs (?P<price_subtotal>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?P<cgst_rate>[\d.]+)%\s+CGST\s+Rs (?P<cgst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s+Rs (?P<price_total>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      - '^\s*(?:(?P<name>\S.*?)\s+)??Rs (?P<price_unit>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?:Rs (?P<discount>-?\d[\d,]*(?:\.\d{1,2})?)\s+)?(?:(?P<qty>\d+)\s+)?Rs (?P<price_subtotal>-?\d[\d,]*(?:\.\d{1,2})?)\s+(?P<igst_rate>[\d.]+)%\s+IGST\s+Rs (?P<igst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s+Rs (?P<price_total>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      # further tax lines of the row
+      - '^\s*(?P<sgst_rate>[\d.]+)%\s+(?:SGST|UTGST)\s+Rs (?P<sgst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      - '^\s*(?P<cgst_rate>[\d.]+)%\s+CGST\s+Rs (?P<cgst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      - '^\s*(?P<igst_rate>[\d.]+)%\s+IGST\s+Rs (?P<igst_amount>-?\d[\d,]*(?:\.\d{1,2})?)\s*$'
+      - '^\s*HSN:\s*(?P<hsn_sac>\d+)\s*$'
+      # more description text
+      - '^\s*(?P<name>\S.*?)\s*$'
+    skip_line: '^\s*\d+(?:\.\d+)?%\s+None\s'
+    types:
+      pos: int
+      qty: int
+      price_unit: float
+      discount: float
+      price_subtotal: float
+      cgst_rate: float
+      cgst_amount: float
+      sgst_rate: float
+      sgst_amount: float
+      igst_rate: float
+      igst_amount: float
+      price_total: float
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%d.%m.%Y']
+  replace:
+    - ['\r', '']
+    # the rupee sign marks money (a quantity has none); a minus sign goes after it: -\u20b933.90 -> Rs -33.90
+    - ['(-?)\u20b9\s*(\d)', 'Rs \1\2']
+
+layout:
+  columns: 12
+  sample_pages: 13
+  order:
+    - ['tax', 6]
+    - ['memo', 10]
+    - ['sold', 0]
+    - ['pan', 0]
+    - ['gst', 0]
+    - ['registration', 1]
+    - ['code', 10]
+    - ['order', 0]
+    - ['number', 1]
+    - ['invoice', 7]
+    - ['number', 8]
+    - ['order', 0]
+    - ['date', 1]
+    - ['invoice', 7]
+    - ['invoice', 8]
+    - ['date', 9]
+    - ['tax', 8]
+    - ['tax', 9]
+    - ['total', 10]
+    - ['amount', 7]
+    - ['amount', 9]
+    - ['amount', 10]
+    - ['total', 0]
+    - ['amount', 0]
+    - ['seller', 3]
+    - ['services', 3]
+    - ['amazon', 6]
+    - ['invoice', 5]

@@ -1,0 +1,132 @@
+# Shopify - monthly bill to a merchant (issued by Shopify Commerce Singapore, IGST under its
+# Indian OIDAR registration). Page 1 = overview by category, page 2 = detailed view; both pages
+# carry the bill number, so they form one document.
+issuer: Shopify
+
+keywords:
+  - 'Shopify Commerce Singapore Pte. Ltd.'
+  - 'Bill #'
+  - 'billing cycle'
+
+required_fields: [issuer, document_type, invoice_number, date, amount, seller_name, buyer_name]
+
+fields:
+  document_type: {parser: static, value: tax_invoice}
+  invoice_number: 'Bill #(\d+)'
+  date: 'Date issued ([A-Z][a-z]{2} \d{1,2}, \d{4})'
+  billing_period: '(?m)^Bill #\d+\s+(\S.*?billing cycle)'
+
+  seller_name: '(?m)^\s+(Shopify Commerce Singapore Pte\. Ltd\.)\s*$'
+  seller_address: {parser: regex, regex: '(?s)Shopify Commerce Singapore Pte\. Ltd\.\s*\n(.*?)\n\s*GSTIN', replace: [['\s+', ' '], ['^\s|\s$', '']]}
+  # Shopify's Indian GST registration for foreign online services (not the usual 15-character form)
+  seller_tax_id: '(?m)^\s+GSTIN (\S+)\s*$'
+
+  # "Account billed": three columns - name / e-mail / contact, address, payment status
+  buyer_name: {parser: regex, regex: '(?s)Account billed[^\n]*\n(.*?)\n\S+@\S+', replace: [['(?m)\s{2,}.*$', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  buyer_email: '(?m)^(\S+@\S+\.\S+)\s{2,}'
+  buyer_trade_name: '(?m)^OVERVIEW\s*\n\s*\n(\S[^\n]*?)\s*\n'
+  buyer_address: {parser: regex, regex: '(?s)Account billed[^\n]*\n(.*?)\n\s*\n', replace: [['(?m)^\S.*?\s{2,}', ''], ['(?m)^\s+', ''], ['(?m)\s{2,}.*$', ''], ['\s+', ' '], ['^\s|\s$', '']]}
+  buyer_state: '(?s)Account billed.*?\n\s{20,}([A-Z][A-Za-z ]+?) - \d{2}\s*\n'
+  buyer_state_code: '(?s)Account billed.*?\n\s{20,}[A-Z][A-Za-z ]+? - (\d{2})\s*\n'
+
+  amount_untaxed: '(?m)^\s+Subtotal\s+([\d,]+(?:\.\d{1,2})?) INR'
+  tax_rate: {parser: regex, regex: 'IGST - INDIA \(([\d.]+)%\)', type: float}
+  amount_igst: 'IGST - INDIA \([\d.]+%\)\s+\S+\s+([\d,]+(?:\.\d{1,2})?) INR'
+  amount: '(?m)^\s+Total\s+([\d,]+(?:\.\d{1,2})?) INR'
+  amount_due: 'TOTAL DUE\s+([\d,]+(?:\.\d{1,2})?) INR'
+
+  lines:
+    parser: lines
+    start: '(?m)^OVERVIEW'
+    end: '(?m)^\s+Subtotal'
+    # "Apps (1 item) 998315 - Hosting and ... services      3,217.56 INR";  "Credit      -20.00 INR"
+    # "(1 item)" is the number of entries in the category (listed on page 2), not a quantity
+    first_line: '^(?P<name>\S.*?(?: \(\d+ items?\))?)(?:\s+(?P<hsn_sac>\d{6})\s+-\s+(?P<line_note>\S.*?))?\s{2,}(?P<price_subtotal>-?[\d,]+(?:\.\d{1,2})?) INR\s*$'
+    line: '^(?!)'
+    types:
+      price_subtotal: float
+
+checks:
+  document:
+    - name: igst rate
+      rule: "round2(amount_untaxed * tax_rate / 100) == amount_igst"
+
+options:
+  currency: INR
+  decimal_separator: '.'
+  date_formats: ['%b %d, %Y']
+  replace:
+    - ['\r', '']
+    # the rupee sign (written as an escape to keep this file ASCII): "-Rs20.00 INR" -> "-20.00 INR"
+    - ['\u20b9', '']
+
+layout:
+  columns: 12
+  sample_pages: 1
+  order:
+    - ['bill', 0]
+    - ['billing', 3]
+    - ['cycle', 4]
+    - ['date', 0]
+    - ['issued', 1]
+    - ['shopify', 8]
+    - ['commerce', 9]
+    - ['singapore', 10]
+    - ['pte', 11]
+    - ['ltd', 11]
+    - ['singapore', 10]
+    - ['singapore', 10]
+    - ['gstin', 9]
+    - ['total', 0]
+    - ['due', 1]
+    - ['inr', 2]
+    - ['overview', 0]
+    - ['inr', 10]
+    - ['items', 2]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['subtotal', 5]
+    - ['inr', 10]
+    - ['igst', 5]
+    - ['india', 6]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['total', 5]
+    - ['account', 0]
+    - ['billed', 1]
+    - ['bill', 6]
+    - ['india', 3]
+    - ['bill', 2]
+    - ['shopify', 3]
+    - ['bill', 0]
+    - ['billing', 3]
+    - ['cycle', 4]
+    - ['date', 0]
+    - ['issued', 1]
+    - ['shopify', 8]
+    - ['commerce', 9]
+    - ['singapore', 10]
+    - ['pte', 11]
+    - ['ltd', 11]
+    - ['singapore', 10]
+    - ['singapore', 10]
+    - ['gstin', 9]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['items', 2]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['inr', 10]
+    - ['subtotal', 5]
+    - ['inr', 10]
+    - ['igst', 5]
+    - ['india', 6]
+    - ['inr', 10]
+    - ['total', 5]
+    - ['inr', 10]
+    - ['bill', 2]
+    - ['shopify', 3]
